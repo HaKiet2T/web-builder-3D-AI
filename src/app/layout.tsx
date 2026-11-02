@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "FORMA / AUDIO - Studio One 3D Customizer",
-  description: "Trải nghiệm tùy chỉnh loa không dây cao cấp Studio One và âm học 3D thời gian thực.",
+  title: "ASUS ROG Monitors | Bộ sưu tập màn hình",
+  description: "Khám phá bộ sưu tập màn hình ASUS ROG với vòng sản phẩm có thể tương tác.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
