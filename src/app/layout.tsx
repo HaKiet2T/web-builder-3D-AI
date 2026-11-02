@@ -17,11 +17,7 @@ export const metadata: Metadata = {
   description: "Trải nghiệm tùy chỉnh loa không dây cao cấp Studio One và âm học 3D thời gian thực.",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="vi"
