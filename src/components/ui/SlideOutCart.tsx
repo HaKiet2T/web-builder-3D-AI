@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useWorkspaceStore, type ShipmentItem } from '@/store/useWorkspaceStore';
 import type { Order } from '@/types/order';
 
@@ -22,10 +22,27 @@ export function SlideOutCart() {
   const isNight = useWorkspaceStore((state) => state.isNight);
   const triggerPaymentSuccess = useWorkspaceStore((state) => state.triggerPaymentSuccess);
 
-  const subtotal = useWorkspaceStore((state) => state.getCartSubtotal());
-  const shippingFee = useWorkspaceStore((state) => state.getShippingFee());
-  const grandTotal = useWorkspaceStore((state) => state.getGrandTotal());
-  const { inStockGroup, preorderGroup } = useWorkspaceStore((state) => state.getSplitShipment());
+  // Tính toán trong component body thay vì gọi getter trong selector
+  // để tránh lỗi "getServerSnapshot should be cached" / vòng lặp re-render vô tận
+  const subtotal = useMemo(
+    () => cartItems.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0),
+    [cartItems],
+  );
+  const shippingFee = useMemo(() => {
+    if (cartItems.length === 0) return 0;
+    const hasInStock = cartItems.some((i) => i.stockStatus === 'in-stock');
+    const hasPreorder = cartItems.some((i) => i.stockStatus === 'preorder');
+    return hasInStock && hasPreorder ? 70_000 : 35_000;
+  }, [cartItems]);
+  const grandTotal = subtotal + shippingFee;
+  const inStockGroup = useMemo(
+    () => cartItems.filter((item) => item.stockStatus === 'in-stock'),
+    [cartItems],
+  );
+  const preorderGroup = useMemo(
+    () => cartItems.filter((item) => item.stockStatus === 'preorder'),
+    [cartItems],
+  );
 
   const isSplit = inStockGroup.length > 0 && preorderGroup.length > 0;
   const totalItemsCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
