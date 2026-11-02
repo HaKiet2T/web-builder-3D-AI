@@ -8,7 +8,7 @@ import { SlideOutCart } from '@/components/ui/SlideOutCart';
 const SceneCanvas = dynamic(() => import('@/components/canvas/SceneCanvas'), {
   ssr: false,
   loading: () => (
-    <div className="absolute inset-0 animate-pulse bg-[#e9e5de]" aria-label="Đang tải mô hình 3D" />
+    <div className="absolute inset-0 animate-pulse bg-[#e9e5de] dark:bg-[#10151d]" aria-label="Đang tải mô hình 3D" />
   ),
 });
 
@@ -40,16 +40,11 @@ export default function Home() {
   return (
     <main
       className={`relative isolate min-h-screen transition-colors duration-500 ${
-        isNight ? 'bg-[#10151d] text-white' : 'bg-[#e9e5de] text-[#202326]'
+        isNight ? 'dark bg-[#10151d] text-white' : 'bg-[#e9e5de] text-[#202326]'
       }`}
     >
-      {/* 3D Canvas Background */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <SceneCanvas />
-      </div>
-
       {/* Navigation Header */}
-      <header className="relative z-20 flex items-center justify-between px-6 py-6 sm:px-12 backdrop-blur-md bg-transparent">
+      <header className="sticky top-0 z-30 flex items-center justify-between px-6 py-5 sm:px-12 backdrop-blur-md bg-transparent">
         <a href="#home" className="text-sm font-semibold tracking-[0.24em]">
           FORMA / AUDIO
         </a>
@@ -89,14 +84,20 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Hero Section with 3D Customizer Card */}
+      {/* Hero Section with 3D Canvas Viewport */}
       <section
         id="home"
-        className="relative z-10 flex min-h-[calc(100vh-88px)] items-end px-6 pb-12 sm:px-12 sm:pb-16"
+        className="relative min-h-[calc(100vh-80px)] flex items-end px-6 pb-12 sm:px-12 sm:pb-16 overflow-hidden pointer-events-none"
         aria-label="Tùy chỉnh loa Studio One"
       >
+        {/* 3D Canvas Background inside Hero */}
+        <div className="absolute inset-0 pointer-events-auto z-0">
+          <SceneCanvas />
+        </div>
+
+        {/* 3D Customizer Card */}
         <div
-          className={`max-w-md rounded-3xl border p-6 sm:p-8 shadow-2xl backdrop-blur-2xl transition-all duration-500 ${
+          className={`relative z-10 max-w-md rounded-3xl border p-6 sm:p-8 shadow-2xl backdrop-blur-2xl transition-all duration-500 pointer-events-auto ${
             isNight
               ? 'border-white/15 bg-black/40 text-white shadow-black/40'
               : 'border-white/40 bg-white/70 text-[#202326] shadow-black/10'
@@ -107,7 +108,7 @@ export default function Home() {
           </p>
           <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">Studio One</h1>
           <p className="mt-3 max-w-sm text-sm leading-6 text-current/75">
-            Loa không dây tối giản, hoàn thiện thủ công và sẵn sàng lấp đầy căn phòng bằng âm thanh chân thực 360 độ.
+            Loa không dây tối giản, hoàn thiện thủ công và sẵn sàng lấp đầy căn phòng bằng âm thanh chân thực 360 độ. Kéo thả để xoay mô hình 3D.
           </p>
 
           <div className="mt-7">

@@ -15,19 +15,15 @@ const seeded = (index: number, salt: number) => {
 export function SuccessParticles() {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const celebration = useWorkspaceStore((state) => state.successCelebration);
-  const geometry = useMemo(() => new THREE.IcosahedronGeometry(0.025, 0), []);
-  const material = useMemo(
-    () => new THREE.MeshBasicMaterial({ color: '#f5b942', transparent: true }),
-    [],
-  );
   const particles = useMemo(
-    () => Array.from({ length: PARTICLE_COUNT }, (_, index) => ({
-      x: (seeded(index, 0) - 0.5) * 4,
-      y: seeded(index, 1) * 3,
-      z: (seeded(index, 2) - 0.5) * 2,
-      speed: 0.35 + seeded(index, 3) * 0.8,
-      scale: 0.5 + seeded(index, 4) * 1.5,
-    })),
+    () =>
+      Array.from({ length: PARTICLE_COUNT }, (_, index) => ({
+        x: (seeded(index, 0) - 0.5) * 4,
+        y: seeded(index, 1) * 3,
+        z: (seeded(index, 2) - 0.5) * 2,
+        speed: 0.35 + seeded(index, 3) * 0.8,
+        scale: 0.5 + seeded(index, 4) * 1.5,
+      })),
     [],
   );
   const active = useRef(false);
@@ -42,11 +38,6 @@ export function SuccessParticles() {
       startedAt.current = -1;
     }
   }, [celebration]);
-
-  useEffect(() => () => {
-    geometry.dispose();
-    material.dispose();
-  }, [geometry, material]);
 
   useFrame(({ clock }) => {
     const mesh = meshRef.current;
@@ -72,5 +63,10 @@ export function SuccessParticles() {
     mesh.instanceMatrix.needsUpdate = true;
   });
 
-  return <instancedMesh ref={meshRef} args={[geometry, material, PARTICLE_COUNT]} visible={false} />;
+  return (
+    <instancedMesh ref={meshRef} args={[undefined, undefined, PARTICLE_COUNT]} visible={false}>
+      <icosahedronGeometry args={[0.025, 0]} />
+      <meshBasicMaterial color="#f5b942" transparent />
+    </instancedMesh>
+  );
 }
