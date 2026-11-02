@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# web-builder-3D-AI
 
-## Getting Started
+Modern 3D E-Commerce & Interactive Workspace Builder powered by Next.js (App Router), Three.js, React Three Fiber (R3F), Zustand, and Tailwind CSS.
 
-First, run the development server:
+## 🚀 Tech Stack
+
+- **Framework**: Next.js 16 (App Router, React 19, TypeScript)
+- **3D Engine**: Three.js, `@react-three/fiber`, `@react-three/drei`, GSAP
+- **State Management**: Zustand
+- **Styling**: Tailwind CSS
+- **Validation & APIs**: Zod, React Hook Form, Resend
+- **Security**: HMAC-SHA256 signature verification for Payment Webhooks
+
+## 📦 Project Structure
+
+```
+├── .github/workflows/       # GitHub Actions CI workflow (typecheck & lint)
+├── src/
+│   ├── app/                 # Next.js App Router pages & API routes
+│   │   ├── api/checkout/    # Zod-validated checkout & Dual Shipping calculation
+│   │   └── api/webhooks/    # HMAC-SHA256 protected payment webhooks
+│   ├── components/
+│   │   ├── canvas/          # 3D R3F Canvas components (SceneCanvas, Camera, Lighting)
+│   │   └── dom/             # UI overlay controls & components
+│   ├── store/               # Zustand state stores (useWorkspaceStore)
+│   ├── types/               # TypeScript interfaces (Order, Fulfillment, Workspace)
+│   └── lib/                 # Utility functions & helpers
+└── public/
+    └── models/              # 3D GLTF/GLB models & textures
+```
+
+## 🛠️ Getting Started
+
+First, install dependencies:
+
+```bash
+npm install
+```
+
+Copy the environment variables:
+
+```bash
+cp .env.example .env.local
+```
+
+Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to view the application.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🧪 Quality Gates & CI
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Typecheck**: `npm run typecheck`
+- **Lint**: `npm run lint`
+- **Build**: `npm run build`
