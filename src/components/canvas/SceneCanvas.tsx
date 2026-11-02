@@ -25,15 +25,6 @@ function InteractiveSpeaker() {
     }
   }, [variant]);
 
-  useLayoutEffect(() => () => {
-    groupRef.current?.traverse((object) => {
-      const mesh = object as THREE.Mesh;
-      mesh.geometry?.dispose();
-      if (Array.isArray(mesh.material)) mesh.material.forEach((material) => material.dispose());
-      else mesh.material?.dispose();
-    });
-  }, []);
-
   return (
     <group ref={groupRef} position={[0, 0.95, 0]} rotation={[0.04, -0.32, 0]}>
       <mesh castShadow receiveShadow>
@@ -75,7 +66,13 @@ export default function SceneCanvas() {
       className="!absolute inset-0"
     >
       <PerspectiveCamera makeDefault position={[0, 1.8, 5.2]} fov={38} />
-      <OrbitControls enablePan={false} minDistance={3.5} maxDistance={7} maxPolarAngle={Math.PI / 1.8} />
+      <OrbitControls
+        enablePan={false}
+        enableZoom={false}
+        minDistance={3.5}
+        maxDistance={7}
+        maxPolarAngle={Math.PI / 1.8}
+      />
       <color attach="background" args={[isNight ? '#10151d' : '#e9e5de']} />
       <ambientLight intensity={isNight ? 0.22 : 0.55} />
       <directionalLight position={[4, 7, 5]} intensity={isNight ? 1.4 : 2.2} castShadow shadow-mapSize={[1024, 1024]} />
