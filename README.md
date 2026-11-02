@@ -56,3 +56,27 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 - **Typecheck**: `npm run typecheck`
 - **Lint**: `npm run lint`
 - **Build**: `npm run build`
+
+## Product image processing
+
+Put original ASUS monitor/product photos in `picture/monitor/asus/Image/` at the repository root. The folder name you requested is preserved, but it sits outside `public/`, so originals are not exposed by the Next.js web server and are ignored by Git. The processor writes transparent PNGs with a soft drop shadow to `public/products/asus/`; use those generated files in the storefront with URLs such as `/products/asus/product-name.png`.
+
+The processor uses local CPU inference with `rembg` and Pillow. It does not send images to a cloud API. `rembg` supports Python 3.11-3.13; the setup script installs Python 3.13 with Python Install Manager if there is no compatible runtime, then creates an isolated project environment and installs the dependencies:
+
+```powershell
+.\scripts\setup-image-processor.ps1
+```
+
+Process the current images once:
+
+```powershell
+.\.venv-product-images\Scripts\python.exe scripts\process_product_images.py
+```
+
+Keep the processor running to automatically handle new or changed images:
+
+```powershell
+.\.venv-product-images\Scripts\python.exe scripts\process_product_images.py --watch
+```
+
+Add `--force` to regenerate outputs. The default model is `u2net`; pass `--model <name>` to select another model supported by rembg. Model weights have separate licenses from the rembg package. In particular, rembg documents a paid commercial-use requirement for its default BRIA RMBG-2.0 model, so verify the selected model's terms before using outputs commercially.
