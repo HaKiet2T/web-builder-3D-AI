@@ -52,6 +52,15 @@ export function SuccessParticles() {
     }
   }, [celebration]);
 
+  // Garbage Collection: Giải phóng tài nguyên hình học và shader khỏi VRAM khi unmount
+  useEffect(() => {
+    return () => {
+      geometry.dispose();
+      material.dispose();
+    };
+  }, [geometry, material]);
+
+  // Vòng lặp Render: Cập nhật ma trận biến đổi của từng hạt trong 1 Single Draw Call
   useFrame(({ clock }) => {
     const mesh = meshRef.current;
     if (!mesh) return;
