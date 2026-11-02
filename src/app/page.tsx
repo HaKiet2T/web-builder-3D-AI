@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { useMemo } from 'react';
 import { useWorkspaceStore, type SpeakerColor } from '@/store/useWorkspaceStore';
 import { BentoGrid } from '@/components/ui/BentoGrid';
 import { SlideOutCart } from '@/components/ui/SlideOutCart';
@@ -21,9 +22,21 @@ const colorOptions: { id: SpeakerColor; label: string; swatch: string }[] = [
 const formatPrice = (price: number) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(price);
 
+const VARIANT_SURCHARGES: Record<SpeakerColor, number> = {
+  graphite: 0,
+  sand: 250_000,
+  ocean: 450_000,
+};
+
 export default function Home() {
   const variant = useWorkspaceStore((state) => state.currentSetup.variant);
-  const totalPrice = useWorkspaceStore((state) => state.getTotalPrice());
+  const currentSetup = useWorkspaceStore((state) => state.currentSetup);
+  // Tính totalPrice trong component body thay vì gọi getter trong selector
+  // để tránh vòng lặp re-render vô tận (cùng gốc lỗi SlideOutCart)
+  const totalPrice = useMemo(
+    () => currentSetup.basePrice + VARIANT_SURCHARGES[currentSetup.variant],
+    [currentSetup],
+  );
   const isNight = useWorkspaceStore((state) => state.isNight);
   const setVariant = useWorkspaceStore((state) => state.setVariant);
   const toggleNight = useWorkspaceStore((state) => state.toggleNight);
