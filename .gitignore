@@ -20,6 +20,10 @@
 # production
 /build
 
+# Original product images stay local; only processed web-ready images belong in public/.
+/picture/monitor/asus/Image/*
+!/picture/monitor/asus/Image/.gitkeep
+
 # misc
 .DS_Store
 *.pem
