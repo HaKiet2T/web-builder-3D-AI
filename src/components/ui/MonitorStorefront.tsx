@@ -17,31 +17,42 @@ interface DragState {
   startY: number;
   startRotation: number;
   moved: boolean;
+  samples: Array<{ x: number; time: number }>;
 }
 
 const FULL_TURN = Math.PI * 2;
-const TOP_ANGLE = -Math.PI / 2;
-const DRAG_RADIANS_PER_PIXEL = 0.01;
+const ORBIT_FOCUS_ANGLE = Math.atan2(-0.8, -0.45);
+const DRAG_RADIANS_PER_PIXEL = 0.003;
+const INERTIA_DURATION_MS = 420;
+const MAX_INERTIA_RADIANS = 0.5;
 const DETAIL_TRANSITION_MS = 700;
+const AUTO_ROTATION_MS = 3600;
 
 function wrapAngle(angle: number) {
   return ((angle + Math.PI) % FULL_TURN + FULL_TURN) % FULL_TURN - Math.PI;
 }
 
-function orbitStyle(angle: number): CSSProperties {
+function orbitStyle(angle: number, productCount: number): CSSProperties {
   const sine = Math.sin(angle);
   const cosine = Math.cos(angle);
-  const foregroundProgress = (1 - sine) / 2;
-  const scale = 0.48 + 0.66 * foregroundProgress;
+  const itemDensity = Math.min(1, 6 / Math.max(productCount, 1));
+  const wideDistance = Math.hypot(cosine + 0.45, sine + 0.8);
+  const wideProximity = 1 - Math.min(wideDistance / 2, 1);
+  const mobileDistance = Math.hypot(cosine, sine + 0.55);
+  const mobileProximity = 1 - Math.min(mobileDistance / 2, 1);
 
   return {
-    '--orbit-x-wide': (cosine * 29).toFixed(3) + 'vw',
-    '--orbit-y-wide': (sine * 16).toFixed(3) + 'svh',
-    '--orbit-x-mobile': (cosine * 22).toFixed(3) + 'vw',
-    '--orbit-y-mobile': (sine * 13).toFixed(3) + 'svh',
-    '--orbit-scale': scale.toFixed(3),
-    '--orbit-opacity': (0.54 + 0.46 * foregroundProgress).toFixed(3),
-    '--orbit-depth': String(Math.round(60 - sine * 24)),
+    '--orbit-x-wide': (cosine * 32).toFixed(3) + 'vw',
+    '--orbit-y-wide': (sine * 34).toFixed(3) + 'svh',
+    '--orbit-x-mobile': (cosine * 31).toFixed(3) + 'vw',
+    '--orbit-y-mobile': (sine * 17).toFixed(3) + 'svh',
+    '--orbit-item-density': itemDensity.toFixed(3),
+    '--orbit-scale-wide': (0.54 + 0.7 * wideProximity).toFixed(3),
+    '--orbit-scale-mobile': (0.54 + 0.65 * mobileProximity).toFixed(3),
+    '--orbit-opacity': (0.58 + 0.42 * wideProximity).toFixed(3),
+    '--orbit-opacity-mobile': (0.58 + 0.42 * mobileProximity).toFixed(3),
+    '--orbit-depth': String(Math.round(20 + wideProximity * 40)),
+    '--orbit-depth-mobile': String(Math.round(20 + mobileProximity * 40)),
   } as CSSProperties;
 }
 
@@ -89,13 +100,19 @@ function ThemeIcon({ theme }: { theme: 'light' | 'dark' }) {
 export function MonitorStorefront({ products }: MonitorStorefrontProps) {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [themeReady, setThemeReady] = useState(false);
-  const [rotation, setRotation] = useState(TOP_ANGLE);
+  const [rotation, setRotation] = useState(ORBIT_FOCUS_ANGLE);
   const [view, setView] = useState<ViewState>('gallery');
   const [detailId, setDetailId] = useState<string | null>(null);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const rotationRef = useRef(TOP_ANGLE);
+  const [isAutoRotating, setIsAutoRotating] = useState(false);
+  const [isInertial, setIsInertial] = useState(false);
+  const rotationRef = useRef(ORBIT_FOCUS_ANGLE);
   const dragRef = useRef<DragState | null>(null);
+  const autoRotationFrameRef = useRef<number | null>(null);
+  const inertiaFrameRef = useRef<number | null>(null);
+  const autoRotationStartedRef = useRef(false);
+  const autoRotationActiveRef = useRef(false);
   const suppressClickUntilRef = useRef(0);
   const detailHeadingRef = useRef<HTMLHeadingElement>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
@@ -106,6 +123,27 @@ export function MonitorStorefront({ products }: MonitorStorefrontProps) {
     setRotation(nextRotation);
   }, []);
 
+  const stopInertia = useCallback(() => {
+    if (inertiaFrameRef.current !== null) {
+      window.cancelAnimationFrame(inertiaFrameRef.current);
+      inertiaFrameRef.current = null;
+    }
+    setIsInertial(false);
+  }, []);
+
+  const stopAutoRotation = useCallback(() => {
+    autoRotationStartedRef.current = true;
+    if (autoRotationFrameRef.current !== null) {
+      window.cancelAnimationFrame(autoRotationFrameRef.current);
+      autoRotationFrameRef.current = null;
+    }
+
+    if (autoRotationActiveRef.current) {
+      autoRotationActiveRef.current = false;
+      setIsAutoRotating(false);
+    }
+  }, []);
+
   const activeIndex = useMemo(() => {
     if (products.length === 0) return -1;
 
@@ -114,7 +152,7 @@ export function MonitorStorefront({ products }: MonitorStorefrontProps) {
 
     products.forEach((product, index) => {
       const angle = rotation + (index * FULL_TURN) / products.length;
-      const distance = Math.abs(wrapAngle(angle - TOP_ANGLE));
+      const distance = Math.abs(wrapAngle(angle - ORBIT_FOCUS_ANGLE));
       if (distance < nearestDistance) {
         nearestDistance = distance;
         nearestIndex = index;
@@ -162,14 +200,70 @@ export function MonitorStorefront({ products }: MonitorStorefrontProps) {
   }, [theme, themeReady]);
 
   useEffect(() => {
+    if (autoRotationStartedRef.current) return;
+
+    let startFrame: number | null = window.requestAnimationFrame(() => {
+      if (autoRotationStartedRef.current) return;
+      autoRotationStartedRef.current = true;
+      if (
+        reducedMotion ||
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+        products.length < 2
+      ) {
+        return;
+      }
+
+      const startRotation = rotationRef.current;
+      let startTime: number | null = null;
+      autoRotationActiveRef.current = true;
+      setIsAutoRotating(true);
+
+      const animate = (time: number) => {
+        if (!autoRotationActiveRef.current) return;
+        if (startTime === null) startTime = time;
+
+        const progress = Math.min((time - startTime) / AUTO_ROTATION_MS, 1);
+        const easedProgress = 1 - Math.pow(1 - progress, 3);
+        updateRotation(startRotation + Math.PI * easedProgress);
+
+        if (progress < 1) {
+          autoRotationFrameRef.current = window.requestAnimationFrame(animate);
+        } else {
+          autoRotationFrameRef.current = null;
+          autoRotationActiveRef.current = false;
+          setIsAutoRotating(false);
+        }
+      };
+
+      autoRotationFrameRef.current = window.requestAnimationFrame(animate);
+    });
+
+    return () => {
+      if (startFrame !== null) window.cancelAnimationFrame(startFrame);
+      startFrame = null;
+      if (autoRotationFrameRef.current !== null) {
+        window.cancelAnimationFrame(autoRotationFrameRef.current);
+        autoRotationFrameRef.current = null;
+      }
+      if (autoRotationActiveRef.current) {
+        autoRotationActiveRef.current = false;
+        setIsAutoRotating(false);
+      }
+    };
+  }, [products.length, reducedMotion, updateRotation]);
+
+  useEffect(() => {
     const onPointerMove = (event: PointerEvent) => {
       const drag = dragRef.current;
       if (!drag || event.pointerId !== drag.pointerId) return;
 
+      const now = performance.now();
       const distance = Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY);
       if (!drag.moved && distance < 6) return;
 
       drag.moved = true;
+      drag.samples = drag.samples.filter((sample) => now - sample.time <= 120);
+      drag.samples.push({ x: event.clientX, time: now });
       const dragDistance = event.clientX - drag.startX;
       updateRotation(drag.startRotation + dragDistance * DRAG_RADIANS_PER_PIXEL);
     };
@@ -178,7 +272,45 @@ export function MonitorStorefront({ products }: MonitorStorefrontProps) {
       const drag = dragRef.current;
       if (!drag || event.pointerId !== drag.pointerId) return;
 
+      const now = performance.now();
       if (drag.moved) suppressClickUntilRef.current = performance.now() + 260;
+      if (drag.moved && event.type === 'pointerup' && !reducedMotion) {
+        drag.samples = drag.samples.filter((sample) => now - sample.time <= 120);
+        drag.samples.push({ x: event.clientX, time: now });
+        const firstSample = drag.samples[0];
+        const lastSample = drag.samples[drag.samples.length - 1];
+        const elapsed = lastSample.time - firstSample.time;
+        if (elapsed > 0) {
+          const velocityX = (lastSample.x - firstSample.x) / elapsed;
+          const inertiaDistance = Math.max(
+            -MAX_INERTIA_RADIANS,
+            Math.min(
+              MAX_INERTIA_RADIANS,
+              velocityX * DRAG_RADIANS_PER_PIXEL * INERTIA_DURATION_MS * 0.4,
+            ),
+          );
+          if (Math.abs(inertiaDistance) > 0.015) {
+            const startRotation = rotationRef.current;
+            let startTime: number | null = null;
+            setIsInertial(true);
+            const animateInertia = (time: number) => {
+              if (startTime === null) startTime = time;
+              const progress = Math.min((time - startTime) / INERTIA_DURATION_MS, 1);
+              const easedProgress = 1 - Math.pow(1 - progress, 3);
+              updateRotation(startRotation + inertiaDistance * easedProgress);
+
+              if (progress < 1) {
+                inertiaFrameRef.current = window.requestAnimationFrame(animateInertia);
+              } else {
+                inertiaFrameRef.current = null;
+                setIsInertial(false);
+              }
+            };
+            inertiaFrameRef.current = window.requestAnimationFrame(animateInertia);
+          }
+        }
+      }
+
       dragRef.current = null;
       setIsDragging(false);
     };
@@ -190,8 +322,13 @@ export function MonitorStorefront({ products }: MonitorStorefrontProps) {
       window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('pointerup', finishDrag);
       window.removeEventListener('pointercancel', finishDrag);
+      if (inertiaFrameRef.current !== null) {
+        window.cancelAnimationFrame(inertiaFrameRef.current);
+        inertiaFrameRef.current = null;
+        setIsInertial(false);
+      }
     };
-  }, [updateRotation]);
+  }, [reducedMotion, updateRotation]);
 
   useEffect(() => {
     if (view === 'moving') {
@@ -229,10 +366,12 @@ export function MonitorStorefront({ products }: MonitorStorefrontProps) {
   const rotateToIndex = useCallback(
     (index: number) => {
       if (products.length < 2) return;
-      const target = TOP_ANGLE - (index * FULL_TURN) / products.length;
+      stopInertia();
+      stopAutoRotation();
+      const target = ORBIT_FOCUS_ANGLE - (index * FULL_TURN) / products.length;
       updateRotation(rotationRef.current + wrapAngle(target - rotationRef.current));
     },
-    [products.length, updateRotation],
+    [products.length, stopAutoRotation, stopInertia, updateRotation],
   );
 
   const moveGallery = useCallback(
@@ -246,6 +385,8 @@ export function MonitorStorefront({ products }: MonitorStorefrontProps) {
 
   const openDetails = (product: MonitorProduct, trigger: HTMLElement) => {
     if (performance.now() < suppressClickUntilRef.current) return;
+    stopInertia();
+    stopAutoRotation();
     triggerRef.current = trigger;
     setDetailId(product.id);
     setView(reducedMotion ? 'details' : 'moving');
@@ -282,23 +423,35 @@ export function MonitorStorefront({ products }: MonitorStorefrontProps) {
     if (view !== 'gallery' || (event.button !== 0 && event.pointerType === 'mouse')) return;
     if (event.target instanceof Element && event.target.closest('[data-orbit-control]')) return;
 
-    event.currentTarget.setPointerCapture(event.pointerId);
+    stopInertia();
+    stopAutoRotation();
+    const now = performance.now();
     dragRef.current = {
       pointerId: event.pointerId,
       startX: event.clientX,
       startY: event.clientY,
       startRotation: rotationRef.current,
       moved: false,
+      samples: [{ x: event.clientX, time: now }],
     };
     setIsDragging(true);
   };
 
   const handleRangeChange = (value: number) => {
+    stopInertia();
+    stopAutoRotation();
     updateRotation((value * Math.PI) / 180);
   };
 
   return (
-    <main className="monitor-storefront" data-theme={theme} data-view={view} data-dragging={isDragging}>
+    <main
+      className="monitor-storefront"
+      data-theme={theme}
+      data-view={view}
+      data-dragging={isDragging}
+      data-rotating={isAutoRotating}
+      data-inertial={isInertial}
+    >
       <header className="monitor-header">
         <a className="monitor-brand" href="#collection" aria-label="ASUS Republic of Gamers, về bộ sưu tập">
           <span className="monitor-brand-name">ASUS</span>
@@ -367,7 +520,7 @@ export function MonitorStorefront({ products }: MonitorStorefrontProps) {
               <button
                 key={product.id}
                 className="monitor-orbit-item"
-                style={orbitStyle(angle)}
+                style={orbitStyle(angle, products.length)}
                 data-active={activeIndex === index}
                 data-focused={isFocused}
                 data-product-trigger
@@ -382,6 +535,7 @@ export function MonitorStorefront({ products }: MonitorStorefrontProps) {
                       src={product.image}
                       alt=""
                       fill
+                      draggable={false}
                       sizes="(max-width: 720px) 68vw, 24vw"
                       preload={index === 0}
                       loading={index === 0 ? undefined : 'lazy'}
