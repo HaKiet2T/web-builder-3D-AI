@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
 import type { MonitorProduct } from '@/data/monitors';
 
@@ -70,44 +70,18 @@ function ArrowIcon({ direction }: { direction: 'left' | 'right' }) {
   );
 }
 
-function ThemeIcon({ theme }: { theme: 'light' | 'dark' }) {
-  if (theme === 'light') {
-    return (
-      <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="monitor-theme-icon">
-        <circle cx="12" cy="12" r="3.7" stroke="currentColor" strokeWidth="1.5" />
-        <path
-          d="M12 2.5v2m0 15v2m9.5-9.5h-2m-15 0h-2m16.22-6.72-1.42 1.42M6.7 17.3l-1.42 1.42m13.44 0-1.42-1.42M6.7 6.7 5.28 5.28"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-        />
-      </svg>
-    );
-  }
-
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="monitor-theme-icon">
-      <path
-        d="M19.8 15.2A8.1 8.1 0 0 1 8.8 4.2 8.2 8.2 0 1 0 19.8 15.2Z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 export function MonitorStorefront({ products }: MonitorStorefrontProps) {
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  const [themeReady, setThemeReady] = useState(false);
-  const [rotation, setRotation] = useState(ORBIT_FOCUS_ANGLE);
   const [view, setView] = useState<ViewState>('gallery');
   const [detailId, setDetailId] = useState<string | null>(null);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isAutoRotating, setIsAutoRotating] = useState(false);
   const [isInertial, setIsInertial] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
   const rotationRef = useRef(ORBIT_FOCUS_ANGLE);
+  const activeIndexRef = useRef(0);
+  const itemRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const sliderRef = useRef<HTMLInputElement>(null);
   const dragRef = useRef<DragState | null>(null);
   const autoRotationFrameRef = useRef<number | null>(null);
   const inertiaFrameRef = useRef<number | null>(null);
@@ -118,10 +92,61 @@ export function MonitorStorefront({ products }: MonitorStorefrontProps) {
   const triggerRef = useRef<HTMLElement | null>(null);
   const restoreFocusAfterReturnRef = useRef(false);
 
-  const updateRotation = useCallback((nextRotation: number) => {
-    rotationRef.current = nextRotation;
-    setRotation(nextRotation);
-  }, []);
+  /**
+   * Rotation drives six absolutely-positioned products, the slider and the
+   * counter. Writing the custom properties straight to the DOM keeps the ring
+   * at 60fps on low-end hardware: React only re-renders when the nearest
+   * product (or a view state) actually changes, instead of on every frame.
+   * Geometry is the same `orbitStyle` output as the initial render.
+   */
+  const updateRotation = useCallback(
+    (nextRotation: number) => {
+      rotationRef.current = nextRotation;
+      const count = products.length;
+
+      products.forEach((_, index) => {
+        const element = itemRefs.current[index];
+        if (!element) return;
+        const style = orbitStyle(nextRotation + (index * FULL_TURN) / count, count);
+        for (const [property, value] of Object.entries(style)) {
+          element.style.setProperty(property, String(value));
+        }
+      });
+
+      if (sliderRef.current) {
+        const degrees = ((Math.round((nextRotation * 180) / Math.PI) % 360) + 360) % 360;
+        sliderRef.current.value = String(degrees);
+        sliderRef.current.style.setProperty(
+          '--rotation-progress',
+          ((degrees / 359) * 100).toFixed(2) + '%',
+        );
+      }
+
+      if (count === 0) return;
+
+      let nearestIndex = 0;
+      let nearestDistance = Number.POSITIVE_INFINITY;
+
+      products.forEach((_, index) => {
+        const angle = nextRotation + (index * FULL_TURN) / count;
+        const distance = Math.abs(wrapAngle(angle - ORBIT_FOCUS_ANGLE));
+        if (distance < nearestDistance) {
+          nearestDistance = distance;
+          nearestIndex = index;
+        }
+      });
+
+      if (nearestIndex !== activeIndexRef.current) {
+        activeIndexRef.current = nearestIndex;
+        setActiveIndex(nearestIndex);
+      }
+    },
+    [products],
+  );
+
+  useLayoutEffect(() => {
+    updateRotation(rotationRef.current);
+  }, [updateRotation]);
 
   const stopInertia = useCallback(() => {
     if (inertiaFrameRef.current !== null) {
@@ -144,28 +169,9 @@ export function MonitorStorefront({ products }: MonitorStorefrontProps) {
     }
   }, []);
 
-  const activeIndex = useMemo(() => {
-    if (products.length === 0) return -1;
-
-    let nearestIndex = 0;
-    let nearestDistance = Number.POSITIVE_INFINITY;
-
-    products.forEach((product, index) => {
-      const angle = rotation + (index * FULL_TURN) / products.length;
-      const distance = Math.abs(wrapAngle(angle - ORBIT_FOCUS_ANGLE));
-      if (distance < nearestDistance) {
-        nearestDistance = distance;
-        nearestIndex = index;
-      }
-    });
-
-    return nearestIndex;
-  }, [products, rotation]);
-
   const activeProduct = activeIndex >= 0 ? products[activeIndex] : null;
   const detailIndex = products.findIndex((product) => product.id === detailId);
   const detailProduct = detailIndex >= 0 ? products[detailIndex] : null;
-  const rotationDegrees = ((Math.round((rotation * 180) / Math.PI) % 360) + 360) % 360;
   const hasDetail = view !== 'gallery' && detailProduct !== null;
 
   useEffect(() => {
@@ -174,30 +180,10 @@ export function MonitorStorefront({ products }: MonitorStorefrontProps) {
     updateMotionPreference();
     motionQuery.addEventListener('change', updateMotionPreference);
 
-    const frame = window.requestAnimationFrame(() => {
-      try {
-        const savedTheme = window.localStorage.getItem('monitor-storefront-theme');
-        if (savedTheme === 'light' || savedTheme === 'dark') setTheme(savedTheme);
-      } catch {
-        // Keep the default light theme when storage is unavailable.
-      }
-      setThemeReady(true);
-    });
-
     return () => {
-      window.cancelAnimationFrame(frame);
       motionQuery.removeEventListener('change', updateMotionPreference);
     };
   }, []);
-
-  useEffect(() => {
-    if (!themeReady) return;
-    try {
-      window.localStorage.setItem('monitor-storefront-theme', theme);
-    } catch {
-      // Theme selection still works for the current session.
-    }
-  }, [theme, themeReady]);
 
   useEffect(() => {
     if (autoRotationStartedRef.current) return;
@@ -253,6 +239,34 @@ export function MonitorStorefront({ products }: MonitorStorefrontProps) {
   }, [products.length, reducedMotion, updateRotation]);
 
   useEffect(() => {
+    // Mice can emit several pointermove events per frame; writing the orbit
+    // variables once per animation frame keeps the work bounded instead of
+    // repeating 60+ custom-property writes per frame on high-polling devices.
+    let pendingRotation: number | null = null;
+    let pendingFrame: number | null = null;
+
+    const flushPendingRotation = () => {
+      if (pendingFrame !== null) {
+        window.cancelAnimationFrame(pendingFrame);
+        pendingFrame = null;
+      }
+      if (pendingRotation !== null) {
+        updateRotation(pendingRotation);
+        pendingRotation = null;
+      }
+    };
+
+    const scheduleRotation = (next: number) => {
+      pendingRotation = next;
+      if (pendingFrame !== null) return;
+      pendingFrame = window.requestAnimationFrame(() => {
+        pendingFrame = null;
+        if (pendingRotation === null) return;
+        updateRotation(pendingRotation);
+        pendingRotation = null;
+      });
+    };
+
     const onPointerMove = (event: PointerEvent) => {
       const drag = dragRef.current;
       if (!drag || event.pointerId !== drag.pointerId) return;
@@ -265,13 +279,14 @@ export function MonitorStorefront({ products }: MonitorStorefrontProps) {
       drag.samples = drag.samples.filter((sample) => now - sample.time <= 120);
       drag.samples.push({ x: event.clientX, time: now });
       const dragDistance = event.clientX - drag.startX;
-      updateRotation(drag.startRotation + dragDistance * DRAG_RADIANS_PER_PIXEL);
+      scheduleRotation(drag.startRotation + dragDistance * DRAG_RADIANS_PER_PIXEL);
     };
 
     const finishDrag = (event: PointerEvent) => {
       const drag = dragRef.current;
       if (!drag || event.pointerId !== drag.pointerId) return;
 
+      flushPendingRotation();
       const now = performance.now();
       if (drag.moved) suppressClickUntilRef.current = performance.now() + 260;
       if (drag.moved && event.type === 'pointerup' && !reducedMotion) {
@@ -322,6 +337,11 @@ export function MonitorStorefront({ products }: MonitorStorefrontProps) {
       window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('pointerup', finishDrag);
       window.removeEventListener('pointercancel', finishDrag);
+      if (pendingFrame !== null) {
+        window.cancelAnimationFrame(pendingFrame);
+        pendingFrame = null;
+      }
+      pendingRotation = null;
       if (inertiaFrameRef.current !== null) {
         window.cancelAnimationFrame(inertiaFrameRef.current);
         inertiaFrameRef.current = null;
@@ -446,33 +466,11 @@ export function MonitorStorefront({ products }: MonitorStorefrontProps) {
   return (
     <main
       className="monitor-storefront"
-      data-theme={theme}
       data-view={view}
       data-dragging={isDragging}
       data-rotating={isAutoRotating}
       data-inertial={isInertial}
     >
-      <header className="monitor-header">
-        <a className="monitor-brand" href="#collection" aria-label="ASUS Republic of Gamers, về bộ sưu tập">
-          <span className="monitor-brand-name">ASUS</span>
-          <span className="monitor-brand-rule" aria-hidden="true" />
-          <span className="monitor-brand-meta">Republic of Gamers</span>
-        </a>
-        <div className="monitor-header-actions">
-          <span className="monitor-header-label">Bộ sưu tập màn hình</span>
-          <button
-            className="monitor-theme-toggle"
-            type="button"
-            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-            aria-label={theme === 'light' ? 'Chuyển sang chế độ tối' : 'Chuyển sang chế độ sáng'}
-            aria-pressed={theme === 'dark'}
-            title={theme === 'light' ? 'Chế độ tối' : 'Chế độ sáng'}
-          >
-            <ThemeIcon theme={theme} />
-            <span>{theme === 'light' ? 'Chế độ tối' : 'Chế độ sáng'}</span>
-          </button>
-        </div>
-      </header>
 
       <section
         className="monitor-experience"
@@ -513,12 +511,15 @@ export function MonitorStorefront({ products }: MonitorStorefrontProps) {
           inert={hasDetail}
         >
           {products.map((product, index) => {
-            const angle = rotation + (index * FULL_TURN) / products.length;
+            const angle = ORBIT_FOCUS_ANGLE + (index * FULL_TURN) / products.length;
             const isFocused = detailId === product.id && (view === 'moving' || view === 'details');
 
             return (
               <button
                 key={product.id}
+                ref={(node) => {
+                  itemRefs.current[index] = node;
+                }}
                 className="monitor-orbit-item"
                 style={orbitStyle(angle, products.length)}
                 data-active={activeIndex === index}
@@ -536,9 +537,11 @@ export function MonitorStorefront({ products }: MonitorStorefrontProps) {
                       alt=""
                       fill
                       draggable={false}
-                      sizes="(max-width: 720px) 68vw, 24vw"
+                      // The ring is above the fold and items travel in and out of
+                      // view, so lazy loading made products pop in mid-rotation.
+                      sizes="(max-width: 720px) 68vw, 26vw"
                       preload={index === 0}
-                      loading={index === 0 ? undefined : 'lazy'}
+                      loading="eager"
                       className="monitor-product-image"
                     />
                   </span>
@@ -567,11 +570,12 @@ export function MonitorStorefront({ products }: MonitorStorefrontProps) {
           <label className="monitor-wheel-slider">
             <span className="sr-only">Xoay bộ sưu tập màn hình</span>
             <input
+              ref={sliderRef}
               type="range"
               min="0"
               max="359"
               step="1"
-              value={rotationDegrees}
+              defaultValue={0}
               onChange={(event) => handleRangeChange(Number(event.currentTarget.value))}
               aria-valuetext={'Màn hình ' + String(Math.max(activeIndex + 1, 1)) + ' trên ' + String(products.length)}
               disabled={products.length < 2 || hasDetail}
