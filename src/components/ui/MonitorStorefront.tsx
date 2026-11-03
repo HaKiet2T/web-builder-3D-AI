@@ -15,12 +15,14 @@ interface DragState {
   pointerId: number;
   startX: number;
   startY: number;
-  lastAngle: number;
+  startRotation: number;
   moved: boolean;
 }
 
 const FULL_TURN = Math.PI * 2;
 const TOP_ANGLE = -Math.PI / 2;
+const DRAG_RADIANS_PER_PIXEL = 0.01;
+const DETAIL_TRANSITION_MS = 700;
 
 function wrapAngle(angle: number) {
   return ((angle + Math.PI) % FULL_TURN + FULL_TURN) % FULL_TURN - Math.PI;
@@ -29,19 +31,17 @@ function wrapAngle(angle: number) {
 function orbitStyle(angle: number): CSSProperties {
   const sine = Math.sin(angle);
   const cosine = Math.cos(angle);
-  const scale = 0.52 + 0.58 * ((1 - sine) / 2);
+  const foregroundProgress = (1 - sine) / 2;
+  const scale = 0.48 + 0.66 * foregroundProgress;
 
   return {
-    '--orbit-x-wide': (cosine * 27).toFixed(3) + 'vw',
-    '--orbit-y-wide': (sine * 22).toFixed(3) + 'svh',
-    '--detail-x-wide': (-39 - cosine * 27).toFixed(3) + 'vw',
-    '--detail-y-wide': (-5 - sine * 22).toFixed(3) + 'svh',
-    '--orbit-x-mobile': (cosine * 20).toFixed(3) + 'vw',
-    '--orbit-y-mobile': (sine * 14).toFixed(3) + 'svh',
-    '--detail-x-mobile': (-18 - cosine * 20).toFixed(3) + 'vw',
-    '--detail-y-mobile': (-38 - sine * 14).toFixed(3) + 'svh',
+    '--orbit-x-wide': (cosine * 29).toFixed(3) + 'vw',
+    '--orbit-y-wide': (sine * 16).toFixed(3) + 'svh',
+    '--orbit-x-mobile': (cosine * 22).toFixed(3) + 'vw',
+    '--orbit-y-mobile': (sine * 13).toFixed(3) + 'svh',
     '--orbit-scale': scale.toFixed(3),
-    '--orbit-depth': String(Math.round(60 - sine * 20)),
+    '--orbit-opacity': (0.54 + 0.46 * foregroundProgress).toFixed(3),
+    '--orbit-depth': String(Math.round(60 - sine * 24)),
   } as CSSProperties;
 }
 
@@ -97,7 +97,6 @@ export function MonitorStorefront({ products }: MonitorStorefrontProps) {
   const rotationRef = useRef(TOP_ANGLE);
   const dragRef = useRef<DragState | null>(null);
   const suppressClickUntilRef = useRef(0);
-  const experienceRef = useRef<HTMLElement>(null);
   const detailHeadingRef = useRef<HTMLHeadingElement>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
   const restoreFocusAfterReturnRef = useRef(false);
@@ -162,19 +161,6 @@ export function MonitorStorefront({ products }: MonitorStorefrontProps) {
     }
   }, [theme, themeReady]);
 
-  const pointerAngle = useCallback((clientX: number, clientY: number) => {
-    const bounds = experienceRef.current?.getBoundingClientRect();
-    if (!bounds) return TOP_ANGLE;
-
-    const isMobile = window.innerWidth < 720;
-    const centerX = bounds.left + bounds.width * (isMobile ? 0.5 : 0.7);
-    const centerY = bounds.top + bounds.height * (isMobile ? 0.64 : 0.55);
-    const radiusX = bounds.width * (isMobile ? 0.3 : 0.27);
-    const radiusY = window.innerHeight * (isMobile ? 0.14 : 0.22);
-
-    return Math.atan2((clientY - centerY) / radiusY, (clientX - centerX) / radiusX);
-  }, []);
-
   useEffect(() => {
     const onPointerMove = (event: PointerEvent) => {
       const drag = dragRef.current;
@@ -184,10 +170,8 @@ export function MonitorStorefront({ products }: MonitorStorefrontProps) {
       if (!drag.moved && distance < 6) return;
 
       drag.moved = true;
-      const nextAngle = pointerAngle(event.clientX, event.clientY);
-      const delta = wrapAngle(nextAngle - drag.lastAngle);
-      drag.lastAngle = nextAngle;
-      updateRotation(rotationRef.current + delta);
+      const dragDistance = event.clientX - drag.startX;
+      updateRotation(drag.startRotation + dragDistance * DRAG_RADIANS_PER_PIXEL);
     };
 
     const finishDrag = (event: PointerEvent) => {
@@ -207,11 +191,11 @@ export function MonitorStorefront({ products }: MonitorStorefrontProps) {
       window.removeEventListener('pointerup', finishDrag);
       window.removeEventListener('pointercancel', finishDrag);
     };
-  }, [pointerAngle, updateRotation]);
+  }, [updateRotation]);
 
   useEffect(() => {
     if (view === 'moving') {
-      const timer = window.setTimeout(() => setView('details'), reducedMotion ? 0 : 740);
+      const timer = window.setTimeout(() => setView('details'), reducedMotion ? 0 : DETAIL_TRANSITION_MS);
       return () => window.clearTimeout(timer);
     }
 
@@ -222,7 +206,7 @@ export function MonitorStorefront({ products }: MonitorStorefrontProps) {
           setDetailId(null);
           restoreFocusAfterReturnRef.current = true;
         },
-        reducedMotion ? 0 : 680,
+        reducedMotion ? 0 : DETAIL_TRANSITION_MS,
       );
       return () => window.clearTimeout(timer);
     }
@@ -298,11 +282,12 @@ export function MonitorStorefront({ products }: MonitorStorefrontProps) {
     if (view !== 'gallery' || (event.button !== 0 && event.pointerType === 'mouse')) return;
     if (event.target instanceof Element && event.target.closest('[data-orbit-control]')) return;
 
+    event.currentTarget.setPointerCapture(event.pointerId);
     dragRef.current = {
       pointerId: event.pointerId,
       startX: event.clientX,
       startY: event.clientY,
-      lastAngle: pointerAngle(event.clientX, event.clientY),
+      startRotation: rotationRef.current,
       moved: false,
     };
     setIsDragging(true);
@@ -339,7 +324,6 @@ export function MonitorStorefront({ products }: MonitorStorefrontProps) {
       <section
         className="monitor-experience"
         id="collection"
-        ref={experienceRef}
         aria-label="Bộ sưu tập màn hình ASUS ROG"
         onPointerDown={handlePointerDown}
       >

@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test:e2e": "node scripts/verify-e2e.mjs"
+    "test:e2e": "node scripts/verify-e2e.mjs",
+    "test:monitor-orbit": "node scripts/verify-monitor-orbit.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^7.0.1",
