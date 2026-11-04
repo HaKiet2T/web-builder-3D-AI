@@ -3,10 +3,10 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useId, useRef, useState } from 'react';
-import { CATEGORIES } from '@/data/categories';
 import { SITE } from '@/lib/site';
 import { useTheme } from '@/components/theme/ThemeProvider';
 import type { Theme } from '@/components/theme/ThemeProvider';
+import type { Category } from '@/lib/catalog/types';
 
 interface SiteHeaderProps {
   /**
@@ -17,6 +17,12 @@ interface SiteHeaderProps {
   variant?: 'solid' | 'overlay';
   /** Optional short context shown next to the brand, e.g. the collection name. */
   context?: string;
+  /**
+   * Navigation entries, resolved by the server layout. This component is a
+   * client component, so importing the DAL here would ship the whole catalogue
+   * to the browser.
+   */
+  categories: Category[];
 }
 
 /**
@@ -83,7 +89,7 @@ function MenuIcon({ open }: { open: boolean }) {
   );
 }
 
-export function SiteHeader({ variant, context }: SiteHeaderProps) {
+export function SiteHeader({ variant, context, categories }: SiteHeaderProps) {
   const pathname = usePathname();
   const routeContext = pathname ? FULL_SCREEN_ROUTES[pathname] : undefined;
   const resolvedVariant = variant ?? (routeContext ? 'overlay' : 'solid');
@@ -113,6 +119,7 @@ export function SiteHeader({ variant, context }: SiteHeaderProps) {
 
   const themeLabel = theme === 'light' ? 'Chuyển sang chế độ tối' : 'Chuyển sang chế độ sáng';
   const isCart = pathname === '/cart';
+  if (pathname?.startsWith('/admin')) return null;
 
   return (
     <header className="site-header" data-variant={resolvedVariant} data-menu-open={menuOpen}>
@@ -130,16 +137,17 @@ export function SiteHeader({ variant, context }: SiteHeaderProps) {
 
       <nav className="site-nav" aria-label="Danh mục sản phẩm">
         <ul id={menuId} className="site-nav-list">
-          {CATEGORIES.map((category) => {
-            const isCurrent = pathname === category.href;
+          {categories.map((category) => {
+            const href = `/${category.slug}`;
+            const isCurrent = pathname === href;
             return (
               <li key={category.id}>
                 <Link
                   className="site-nav-link"
-                  href={category.href}
+                  href={href}
                   aria-current={isCurrent ? 'page' : undefined}
                 >
-                  {category.label}
+                  {category.name}
                 </Link>
               </li>
             );

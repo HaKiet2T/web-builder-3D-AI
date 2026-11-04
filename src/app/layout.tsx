@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
+import { listCategories } from "@/lib/catalog/dal";
 import { LEGACY_THEME_STORAGE_KEY, THEME_STORAGE_KEY } from "@/lib/theme";
 import { SITE, SITE_TITLE, SITE_TITLE_TEMPLATE } from "@/lib/site";
 import "./globals.css";
@@ -30,7 +32,11 @@ export const metadata: Metadata = {
 // 'use client' file would hand this server component a client reference.
 const themeBootstrap = `(function(){try{var k=${JSON.stringify(THEME_STORAGE_KEY)};var s=localStorage.getItem(k);if(s!=='light'&&s!=='dark'){s=localStorage.getItem(${JSON.stringify(LEGACY_THEME_STORAGE_KEY)});if(s==='light'||s==='dark')localStorage.setItem(k,s);}document.documentElement.dataset.theme=s==='dark'?'dark':'light';}catch(e){document.documentElement.dataset.theme='light';}})();`;
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Navigation comes from the catalogue so a new category appears in the header
+  // without touching this component.
+  const categories = await listCategories();
+
   return (
     <html
       lang="vi"
@@ -43,7 +49,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-full flex flex-col">
         <ThemeProvider>
-          <SiteHeader />
+          {/* The header reads usePathname() to highlight the current category,
+              which suspends on routes whose dynamic params are not prerendered.
+              Wrapping it keeps the rest of the layout prerenderable. The
+              fallback reserves the same header height so nothing shifts. */}
+          <Suspense fallback={<div className="site-header" data-variant="solid" aria-hidden="true" />}>
+            <SiteHeader categories={categories} />
+          </Suspense>
           {children}
         </ThemeProvider>
       </body>

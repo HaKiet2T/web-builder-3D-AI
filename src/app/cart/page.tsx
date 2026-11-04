@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import { CartView } from '@/components/cart/CartView';
 import { SiteFooter } from '@/components/layout/SiteFooter';
 
 export const metadata: Metadata = {
@@ -11,19 +11,7 @@ export default function CartPage() {
   return (
     <div className="home-page">
       <main className="home-main">
-        <section className="home-hero" aria-labelledby="cart-title">
-          <h1 id="cart-title">Giỏ hàng</h1>
-          <p className="home-intro">Chưa có sản phẩm nào trong giỏ hàng.</p>
-        </section>
-
-        <p className="page-empty">
-          Giỏ hàng dùng chung cho cả năm nhóm thiết bị và sẽ hoạt động khi có sản phẩm. Trong lúc
-          chờ, bạn xem{' '}
-          <Link className="page-inline-link" href="/monitor">
-            bộ sưu tập màn hình ROG
-          </Link>
-          .
-        </p>
+        <CartView />
       </main>
 
       <SiteFooter />

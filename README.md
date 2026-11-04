@@ -55,7 +55,37 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 
 - **Typecheck**: `npm run typecheck`
 - **Lint**: `npm run lint`
+- **Unit tests**: `npm test`
 - **Build**: `npm run build`
+
+## Supabase & admin
+
+The catalogue uses sample records when Supabase is not configured. If Supabase
+is configured, database errors are reported rather than silently switching to
+sample data. Checkout is only persisted when `SUPABASE_SERVICE_ROLE_KEY` is
+available; without a Supabase project checkout is explicitly marked as a
+non-persistent preview.
+
+1. Copy the project URL, anon/publishable key, and service-role key from the
+   Supabase project settings into `.env.local` using `.env.example` as a guide.
+   The service-role key must remain server-only and must never use a
+   `NEXT_PUBLIC_` prefix.
+2. Apply `supabase/migrations/20261104180000_storefront.sql` in the Supabase SQL
+   Editor, then run `supabase/seed.sql` to add the storefront categories.
+3. Create a user under **Authentication → Users**. In the SQL Editor, grant
+   admin access to that account:
+
+   ```sql
+   update auth.users
+   set raw_app_meta_data = coalesce(raw_app_meta_data, '{}'::jsonb) || '{"role":"admin"}'::jsonb
+   where email = 'admin@example.com';
+   ```
+
+   The role is read from trusted `app_metadata`; user-editable metadata does
+   not grant admin access. Sign out and back in after changing the role.
+4. Restart the Next.js server and open `/admin/login`. The admin dashboard,
+   product/variant editor, media uploader, and order manager all use the DAL
+   and Supabase RLS policies.
 
 ## Product image processing
 
