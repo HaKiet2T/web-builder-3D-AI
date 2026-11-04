@@ -1,8 +1,32 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #161616;
+  color-scheme: light;
+  --page: #ffffff;
+  --ink: #171717;
+  --muted: #666666;
+  /* #6f6f6f keeps 12px labels at 4.95:1 on white; #858585 was 3.69:1 and failed WCAG AA. */
+  --soft: #6f6f6f;
+  --line: rgba(25, 25, 25, 0.15);
+  --track: rgba(30, 30, 30, 0.07);
+  --accent: #be123c;
+  --shadow: rgba(13, 17, 22, 0.16);
+  --raise: rgba(23, 23, 23, 0.04);
+  --background: var(--page);
+  --foreground: var(--ink);
+}
+
+html[data-theme='dark'] {
+  color-scheme: dark;
+  --page: #111214;
+  --ink: #f3f3f1;
+  --muted: #b6b6b2;
+  --soft: #8f908e;
+  --line: rgba(255, 255, 255, 0.2);
+  --track: rgba(255, 255, 255, 0.1);
+  --accent: #fb4965;
+  --shadow: rgba(0, 0, 0, 0.46);
+  --raise: rgba(255, 255, 255, 0.06);
 }
 
 @theme inline {
@@ -12,122 +36,353 @@
   --font-mono: var(--font-geist-mono);
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+html {
+  background: var(--page);
 }
 
+body {
+  background: var(--page);
+  color: var(--ink);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  transition: background-color 320ms ease, color 320ms ease;
+}
+
+/* ---------- Shared site chrome ---------- */
+
+.site-header {
+  --header-h: 78px;
+  position: relative;
+  z-index: 300;
+  display: flex;
+  width: 100%;
+  height: var(--header-h);
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(16px, 3vw, 48px);
+  padding: 0 clamp(20px, 4vw, 64px);
+  border-bottom: 1px solid transparent;
+  background: var(--page);
+  color: var(--ink);
+}
+
+.site-header[data-variant='solid'] {
+  position: sticky;
+  top: 0;
+  border-bottom-color: var(--line);
+}
+
+.site-header[data-variant='overlay'] {
+  position: relative;
+  background: transparent;
+}
+
+.site-header-start {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 14px;
+}
+
+.site-brand {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  color: inherit;
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: -0.06em;
+  text-decoration: none;
+}
+
+.site-brand-rule {
+  width: 1px;
+  height: 22px;
+  flex: none;
+  background: var(--line);
+}
+
+.site-context {
+  overflow: hidden;
+  color: var(--soft);
+  font-size: 12px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.site-nav-list {
+  display: flex;
+  align-items: center;
+  gap: clamp(6px, 1.6vw, 26px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site-nav-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  border-bottom: 1px solid transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 180ms ease, border-color 180ms ease;
+}
+
+.site-nav-link:hover {
+  color: var(--ink);
+}
+
+.site-nav-link[aria-current='page'] {
+  border-bottom-color: var(--accent);
+  color: var(--ink);
+}
+
+.site-actions {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+}
+
+.site-icon-button {
+  display: inline-flex;
+  min-width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  padding: 0 14px;
+  color: var(--ink);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: border-color 180ms ease, background-color 180ms ease, color 180ms ease;
+}
+
+.site-icon-button:hover {
+  border-color: var(--ink);
+  background: var(--raise);
+}
+
+.site-cart-link[aria-current='page'] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.site-icon {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+
+.site-menu-button {
+  display: none;
+}
+
+.site-header :where(a, button):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* ---------- Home / category pages ---------- */
+
+.home-page {
+  display: flex;
+  min-height: 100%;
+  flex: 1;
+  flex-direction: column;
+  background: var(--page);
+  color: var(--ink);
+}
+
+.home-main {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: clamp(40px, 7vh, 96px) clamp(20px, 5.2vw, 84px) clamp(48px, 8vh, 104px);
+}
+
+.home-hero {
+  max-width: 100%;
+  margin-bottom: clamp(32px, 5vw, 64px);
+}
+
+.home-hero h1 {
+  max-width: 13ch;
+  margin: 0;
+  font-size: clamp(46px, 8.6vw, 124px);
+  font-weight: 650;
+  letter-spacing: -0.072em;
+  line-height: 0.9;
+  text-wrap: balance;
+}
+
+.home-intro {
+  max-width: 46ch;
+  margin: clamp(18px, 2.2vw, 28px) 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.home-index {
+  margin: 0;
+  padding: 0;
+  border-bottom: 1px solid var(--line);
+  list-style: none;
+}
+
+.home-row {
+  display: grid;
+  grid-template-columns: minmax(132px, 22%) minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: clamp(12px, 3vw, 40px);
+  border-top: 1px solid var(--line);
+  padding: clamp(18px, 2.6vw, 30px) 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.home-row-name {
+  font-size: clamp(22px, 2.8vw, 34px);
+  font-weight: 650;
+  letter-spacing: -0.05em;
+  line-height: 1.05;
+  transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.home-row-description {
+  max-width: 48ch;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.home-row-tail {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 14px;
+  white-space: nowrap;
+}
+
+.home-row-meta {
+  color: var(--soft);
+  font-size: 12px;
+}
+
+.home-row-arrow {
+  color: var(--accent);
+  font-size: 16px;
+  line-height: 1;
+  transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.home-row:hover .home-row-name,
+.home-row:focus-visible .home-row-name {
+  transform: translateX(8px);
+}
+
+.home-row:hover .home-row-arrow,
+.home-row:focus-visible .home-row-arrow {
+  transform: translate(3px, -3px);
+}
+
+.home-row:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+.home-footer {
+  display: flex;
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-top: 1px solid var(--line);
+  padding: 22px clamp(20px, 5.2vw, 84px) 28px;
+  color: var(--soft);
+  font-size: 12px;
+}
+
+.page-back-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  margin-bottom: clamp(20px, 3vw, 32px);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 180ms ease;
+}
+
+.page-back-link:hover {
+  color: var(--ink);
+}
+
+.page-empty {
+  max-width: 52ch;
+  border-top: 1px solid var(--line);
+  padding-top: clamp(20px, 3vw, 32px);
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.page-inline-link {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--line);
+  text-underline-offset: 4px;
+}
+
+.page-inline-link:hover {
+  text-decoration-color: var(--accent);
+}
+
+.page-back-link:focus-visible,
+.page-inline-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* ---------- Monitor storefront ---------- */
+
 .monitor-storefront {
-  --monitor-page: #ffffff;
-  --monitor-ink: #171717;
-  --monitor-muted: #666666;
-  --monitor-soft: #858585;
-  --monitor-line: rgba(25, 25, 25, 0.15);
-  --monitor-track: rgba(30, 30, 30, 0.07);
-  --monitor-accent: #be123c;
-  --monitor-shadow: rgba(13, 17, 22, 0.16);
+  --monitor-page: var(--page);
+  --monitor-ink: var(--ink);
+  --monitor-muted: var(--muted);
+  --monitor-soft: var(--soft);
+  --monitor-line: var(--line);
+  --monitor-track: var(--track);
+  --monitor-accent: var(--accent);
+  --monitor-shadow: var(--shadow);
   --orbit-center-x: 85vw;
   --orbit-center-y: 80%;
   --detail-left-wide: 31vw;
   --detail-top-wide: 51%;
   position: relative;
-  width: 100vw;
+  /* 100%/100% (not 100vw) so a real scrollbar does not add a horizontal scrollbar. */
+  width: 100%;
   min-width: 0;
-  max-width: 100vw;
+  max-width: 100%;
   isolation: isolate;
-  min-height: 100svh;
+  min-height: calc(100svh - 78px);
   overflow: hidden;
   background: var(--monitor-page);
   color: var(--monitor-ink);
   transition: background-color 320ms ease, color 320ms ease;
-}
-
-.monitor-storefront[data-theme='dark'] {
-  --monitor-page: #111214;
-  --monitor-ink: #f3f3f1;
-  --monitor-muted: #b6b6b2;
-  --monitor-soft: #8f908e;
-  --monitor-line: rgba(255, 255, 255, 0.2);
-  --monitor-track: rgba(255, 255, 255, 0.1);
-  --monitor-accent: #fb4965;
-  --monitor-shadow: rgba(0, 0, 0, 0.46);
-}
-
-.monitor-header {
-  position: relative;
-  z-index: 50;
-  display: flex;
-  height: 78px;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  padding: 0 clamp(24px, 4vw, 64px);
-  border-bottom: 1px solid transparent;
-}
-
-.monitor-brand,
-.monitor-header-actions,
-.monitor-theme-toggle {
-  display: inline-flex;
-  align-items: center;
-}
-
-.monitor-brand {
-  min-height: 44px;
-  gap: 14px;
-  color: inherit;
-  text-decoration: none;
-}
-
-.monitor-brand-name {
-  font-size: 17px;
-  font-weight: 900;
-  letter-spacing: -0.09em;
-}
-
-.monitor-brand-rule {
-  width: 1px;
-  height: 22px;
-  background: var(--monitor-line);
-}
-
-.monitor-brand-meta,
-.monitor-header-label {
-  color: var(--monitor-soft);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.17em;
-  text-transform: uppercase;
-}
-
-.monitor-header-actions {
-  gap: clamp(14px, 2vw, 32px);
-}
-
-.monitor-theme-toggle {
-  min-height: 44px;
-  gap: 9px;
-  border: 1px solid var(--monitor-line);
-  border-radius: 999px;
-  background: transparent;
-  padding: 0 15px;
-  color: var(--monitor-ink);
-  cursor: pointer;
-  font: inherit;
-  font-size: 12px;
-  transition: border-color 180ms ease, background-color 180ms ease, color 180ms ease;
-}
-
-.monitor-theme-toggle:hover {
-  border-color: var(--monitor-ink);
-  background: color-mix(in srgb, var(--monitor-ink) 5%, transparent);
-}
-
-.monitor-theme-icon {
-  width: 18px;
-  height: 18px;
-  flex: none;
 }
 
 .monitor-experience {
@@ -135,6 +390,12 @@ body {
   height: calc(100svh - 78px);
   min-height: 650px;
   touch-action: none;
+}
+
+/* While a product is selected the stage is inert, so let the detail panel
+   scroll instead of holding every touch gesture on the page. */
+.monitor-storefront:not([data-view='gallery']) .monitor-experience {
+  touch-action: pan-y;
 }
 
 .monitor-storefront[data-dragging='true'] .monitor-experience {
@@ -311,7 +572,10 @@ body {
   filter: drop-shadow(0 24px 24px var(--monitor-shadow));
 }
 
-.monitor-storefront[data-dragging='true'] .monitor-orbit-item,
+.monitor-storefront[data-dragging='true'] .monitor-orbit-item {
+  transition: none;
+}
+
 .monitor-storefront[data-inertial='true'] .monitor-orbit-item {
   transition: none;
 }
@@ -327,7 +591,10 @@ body {
 
 .monitor-wheel {
   position: absolute;
-  z-index: 45;
+  /* Above the orbit items (max depth 60) so a passing product can never sit on
+     top of the slider and swallow its pointer/drag input; the focused detail
+     item (z-index 70) still wins, and this control is hidden by then. */
+  z-index: 65;
   right: clamp(18px, 3vw, 48px);
   bottom: 18px;
   display: grid;
@@ -386,18 +653,32 @@ body {
   cursor: ew-resize;
 }
 
+/* --rotation-progress is written inline from the current angle, so the track
+   reports where the ring actually is instead of a fixed decorative gradient. */
 .monitor-wheel-slider input::-webkit-slider-runnable-track {
   height: 8px;
   border: 1px solid var(--monitor-line);
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--monitor-track), color-mix(in srgb, var(--monitor-ink) 18%, transparent), var(--monitor-track));
+  background: linear-gradient(
+    90deg,
+    var(--monitor-accent) 0,
+    var(--monitor-accent) var(--rotation-progress, 0%),
+    var(--monitor-track) var(--rotation-progress, 0%),
+    var(--monitor-track) 100%
+  );
 }
 
 .monitor-wheel-slider input::-moz-range-track {
   height: 8px;
   border: 1px solid var(--monitor-line);
   border-radius: 999px;
-  background: color-mix(in srgb, var(--monitor-ink) 9%, transparent);
+  background: var(--monitor-track);
+}
+
+.monitor-wheel-slider input::-moz-range-progress {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--monitor-accent);
 }
 
 .monitor-wheel-slider input::-webkit-slider-thumb {
@@ -578,8 +859,6 @@ body {
   clip-path: inset(50%);
 }
 
-.monitor-brand:focus-visible,
-.monitor-theme-toggle:focus-visible,
 .monitor-text-button:focus-visible,
 .monitor-back-button:focus-visible,
 .monitor-source-link:focus-visible,
@@ -632,47 +911,157 @@ body {
   }
 }
 
-@media (max-width: 720px) {
-  .monitor-storefront {
-    --orbit-center-x-mobile: 82%;
-    --orbit-center-y-mobile: 80%;
+/* ---------- Responsive ---------- */
+
+/* 721-820px uses the desktop detail layout, where the panel used to run into
+   the focused product (measured -30px at 721px). Narrow the panel only; the
+   orbit and its anchors are untouched. */
+@media (min-width: 721px) and (max-width: 820px) {
+  .monitor-detail-panel {
+    width: clamp(268px, 42vw, 340px);
+  }
+}
+
+/* On short desktop/laptop viewports the hero block ran past the fold
+   (copy bottom 627px at 1280x600, so "Xem thông tin" was cut off).
+   Lifting the info block fixes it; the orbit anchors are untouched. */
+@media (min-width: 721px) and (max-height: 700px) {
+  .monitor-copy {
+    top: clamp(12px, 4svh, 40px);
   }
 
-  .monitor-header {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    width: 100%;
-    height: 72px;
-    padding: 0 18px;
-  }
-
-  .monitor-brand {
-    min-width: 0;
-    gap: 10px;
-  }
-
-  .monitor-header-actions {
+  /* The panel is anchored to the 650px-tall experience, so on a 600px-tall
+     laptop its last rows fell below the fold. Anchor it to the viewport. */
+  .monitor-detail-panel {
     position: fixed;
-    z-index: 60;
-    top: 14px;
+    top: 90px;
+    bottom: 20px;
+    max-height: none;
+    transform: translate3d(22px, 0, 0);
+  }
+
+  .monitor-detail-panel[data-visible='true'] {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* Landscape phones: keep the whole info block visible and the wheel reachable
+   without scrolling, without moving the ring. */
+@media (max-height: 480px) {
+  .monitor-copy {
+    top: 10px;
+  }
+
+  .monitor-copy h1 {
+    margin-top: 8px;
+    font-size: clamp(32px, 7svh, 48px);
+  }
+
+  .monitor-intro {
+    margin-top: 6px;
+    font-size: 11px;
+    line-height: 1.45;
+  }
+
+  .monitor-active-product {
+    margin-top: 10px;
+    padding-top: 8px;
+  }
+
+  .monitor-active-name {
+    margin-top: 6px;
+    font-size: 14px;
+  }
+
+  .monitor-wheel {
+    position: fixed;
     right: 14px;
-    width: max-content;
+    bottom: max(14px, env(safe-area-inset-bottom));
+    left: auto;
+    width: min(340px, calc(100vw - 28px));
   }
 
-  .monitor-theme-toggle {
-    flex: none;
+  /* The detail panel is anchored to a 650px-tall experience, so in landscape
+     it opened below the fold. Anchor it to the viewport instead. */
+  .monitor-detail-panel,
+  .monitor-detail-panel[data-visible='true'] {
+    position: fixed;
+    top: auto;
+    right: 14px;
+    bottom: max(74px, calc(env(safe-area-inset-bottom) + 74px));
+    left: 14px;
+    width: auto;
+    max-height: min(56svh, 240px);
+    transform: translate3d(0, 10px, 0);
   }
 
-  .monitor-brand-meta,
-  .monitor-header-label {
+  .monitor-detail-panel[data-visible='true'] {
+    transform: translate3d(0, 0, 0);
+  }
+
+  .monitor-detail-panel h2 {
+    max-width: none;
+    font-size: clamp(22px, 5.2svh, 30px);
+  }
+}
+
+@media (max-width: 900px) {
+  .site-menu-button {
+    display: inline-flex;
+  }
+
+  .site-nav {
+    position: fixed;
+    z-index: 320;
+    top: var(--header-h);
+    right: 0;
+    left: 0;
+    border-bottom: 1px solid var(--line);
+    background: var(--page);
+    padding: 6px clamp(20px, 4vw, 64px) 18px;
+    box-shadow: 0 18px 40px var(--shadow);
+  }
+
+  .site-header[data-menu-open='false'] .site-nav {
     display: none;
   }
 
-  .monitor-theme-toggle {
-    min-height: 44px;
-    gap: 7px;
-    padding: 0 11px;
-    font-size: 11px;
+  .site-nav-list {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+  }
+
+  .site-nav-link {
+    width: 100%;
+    border-top: 1px solid var(--line);
+    border-bottom: 0;
+    padding: 4px 0;
+    font-size: 15px;
+  }
+
+  .site-nav-link[aria-current='page'] {
+    color: var(--accent);
+  }
+}
+
+@media (max-width: 720px) {
+  .site-header {
+    --header-h: 72px;
+    padding: 0 16px;
+  }
+
+  .site-context {
+    display: none;
+  }
+
+  .site-brand {
+    gap: 10px;
+  }
+
+  .monitor-storefront {
+    --orbit-center-x-mobile: 82%;
+    --orbit-center-y-mobile: 80%;
   }
 
   .monitor-experience {
@@ -860,31 +1249,57 @@ body {
     width: clamp(140px, 48vw, 260px);
     transform: translate(-50%, -50%) scale(1.08);
   }
+
+  .home-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px 16px;
+    padding: 20px 0;
+  }
+
+  .home-row-name {
+    font-size: 24px;
+  }
+
+  .home-row-description {
+    grid-column: 1 / -1;
+    font-size: 12.5px;
+  }
+
+  .home-row-tail {
+    gap: 10px;
+  }
+
+  .home-row-meta {
+    font-size: 11px;
+  }
+
+  .site-cart-label {
+    display: none;
+  }
+
+  .site-cart-link {
+    padding: 0 12px;
+  }
 }
 
 @media (max-width: 390px) {
-  .monitor-header {
-    padding: 0 14px;
+  .site-header {
+    padding: 0 12px;
   }
 
-  .monitor-header-actions {
-    min-width: 44px;
-    right: 14px;
+  .site-actions {
+    gap: 6px;
+  }
+
+  .site-icon-button {
+    min-width: 42px;
+    height: 42px;
+    padding: 0 11px;
   }
 
   .monitor-copy {
     left: 18px;
     width: calc(100% - 36px);
-  }
-
-  .monitor-theme-toggle span {
-    display: none;
-  }
-
-  .monitor-theme-toggle {
-    width: 44px;
-    justify-content: center;
-    padding: 0;
   }
 
   .monitor-wheel {
@@ -901,7 +1316,9 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .monitor-storefront *,
   .monitor-storefront *::before,
-  .monitor-storefront *::after {
+  .monitor-storefront *::after,
+  .home-row-name,
+  .home-row-arrow {
     scroll-behavior: auto !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
