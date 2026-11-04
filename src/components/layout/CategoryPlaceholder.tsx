@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { SiteFooter } from '@/components/layout/SiteFooter';
 
 interface CategoryPlaceholderProps {
   title: string;
@@ -26,10 +27,7 @@ export function CategoryPlaceholder({ title, description }: CategoryPlaceholderP
         </p>
       </main>
 
-      <footer className="home-footer">
-        <span>Forma</span>
-        <span>Thiết bị góc máy</span>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

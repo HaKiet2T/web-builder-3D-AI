@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { SiteFooter } from '@/components/layout/SiteFooter';
 
 export const metadata: Metadata = {
   title: 'Giỏ hàng',
@@ -25,10 +26,7 @@ export default function CartPage() {
         </p>
       </main>
 
-      <footer className="home-footer">
-        <span>Forma</span>
-        <span>Thiết bị góc máy</span>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

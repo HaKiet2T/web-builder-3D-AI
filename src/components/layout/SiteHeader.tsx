@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useId, useRef, useState } from 'react';
 import { CATEGORIES } from '@/data/categories';
+import { SITE } from '@/lib/site';
 import { useTheme } from '@/components/theme/ThemeProvider';
 import type { Theme } from '@/components/theme/ThemeProvider';
 
@@ -116,8 +117,8 @@ export function SiteHeader({ variant, context }: SiteHeaderProps) {
   return (
     <header className="site-header" data-variant={resolvedVariant} data-menu-open={menuOpen}>
       <div className="site-header-start">
-        <Link className="site-brand" href="/" aria-label="Forma, về trang chủ">
-          Forma
+        <Link className="site-brand" href="/" aria-label={`${SITE.name}, về trang chủ`}>
+          {SITE.name}
         </Link>
         {resolvedContext ? (
           <>

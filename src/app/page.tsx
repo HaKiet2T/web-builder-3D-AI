@@ -1,11 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { SiteFooter } from '@/components/layout/SiteFooter';
 import { CATEGORIES } from '@/data/categories';
 import { monitors } from '@/data/monitors';
+import { SITE } from '@/lib/site';
 
 export const metadata: Metadata = {
-  title: 'Thiết bị góc máy',
-  description: 'Chọn nhóm thiết bị bạn cần: màn hình, loa, chuột, bàn phím và đèn màn hình.',
+  title: SITE.tagline,
+  description: SITE.description,
 };
 
 function categoryMeta(categoryId: string) {
@@ -43,10 +45,7 @@ export default function HomePage() {
         </ul>
       </main>
 
-      <footer className="home-footer">
-        <span>Forma</span>
-        <span>Thiết bị góc máy</span>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

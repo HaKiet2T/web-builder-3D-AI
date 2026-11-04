@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { LEGACY_THEME_STORAGE_KEY, THEME_STORAGE_KEY } from "@/lib/theme";
+import { SITE, SITE_TITLE, SITE_TITLE_TEMPLATE } from "@/lib/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -17,10 +18,10 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Forma | Thiết bị góc máy",
-    template: "%s | Forma",
+    default: SITE_TITLE,
+    template: SITE_TITLE_TEMPLATE,
   },
-  description: "Màn hình, loa, chuột, bàn phím và đèn màn hình cho góc máy của bạn.",
+  description: SITE.description,
 };
 
 // Runs synchronously in <head>, before first paint, so the saved theme never
