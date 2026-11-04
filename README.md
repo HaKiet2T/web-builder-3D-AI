@@ -72,6 +72,10 @@ non-persistent preview.
    `NEXT_PUBLIC_` prefix.
 2. Apply `supabase/migrations/20261104180000_storefront.sql` in the Supabase SQL
    Editor, then run `supabase/seed.sql` to add the storefront categories.
+   To add the sample products, variants, and local product media, set
+   `SUPABASE_SERVICE_ROLE_KEY` in `.env.local` and run `npm run seed:supabase`.
+   The command is safe to rerun: existing sample IDs are left unchanged, and
+   it does not create sample orders or payment records.
 3. Create a user under **Authentication → Users**. In the SQL Editor, grant
    admin access to that account:
 

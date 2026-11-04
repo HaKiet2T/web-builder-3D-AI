@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { SiteFooter } from '@/components/layout/SiteFooter';
 import { countProductsByCategory, listCategories } from '@/lib/catalog/dal';
 import { SITE } from '@/lib/site';
@@ -10,10 +11,32 @@ export const metadata: Metadata = {
 };
 
 function formatCount(count: number) {
-  return count === 0 ? 'Đang cập nhật' : `${count} mẫu`;
+  return count === 0 ? 'Chưa có sản phẩm' : `${count} mẫu`;
 }
 
-export default async function HomePage() {
+export default function HomePage() {
+  return (
+    <Suspense fallback={<HomeLoading />}>
+      <HomeContent />
+    </Suspense>
+  );
+}
+
+function HomeLoading() {
+  return (
+    <div className="home-page">
+      <main className="home-main" aria-busy="true">
+        <section className="home-hero">
+          <h1>Chọn thiết bị</h1>
+          <p className="cart-loading" role="status">Đang tải danh mục…</p>
+        </section>
+      </main>
+      <SiteFooter />
+    </div>
+  );
+}
+
+async function HomeContent() {
   // Counts come from the catalogue, so the home index never claims a category is
   // empty when the DAL has products for it.
   const [counts, categories] = await Promise.all([

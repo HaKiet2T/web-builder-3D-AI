@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
 import { CategoryView } from '@/components/layout/CategoryView';
 import {
   getCategory,
@@ -27,8 +28,8 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
   const { category: slug } = await params;
-  const category = await getCategory(slug);
-  if (!category) return { title: 'Không tìm thấy danh mục' };
+  const category = getSampleCategories().find((item) => item.slug === slug);
+  if (!category) return { title: 'Danh mục thiết bị' };
 
   return {
     title: category.name,
@@ -36,7 +37,15 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   };
 }
 
-export default async function CategoryPage({ params }: CategoryPageProps) {
+export default function CategoryPage({ params }: CategoryPageProps) {
+  return (
+    <Suspense fallback={<main className="home-main" aria-busy="true"><p className="cart-loading" role="status">Đang tải danh mục…</p></main>}>
+      <CategoryContent params={params} />
+    </Suspense>
+  );
+}
+
+async function CategoryContent({ params }: CategoryPageProps) {
   const { category: slug } = await params;
   const category = await getCategory(slug);
   if (!category) notFound();

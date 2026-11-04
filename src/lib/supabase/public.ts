@@ -2,6 +2,7 @@ import 'server-only';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/supabase/database.types';
 import { getSupabaseConfig } from '@/lib/supabase/config';
+import { supabaseFetch } from '@/lib/supabase/node-fetch';
 
 export function createPublicSupabaseClient() {
   const config = getSupabaseConfig();
@@ -12,5 +13,6 @@ export function createPublicSupabaseClient() {
       autoRefreshToken: false,
       persistSession: false,
     },
+    global: { fetch: supabaseFetch },
   });
 }

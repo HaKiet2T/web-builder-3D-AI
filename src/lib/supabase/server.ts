@@ -2,6 +2,7 @@ import 'server-only';
 import { createServerClient } from '@supabase/ssr';
 import type { Database } from '@/lib/supabase/database.types';
 import { getSupabaseConfig } from '@/lib/supabase/config';
+import { supabaseFetch } from '@/lib/supabase/node-fetch';
 
 export async function createServerSupabaseClient() {
   const config = getSupabaseConfig();
@@ -21,5 +22,6 @@ export async function createServerSupabaseClient() {
         });
       },
     },
+    global: { fetch: supabaseFetch },
   });
 }

@@ -9,6 +9,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "node --conditions=react-server --import ./tests/register-hooks.mjs --test tests/*.test.ts",
+    "seed:supabase": "node --import ./tests/register-hooks.mjs ./scripts/seed-supabase.mjs",
     "test:e2e": "node scripts/verify-e2e.mjs",
     "test:monitor-orbit": "node scripts/verify-monitor-orbit.mjs"
   },

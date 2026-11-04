@@ -470,6 +470,7 @@ export function MonitorStorefront({ products }: MonitorStorefrontProps) {
       data-dragging={isDragging}
       data-rotating={isAutoRotating}
       data-inertial={isInertial}
+      data-empty={products.length === 0}
     >
 
       <section
@@ -479,9 +480,11 @@ export function MonitorStorefront({ products }: MonitorStorefrontProps) {
         onPointerDown={handlePointerDown}
       >
         <div className="monitor-copy" data-orbit-control aria-hidden={hasDetail} inert={hasDetail}>
-          <p className="monitor-count">
-            {String(Math.max(activeIndex + 1, 1)).padStart(2, '0')} / {String(products.length).padStart(2, '0')}
-          </p>
+          {products.length > 0 ? (
+            <p className="monitor-count">
+              {String(activeIndex + 1).padStart(2, '0')} / {String(products.length).padStart(2, '0')}
+            </p>
+          ) : null}
           <h1>Màn hình ROG</h1>
           <p className="monitor-intro">Khám phá bộ sưu tập màn hình gaming ASUS ROG.</p>
 
@@ -551,50 +554,52 @@ export function MonitorStorefront({ products }: MonitorStorefrontProps) {
           })}
         </div>
 
-        <div
-          className="monitor-wheel"
-          data-orbit-control
-          aria-label="Điều khiển vòng sản phẩm"
-          aria-hidden={hasDetail}
-          inert={hasDetail}
-        >
-          <button
-            className="monitor-wheel-button"
-            type="button"
-            onClick={() => moveGallery(-1)}
-            aria-label="Xoay đến màn hình trước"
-            disabled={products.length < 2 || hasDetail}
+        {products.length > 0 ? (
+          <div
+            className="monitor-wheel"
+            data-orbit-control
+            aria-label="Điều khiển vòng sản phẩm"
+            aria-hidden={hasDetail}
+            inert={hasDetail}
           >
-            <ArrowIcon direction="left" />
-          </button>
-          <label className="monitor-wheel-slider">
-            <span className="sr-only">Xoay bộ sưu tập màn hình</span>
-            <input
-              ref={sliderRef}
-              type="range"
-              min="0"
-              max="359"
-              step="1"
-              defaultValue={0}
-              onChange={(event) => handleRangeChange(Number(event.currentTarget.value))}
-              aria-valuetext={'Màn hình ' + String(Math.max(activeIndex + 1, 1)) + ' trên ' + String(products.length)}
+            <button
+              className="monitor-wheel-button"
+              type="button"
+              onClick={() => moveGallery(-1)}
+              aria-label="Xoay đến màn hình trước"
               disabled={products.length < 2 || hasDetail}
-            />
-            <span className="monitor-wheel-hint" aria-hidden="true">Kéo để xoay</span>
-          </label>
-          <button
-            className="monitor-wheel-button"
-            type="button"
-            onClick={() => moveGallery(1)}
-            aria-label="Xoay đến màn hình tiếp theo"
-            disabled={products.length < 2 || hasDetail}
-          >
-            <ArrowIcon direction="right" />
-          </button>
-          <span className="monitor-wheel-index" aria-hidden="true">
-            {String(Math.max(activeIndex + 1, 1)).padStart(2, '0')} / {String(products.length).padStart(2, '0')}
-          </span>
-        </div>
+            >
+              <ArrowIcon direction="left" />
+            </button>
+            <label className="monitor-wheel-slider">
+              <span className="sr-only">Xoay bộ sưu tập màn hình</span>
+              <input
+                ref={sliderRef}
+                type="range"
+                min="0"
+                max="359"
+                step="1"
+                defaultValue={0}
+                onChange={(event) => handleRangeChange(Number(event.currentTarget.value))}
+                aria-valuetext={'Màn hình ' + String(activeIndex + 1) + ' trên ' + String(products.length)}
+                disabled={products.length < 2 || hasDetail}
+              />
+              <span className="monitor-wheel-hint" aria-hidden="true">Kéo để xoay</span>
+            </label>
+            <button
+              className="monitor-wheel-button"
+              type="button"
+              onClick={() => moveGallery(1)}
+              aria-label="Xoay đến màn hình tiếp theo"
+              disabled={products.length < 2 || hasDetail}
+            >
+              <ArrowIcon direction="right" />
+            </button>
+            <span className="monitor-wheel-index" aria-hidden="true">
+              {String(activeIndex + 1).padStart(2, '0')} / {String(products.length).padStart(2, '0')}
+            </span>
+          </div>
+        ) : null}
 
         {detailProduct && (
           <section

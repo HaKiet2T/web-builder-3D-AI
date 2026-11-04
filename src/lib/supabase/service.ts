@@ -1,6 +1,7 @@
 import 'server-only';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/supabase/database.types';
+import { supabaseFetch } from '@/lib/supabase/node-fetch';
 
 export function createServiceSupabaseClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -12,5 +13,6 @@ export function createServiceSupabaseClient() {
       autoRefreshToken: false,
       persistSession: false,
     },
+    global: { fetch: supabaseFetch },
   });
 }

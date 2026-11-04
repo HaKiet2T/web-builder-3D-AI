@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { connection } from 'next/server';
+import { Suspense } from 'react';
 import { updateOrderStatusAction } from '@/app/admin/(dashboard)/actions';
 import { listAdminOrders } from '@/lib/orders/dal';
 import type { OrderStatus } from '@/types/order';
@@ -31,7 +32,21 @@ interface OrdersPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-export default async function AdminOrdersPage({ searchParams }: OrdersPageProps) {
+export default function AdminOrdersPage({ searchParams }: OrdersPageProps) {
+  return (
+    <Suspense
+      fallback={
+        <p className="admin-notice" role="status" aria-busy="true">
+          Đang tải danh sách đơn hàng…
+        </p>
+      }
+    >
+      <AdminOrdersContent searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+async function AdminOrdersContent({ searchParams }: OrdersPageProps) {
   await connection();
   const [orders, query] = await Promise.all([listAdminOrders(), searchParams]);
 

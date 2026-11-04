@@ -32,11 +32,7 @@ export const metadata: Metadata = {
 // 'use client' file would hand this server component a client reference.
 const themeBootstrap = `(function(){try{var k=${JSON.stringify(THEME_STORAGE_KEY)};var s=localStorage.getItem(k);if(s!=='light'&&s!=='dark'){s=localStorage.getItem(${JSON.stringify(LEGACY_THEME_STORAGE_KEY)});if(s==='light'||s==='dark')localStorage.setItem(k,s);}document.documentElement.dataset.theme=s==='dark'?'dark':'light';}catch(e){document.documentElement.dataset.theme='light';}})();`;
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  // Navigation comes from the catalogue so a new category appears in the header
-  // without touching this component.
-  const categories = await listCategories();
-
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="vi"
@@ -54,11 +50,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               Wrapping it keeps the rest of the layout prerenderable. The
               fallback reserves the same header height so nothing shifts. */}
           <Suspense fallback={<div className="site-header" data-variant="solid" aria-hidden="true" />}>
-            <SiteHeader categories={categories} />
+            <CatalogueHeader />
           </Suspense>
           {children}
         </ThemeProvider>
       </body>
     </html>
   );
+}
+
+async function CatalogueHeader() {
+  const categories = await listCategories();
+  return <SiteHeader categories={categories} />;
 }

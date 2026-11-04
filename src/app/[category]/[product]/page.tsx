@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
 import { ProductDetailView } from '@/components/layout/ProductDetailView';
 import {
   getCategory,
@@ -16,9 +17,8 @@ interface ProductPageProps {
  * Product detail route for the four catalogue categories that use the shared
  * storefront. `/monitor` keeps the ring gallery instead.
  *
- * Every product is listed here, so both params are known at build time. That
- * also lets `usePathname()` in the header resolve during prerendering instead of
- * suspending on an unknown param.
+ * Sample products are prerendered; products added through the admin resolve
+ * from Supabase at request time.
  */
 
 export function generateStaticParams() {
@@ -30,8 +30,8 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { product: productSlug } = await params;
-  const product = await getProductBySlug(productSlug);
-  if (!product) return { title: 'Không tìm thấy sản phẩm' };
+  const product = getSampleProducts().find((item) => item.slug === productSlug);
+  if (!product) return { title: 'Sản phẩm' };
 
   return {
     title: product.name,
@@ -39,7 +39,15 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   };
 }
 
-export default async function ProductPage({ params }: ProductPageProps) {
+export default function ProductPage({ params }: ProductPageProps) {
+  return (
+    <Suspense fallback={<main className="home-main" aria-busy="true"><p className="cart-loading" role="status">Đang tải sản phẩm…</p></main>}>
+      <ProductContent params={params} />
+    </Suspense>
+  );
+}
+
+async function ProductContent({ params }: ProductPageProps) {
   const { category: categorySlug, product: productSlug } = await params;
 
   const [category, product] = await Promise.all([

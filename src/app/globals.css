@@ -434,6 +434,34 @@ body {
   min-width: 275px;
 }
 
+.monitor-storefront[data-empty='true'] .monitor-experience::before,
+.monitor-storefront[data-empty='true'] .monitor-experience::after {
+  display: none;
+}
+
+.monitor-storefront[data-empty='true'] .monitor-copy {
+  left: 50%;
+  top: 50%;
+  width: min(80vw, 620px);
+  min-width: 0;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.monitor-storefront[data-empty='true'] .monitor-copy h1 {
+  max-width: none;
+}
+
+.monitor-storefront[data-empty='true'] .monitor-intro {
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.monitor-storefront[data-empty='true'] .monitor-product-stage,
+.monitor-storefront[data-empty='true'] .monitor-wheel {
+  display: none;
+}
+
 .monitor-count {
   color: var(--monitor-muted);
   font-size: 11px;
