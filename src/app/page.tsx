@@ -1,18 +1,19 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { Suspense } from 'react';
 import { SiteFooter } from '@/components/layout/SiteFooter';
-import { countProductsByCategory, listCategories } from '@/lib/catalog/dal';
+import { HomeHeroBanner } from '@/components/home/HomeHeroBanner';
+import { CategoryShowcase } from '@/components/home/CategoryShowcase';
+import { FeaturedProductsSection } from '@/components/home/FeaturedProductsSection';
+import { SetupCarousel } from '@/components/home/SetupCarousel';
+import { BrandFeatures } from '@/components/home/BrandFeatures';
+import { NewsletterSection } from '@/components/home/NewsletterSection';
+import { countProductsByCategory, listCategories, listFeaturedProducts } from '@/lib/catalog/dal';
 import { SITE } from '@/lib/site';
 
 export const metadata: Metadata = {
-  title: SITE.tagline,
+  title: `${SITE.name} | ${SITE.tagline}`,
   description: SITE.description,
 };
-
-function formatCount(count: number) {
-  return count === 0 ? 'Chưa có sản phẩm' : `${count} mẫu`;
-}
 
 export default function HomePage() {
   return (
@@ -26,10 +27,10 @@ function HomeLoading() {
   return (
     <div className="home-page">
       <main className="home-main" aria-busy="true">
-        <section className="home-hero">
-          <h1>Chọn thiết bị</h1>
-          <p className="cart-loading" role="status">Đang tải danh mục…</p>
-        </section>
+        <div className="home-hero">
+          <h1>Thiết bị setup góc làm việc</h1>
+          <p className="cart-loading" role="status">Đang tải trang chủ…</p>
+        </div>
       </main>
       <SiteFooter />
     </div>
@@ -37,39 +38,34 @@ function HomeLoading() {
 }
 
 async function HomeContent() {
-  // Counts come from the catalogue, so the home index never claims a category is
-  // empty when the DAL has products for it.
-  const [counts, categories] = await Promise.all([
+  const [counts, categories, featuredProducts] = await Promise.all([
     countProductsByCategory(),
     listCategories(),
+    listFeaturedProducts(6),
   ]);
 
   return (
     <div className="home-page">
       <main className="home-main">
-        <section className="home-hero" aria-labelledby="home-title">
-          <h1 id="home-title">Chọn thiết bị</h1>
-          <p className="home-intro">
-            Năm nhóm thiết bị cho một góc máy, chung một giỏ hàng và một luồng thanh toán.
-          </p>
-        </section>
+        <div className="home-container">
+          {/* Hero 1 (-> /mau-setup) & Hero 2, 3 (-> /top-san-pham) */}
+          <HomeHeroBanner />
 
-        <ul className="home-index">
-          {categories.map((category) => (
-            <li key={category.id}>
-              <Link className="home-row" href={`/${category.slug}`}>
-                <span className="home-row-name">{category.name}</span>
-                <span className="home-row-description">{category.description}</span>
-                <span className="home-row-tail">
-                  <span className="home-row-meta">{formatCount(counts[category.id] ?? 0)}</span>
-                  <span className="home-row-arrow" aria-hidden="true">
-                    ↗
-                  </span>
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+          {/* Hệ sinh thái danh mục sản phẩm */}
+          <CategoryShowcase categories={categories} counts={counts} />
+
+          {/* Top sản phẩm nổi bật bán chạy */}
+          <FeaturedProductsSection products={featuredProducts} />
+
+          {/* Không gian trải nghiệm 3 ảnh kéo ngang */}
+          <SetupCarousel />
+
+          {/* Cam kết thương hiệu chuẩn HyperWork */}
+          <BrandFeatures />
+
+          {/* Bản tin & tư vấn góc làm việc */}
+          <NewsletterSection />
+        </div>
       </main>
 
       <SiteFooter />
