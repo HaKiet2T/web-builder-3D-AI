@@ -1,19 +1,12 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { connection } from 'next/server';
-import { Suspense } from 'react';
 import { signOutAdmin } from '@/app/admin/login/actions';
 import { getCurrentAdmin } from '@/lib/admin/auth';
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <Suspense fallback={<main className="admin-main" aria-busy="true"><p role="status">Đang tải quản trị...</p></main>}>
-      <AdminSessionLayout>{children}</AdminSessionLayout>
-    </Suspense>
-  );
-}
+export const instant = false;
 
-async function AdminSessionLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   await connection();
   const admin = await getCurrentAdmin();
   if (!admin) redirect('/admin/login');

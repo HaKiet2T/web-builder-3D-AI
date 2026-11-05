@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import {
@@ -71,7 +71,13 @@ export async function saveProductAction(
 
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'Thông tin sản phẩm không hợp lệ.' };
 
-  const productId = await saveCatalogProduct(parsed.data);
+  let productId: string;
+  try {
+    productId = await saveCatalogProduct(parsed.data);
+  } catch {
+    return { error: 'Không lưu được sản phẩm. Kiểm tra dữ liệu và quyền quản trị rồi thử lại.' };
+  }
+  revalidateTag('catalog', 'max');
   revalidatePath('/');
   revalidatePath('/[category]', 'page');
   revalidatePath('/[category]/[product]', 'page');
@@ -84,6 +90,7 @@ export async function archiveProductAction(formData: FormData) {
   if (!productId) throw new Error('Product id is required.');
 
   await archiveCatalogProduct(productId);
+  revalidateTag('catalog', 'max');
   revalidatePath('/');
   revalidatePath('/[category]', 'page');
   revalidatePath('/admin/products');
@@ -112,6 +119,7 @@ export async function uploadMediaAction(formData: FormData) {
     alt,
   });
 
+  revalidateTag('catalog', 'max');
   revalidatePath('/admin/products');
   revalidatePath('/[category]', 'page');
   revalidatePath('/[category]/[product]', 'page');
@@ -153,6 +161,7 @@ export async function deleteMediaAction(formData: FormData) {
   if (!mediaId) throw new Error('Media id is required.');
 
   await deleteCatalogMedia(mediaId);
+  revalidateTag('catalog', 'max');
   revalidatePath('/admin/products');
   revalidatePath('/[category]', 'page');
   revalidatePath('/[category]/[product]', 'page');

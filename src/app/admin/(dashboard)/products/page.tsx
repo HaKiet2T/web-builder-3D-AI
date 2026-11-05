@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { connection } from 'next/server';
+import { Suspense } from 'react';
 import { AdminProductForm } from '@/app/admin/(dashboard)/AdminProductForm';
 import {
   deleteMediaAction,
@@ -14,7 +15,31 @@ interface ProductsPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-export default async function AdminProductsPage({ searchParams }: ProductsPageProps) {
+export default function AdminProductsPage({ searchParams }: ProductsPageProps) {
+  return (
+    <section className="admin-page">
+      <header className="admin-page-header">
+        <p className="admin-eyebrow">DANH MỤC</p>
+        <h1>Sản phẩm & media</h1>
+        <p>Tạo sản phẩm, chỉnh biến thể và quản lý hình ảnh từ kho Supabase Storage.</p>
+      </header>
+      <Suspense fallback={<ProductsLoading />}>
+        <AdminProductsContent searchParams={searchParams} />
+      </Suspense>
+    </section>
+  );
+}
+
+function ProductsLoading() {
+  return (
+    <div className="admin-product-list" aria-busy="true" aria-label="Đang tải sản phẩm">
+      <p className="admin-notice" role="status">Đang tải danh sách sản phẩm…</p>
+      <div className="admin-panel admin-skeleton" />
+    </div>
+  );
+}
+
+async function AdminProductsContent({ searchParams }: ProductsPageProps) {
   await connection();
   const [products, categories, query] = await Promise.all([
     listAdminProducts(),
@@ -32,13 +57,7 @@ export default async function AdminProductsPage({ searchParams }: ProductsPagePr
           : null;
 
   return (
-    <section className="admin-page">
-      <header className="admin-page-header">
-        <p className="admin-eyebrow">DANH MỤC</p>
-        <h1>Sản phẩm & media</h1>
-        <p>Tạo sản phẩm, chỉnh biến thể và quản lý hình ảnh từ kho Supabase Storage.</p>
-      </header>
-
+    <>
       {savedMessage ? <p className="admin-success" role="status">{savedMessage}</p> : null}
 
       <details className="admin-panel admin-create-panel">
@@ -102,6 +121,6 @@ export default async function AdminProductsPage({ searchParams }: ProductsPagePr
           ))}
         </div>
       )}
-    </section>
+    </>
   );
 }

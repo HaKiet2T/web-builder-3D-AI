@@ -50,6 +50,7 @@ export function CheckoutForm() {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
+        items: items.map((item) => ({ variantId: item.variantId, quantity: item.quantity })),
         lines: items.map((item) => ({ variantId: item.variantId, quantity: item.quantity })),
       }),
     })

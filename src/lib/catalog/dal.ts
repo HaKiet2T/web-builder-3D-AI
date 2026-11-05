@@ -1,4 +1,5 @@
 import 'server-only';
+import { cacheLife, cacheTag } from 'next/cache';
 import { createPublicSupabaseClient } from '@/lib/supabase/public';
 import { requireAdminSupabaseClient } from '@/lib/admin/auth';
 import { CATEGORY_RECORDS, PRODUCT_RECORDS } from '@/lib/catalog/sample-data';
@@ -128,7 +129,10 @@ function mapProduct(
   };
 }
 
-async function loadProducts(includeInactive: boolean): Promise<AdminProduct[]> {
+async function loadProducts(
+  includeInactive: boolean,
+  categoryId?: CategoryId,
+): Promise<AdminProduct[]> {
   const supabase = includeInactive
     ? await requireAdminSupabaseClient()
     : createPublicSupabaseClient();
@@ -139,15 +143,22 @@ async function loadProducts(includeInactive: boolean): Promise<AdminProduct[]> {
 
   let productQuery = supabase.from('products').select('*').order('created_at', { ascending: false });
   if (!includeInactive) productQuery = productQuery.eq('status', 'active');
+  if (categoryId) productQuery = productQuery.eq('category_id', categoryId);
 
-  const [{ data: productRows, error: productError }, { data: variantRows, error: variantError }, { data: mediaRows, error: mediaError }] =
-    await Promise.all([
-      productQuery,
-      supabase.from('product_variants').select('*'),
-      supabase.from('product_media').select('*'),
-    ]);
+  const { data: productRows, error: productError } = await productQuery;
 
   if (productError) throw new Error(`Could not load products: ${productError.message}`);
+  if (!productRows?.length) return [];
+
+  const productIds = productRows.map((product) => product.id);
+  const [
+    { data: variantRows, error: variantError },
+    { data: mediaRows, error: mediaError },
+  ] = await Promise.all([
+    supabase.from('product_variants').select('*').in('product_id', productIds),
+    supabase.from('product_media').select('*').in('product_id', productIds),
+  ]);
+
   if (variantError) throw new Error(`Could not load product variants: ${variantError.message}`);
   if (mediaError) throw new Error(`Could not load product media: ${mediaError.message}`);
 
@@ -157,6 +168,10 @@ async function loadProducts(includeInactive: boolean): Promise<AdminProduct[]> {
 }
 
 export async function listCategories(): Promise<Category[]> {
+  'use cache';
+  cacheLife('minutes');
+  cacheTag('catalog');
+
   const supabase = createPublicSupabaseClient();
   if (!supabase) return [...CATEGORY_RECORDS].sort((a, b) => a.position - b.position);
 
@@ -178,6 +193,10 @@ export function getSampleProducts(): Product[] {
 }
 
 export async function getCategory(idOrSlug: CategoryId | string): Promise<Category | null> {
+  'use cache';
+  cacheLife('minutes');
+  cacheTag('catalog');
+
   const supabase = createPublicSupabaseClient();
   if (!supabase) {
     return CATEGORY_RECORDS.find(
@@ -208,23 +227,77 @@ export async function getCategory(idOrSlug: CategoryId | string): Promise<Catego
 }
 
 export async function listProductsByCategory(categoryIdOrSlug: CategoryId | string): Promise<Product[]> {
+  'use cache';
+  cacheLife('minutes');
+  cacheTag('catalog');
+
   const category = await getCategory(categoryIdOrSlug);
   if (!category) return [];
-  return (await loadProducts(false)).filter((product) => product.categoryId === category.id);
+  return loadProducts(false, category.id);
 }
 
 export async function listProducts(): Promise<Product[]> {
+  'use cache';
+  cacheLife('minutes');
+  cacheTag('catalog');
+
   return loadProducts(false);
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
-  const product = (await listProducts()).find((item) => item.slug === slug);
-  return product ?? null;
+  'use cache';
+  cacheLife('minutes');
+  cacheTag('catalog');
+
+  const supabase = createPublicSupabaseClient();
+  if (!supabase) return PRODUCT_RECORDS.find((item) => item.slug === slug) ?? null;
+
+  const { data: productRow, error: productError } = await supabase
+    .from('products')
+    .select('*')
+    .eq('slug', slug)
+    .eq('status', 'active')
+    .maybeSingle();
+  if (productError) throw new Error(`Could not load product: ${productError.message}`);
+  if (!productRow) return null;
+
+  const [{ data: variants, error: variantError }, { data: media, error: mediaError }] =
+    await Promise.all([
+      supabase.from('product_variants').select('*').eq('product_id', productRow.id),
+      supabase.from('product_media').select('*').eq('product_id', productRow.id),
+    ]);
+  if (variantError) throw new Error(`Could not load product variants: ${variantError.message}`);
+  if (mediaError) throw new Error(`Could not load product media: ${mediaError.message}`);
+
+  return mapProduct(productRow, variants ?? [], media ?? []);
 }
 
 export async function getProductById(id: string): Promise<Product | null> {
-  const product = (await listProducts()).find((item) => item.id === id);
-  return product ?? null;
+  'use cache';
+  cacheLife('minutes');
+  cacheTag('catalog');
+
+  const supabase = createPublicSupabaseClient();
+  if (!supabase) return PRODUCT_RECORDS.find((item) => item.id === id) ?? null;
+
+  const { data: productRow, error: productError } = await supabase
+    .from('products')
+    .select('*')
+    .eq('id', id)
+    .eq('status', 'active')
+    .maybeSingle();
+  if (productError) throw new Error(`Could not load product: ${productError.message}`);
+  if (!productRow) return null;
+
+  const [{ data: variants, error: variantError }, { data: media, error: mediaError }] =
+    await Promise.all([
+      supabase.from('product_variants').select('*').eq('product_id', id),
+      supabase.from('product_media').select('*').eq('product_id', id),
+    ]);
+  if (variantError) throw new Error(`Could not load product variants: ${variantError.message}`);
+  if (mediaError) throw new Error(`Could not load product media: ${mediaError.message}`);
+
+  return mapProduct(productRow, variants ?? [], media ?? []);
 }
 
 export async function getVariant(

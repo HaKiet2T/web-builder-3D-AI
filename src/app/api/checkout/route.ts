@@ -1,37 +1,19 @@
 import { NextResponse } from 'next/server';
-import { z } from 'zod';
 import { priceCart } from '@/lib/cart/server';
+import { CheckoutPayloadSchema } from '@/lib/cart/schema';
 import { buildOrder } from '@/lib/orders/build-order';
 import { OrderPersistenceError, persistCheckoutOrder } from '@/lib/orders/dal';
+
+export { CheckoutPayloadSchema };
 
 /**
  * Checkout.
  *
- * The client only sends variant ids, quantities and customer details. Every
- * price, name and stock status is looked up server-side through the catalogue
- * DAL, so the request body cannot influence the amount charged.
+ * The client only sends variant ids, quantities and customer details under
+ * either `items` (canonical) or `lines` (legacy). Every price, name and stock status
+ * is looked up server-side through the catalogue DAL, so the request body
+ * cannot influence the amount charged.
  */
-
-const CheckoutItemSchema = z.object({
-  variantId: z.string().min(1),
-  quantity: z.number().int().positive().max(999),
-});
-
-const CustomerSchema = z.object({
-  fullName: z.string().min(2, 'Họ tên phải có ít nhất 2 ký tự'),
-  email: z.string().email('Email không hợp lệ'),
-  phone: z.string().regex(/^[0-9+() -]{9,15}$/, 'Số điện thoại không hợp lệ'),
-  address: z.string().min(5, 'Địa chỉ giao hàng quá ngắn'),
-  city: z.string().min(2, 'Tỉnh/Thành phố không hợp lệ'),
-  postalCode: z.string().optional(),
-  notes: z.string().max(500, 'Ghi chú tối đa 500 ký tự').optional(),
-});
-
-const CheckoutPayloadSchema = z.object({
-  customer: CustomerSchema,
-  items: z.array(CheckoutItemSchema).min(1, 'Giỏ hàng không được để trống'),
-  paymentMethod: z.enum(['stripe', 'vnpay', 'momo', 'cod']).default('cod'),
-});
 
 export async function POST(request: Request) {
   let payload: unknown;

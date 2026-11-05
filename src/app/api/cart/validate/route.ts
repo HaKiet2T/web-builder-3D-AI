@@ -1,25 +1,15 @@
 import { NextResponse } from 'next/server';
-import { z } from 'zod';
 import { priceCart } from '@/lib/cart/server';
+import { CartPayloadSchema } from '@/lib/cart/schema';
 
-const CartPayloadSchema = z.object({
-  lines: z
-    .array(
-      z.object({
-        variantId: z.string().min(1),
-        quantity: z.number().int().positive().max(999),
-        unitPrice: z.number().nonnegative().optional(),
-      }),
-    )
-    .max(100),
-});
+export { CartPayloadSchema };
 
 /**
  * Re-prices a cart on the server.
  *
- * The request carries variant ids and quantities only. Any price the client
- * believes it has is used solely to raise a "price changed" notice; the
- * response is the authoritative total.
+ * The request carries variant ids and quantities under either `items` (canonical)
+ * or `lines` (legacy). Any price the client believes it has is used solely to raise
+ * a "price changed" notice; the response is the authoritative total.
  */
 export async function POST(request: Request) {
   let payload: unknown;
@@ -44,7 +34,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const result = await priceCart(parsed.data.lines);
+  const result = await priceCart(parsed.data.items);
 
   return NextResponse.json({
     ok: true,
