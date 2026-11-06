@@ -22,7 +22,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--input", type=Path, default=DEFAULT_INPUT, help="Source image folder.")
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT, help="Folder for web-ready PNGs.")
-    parser.add_argument("--model", default="u2net", help="rembg model name (default: u2net).")
+    parser.add_argument("--model", default="u2netp", help="rembg model name (default: u2netp).")
     parser.add_argument("--force", action="store_true", help="Regenerate outputs even when they are up to date.")
     parser.add_argument("--watch", action="store_true", help="Poll for new or changed images and process them automatically.")
     parser.add_argument("--interval", type=float, default=3.0, help="Polling interval in seconds for --watch (default: 3).")
@@ -112,22 +112,44 @@ def process_image(
     with Image.open(source) as opened:
         prepared = ImageOps.exif_transpose(opened).convert("RGBA")
 
+    # Smart pre-downscaling to avoid processing huge raw camera megapixels
+    max_pre_dim = 1600
+    orig_w, orig_h = prepared.size
+    if max(orig_w, orig_h) > max_pre_dim:
+        scale_factor = max_pre_dim / max(orig_w, orig_h)
+        pre_w = max(1, int(round(orig_w * scale_factor)))
+        pre_h = max(1, int(round(orig_h * scale_factor)))
+        prepared = prepared.resize((pre_w, pre_h), Image.Resampling.BILINEAR)
+
     cutout = remove(prepared, session=session)
     output = make_shadowed_cutout(cutout, shadow_opacity=shadow_opacity)
     destination.parent.mkdir(parents=True, exist_ok=True)
 
     temporary_path = destination.with_name(f".{destination.stem}.tmp.png")
     try:
-        output.save(temporary_path, format="PNG", optimize=True)
+        output.save(temporary_path, format="PNG", optimize=False, compress_level=4)
         temporary_path.replace(destination)
     finally:
         temporary_path.unlink(missing_ok=True)
 
 
 def create_session(model: str) -> Any:
-    from rembg import new_session
+    import os
+    try:
+        import onnxruntime as ort
+        from rembg import new_session
 
-    return new_session(model)
+        sess_opts = ort.SessionOptions()
+        cpu_count = os.cpu_count() or 4
+        optimal_threads = min(8, max(2, cpu_count // 2))
+        sess_opts.intra_op_num_threads = optimal_threads
+        sess_opts.inter_op_num_threads = 1
+        sess_opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+        sess_opts.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
+        return new_session(model, sess_opts=sess_opts)
+    except Exception:
+        from rembg import new_session
+        return new_session(model)
 
 
 def process_pending(

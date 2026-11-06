@@ -9,6 +9,7 @@ import {
   saveCatalogProduct,
   uploadCatalogMedia,
 } from '@/lib/catalog/dal';
+import { processProductImages } from '@/lib/catalog/image-processing';
 import { updateAdminOrderStatus } from '@/lib/orders/dal';
 
 export interface AdminFormState {
@@ -99,25 +100,63 @@ export async function archiveProductAction(formData: FormData) {
 
 export async function uploadMediaAction(formData: FormData) {
   const productId = String(formData.get('productId') ?? '').trim();
-  const alt = String(formData.get('alt') ?? '').trim();
-  const file = formData.get('file');
+  const productName = String(formData.get('productName') ?? '').trim();
+  const userAlt = String(formData.get('alt') ?? '').trim();
 
-  if (!productId || !alt || !(file instanceof File) || file.size === 0) {
-    throw new Error('Choose an image and provide its alt text.');
+  const rawFiles = [
+    ...formData.getAll('files'),
+    ...formData.getAll('file'),
+  ].filter((item): item is File => item instanceof File && item.size > 0);
+
+  if (!productId || rawFiles.length === 0) {
+    throw new Error('Vui lòng chọn ít nhất một file ảnh để tải lên.');
   }
-  if (file.size > 5 * 1024 * 1024) throw new Error('Images must be 5 MB or smaller.');
 
-  const content = await file.arrayBuffer();
-  const imageType = detectImageType(new Uint8Array(content));
-  if (!imageType) throw new Error('Only valid JPEG, PNG, and WebP images are supported.');
+  const fileInputs: Array<{ name: string; buffer: Buffer }> = [];
 
-  await uploadCatalogMedia({
-    productId,
-    fileName: `upload.${imageType.extension}`,
-    contentType: imageType.contentType,
-    content,
-    alt,
+  for (const file of rawFiles) {
+    if (file.size > 15 * 1024 * 1024) {
+      throw new Error(`File "${file.name}" vượt quá kích thước 15 MB.`);
+    }
+
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const imageType = detectImageType(new Uint8Array(buffer));
+    if (!imageType) {
+      throw new Error(`File "${file.name}" không hợp lệ. Chỉ chấp nhận ảnh JPEG, PNG hoặc WebP.`);
+    }
+
+    fileInputs.push({ name: file.name, buffer });
+  }
+
+  // Pass through background removal (rembg) and 1:1 aspect ratio standardization
+  const processedImages = await processProductImages(fileInputs, {
+    targetDim: 1200,
+    paddingRatio: 0.82,
+    shadowOpacity: 0.22,
   });
+
+  for (let i = 0; i < processedImages.length; i++) {
+    const item = processedImages[i];
+    let finalAlt: string;
+
+    if (userAlt) {
+      finalAlt = processedImages.length > 1 ? `${userAlt} (${i + 1})` : userAlt;
+    } else {
+      const cleanFileName = item.originalName.replace(/\.[^/.]+$/, '').trim();
+      const baseName = productName || cleanFileName || 'Ảnh sản phẩm';
+      finalAlt = processedImages.length > 1 ? `${baseName} - Góc ${i + 1}` : `${baseName} - Ảnh chi tiết`;
+    }
+
+    await uploadCatalogMedia({
+      productId,
+      fileName: `upload-${crypto.randomUUID()}.${item.extension}`,
+      contentType: item.contentType,
+      content: item.content,
+      alt: finalAlt,
+      width: item.width,
+      height: item.height,
+    });
+  }
 
   revalidateTag('catalog', 'max');
   revalidatePath('/admin/products');

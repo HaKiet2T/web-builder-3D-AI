@@ -477,6 +477,8 @@ export async function uploadCatalogMedia(input: {
   contentType: string;
   content: ArrayBuffer;
   alt: string;
+  width?: number | null;
+  height?: number | null;
 }): Promise<void> {
   const supabase = await requireAdminSupabaseClient();
   const extension = input.fileName.split('.').pop()?.toLowerCase();
@@ -506,8 +508,8 @@ export async function uploadCatalogMedia(input: {
     url: publicUrl.publicUrl,
     storage_path: path,
     alt: input.alt,
-    width: null,
-    height: null,
+    width: input.width ?? null,
+    height: input.height ?? null,
     position: (existing?.[0]?.position ?? 0) + 1,
   });
 
