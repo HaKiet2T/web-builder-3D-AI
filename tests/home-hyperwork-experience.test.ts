@@ -58,4 +58,59 @@ describe('HyperWork inspired home page and destination routes', () => {
     assert.match(topProductsPage, /export default function TopProductsPage/);
     assert.match(spaceDetailPage, /export function generateStaticParams/);
   });
+
+  it('enforces architectural sequence: Hero Banner -> 3 Setup Images -> Category Showcase -> Featured Products', () => {
+    const heroIdx = homePage.indexOf('<HomeHeroBanner');
+    const setupIdx = homePage.indexOf('<SetupCarousel');
+    const categoryIdx = homePage.indexOf('<CategoryShowcase');
+    const featuredIdx = homePage.indexOf('<FeaturedProductsSection');
+
+    assert.ok(heroIdx > -1, 'HomeHeroBanner must be present');
+    assert.ok(setupIdx > heroIdx, 'SetupCarousel (3 images) must immediately follow Hero Banner');
+    assert.ok(categoryIdx > setupIdx, 'CategoryShowcase must come after SetupCarousel');
+    assert.ok(featuredIdx > categoryIdx, 'FeaturedProductsSection must follow CategoryShowcase');
+  });
+
+  it('setup carousel contains bottom navigation controls and indicator dots', () => {
+    assert.match(setupCarousel, /setup-carousel-bottom-nav/);
+    assert.match(setupCarousel, /carousel-dots-group/);
+    assert.match(setupCarousel, /carousel-dot-indicator/);
+  });
+
+  it('implements Direction 3: Full-Bleed Edge-to-Edge unboxed architecture', () => {
+    const globalsCss = readFileSync('src/app/globals.css', 'utf8');
+
+    assert.match(homePage, /home-main-fullbleed/);
+    assert.match(globalsCss, /\.home-page \.home-main\s*\{[^}]*max-width:\s*100%/);
+    assert.match(globalsCss, /\.hero-primary-card\s*\{[^}]*border-radius:\s*0/);
+    assert.match(globalsCss, /\.hero-secondary-card\s*\{[^}]*border-radius:\s*0/);
+    assert.match(globalsCss, /\.setup-card\s*\{[^}]*border-radius:\s*0/);
+  });
+
+  it('ensures balanced vertical separation between hero banners and setup carousel', () => {
+    const globalsCss = readFileSync('src/app/globals.css', 'utf8');
+    assert.match(
+      globalsCss,
+      /\.setup-carousel-section\s*\{[^}]*margin-top:\s*clamp\(8px,\s*1vw,\s*16px\)/,
+      'Setup carousel top margin must match hero section gap clamp(8px, 1vw, 16px) for uniform spacing'
+    );
+  });
+
+  it('configures 7s autoplay slideshow, center full-frame and frosted glass overlay', () => {
+    const globalsCss = readFileSync('src/app/globals.css', 'utf8');
+
+    // 7s autoplay
+    assert.match(setupCarousel, /AUTOPLAY_INTERVAL\s*=\s*7000/);
+    assert.match(setupCarousel, /setInterval/);
+    assert.match(setupCarousel, /onMouseEnter=\{\(\)\s*=>\s*setIsPaused\(true\)\}/);
+
+    // Frosted glass overlay
+    assert.match(setupCarousel, /setup-card-glass-overlay/);
+    assert.match(globalsCss, /\.setup-card-glass-overlay\s*\{[^}]*backdrop-filter:\s*blur\(8px\)/);
+    assert.match(globalsCss, /\.setup-card-glass-overlay\.is-hidden\s*\{[^}]*opacity:\s*0/);
+
+    // Half-visible side slides formula on desktop
+    assert.match(globalsCss, /\.setup-carousel-item\s*\{[^}]*width:\s*calc\(\(100vw/);
+    assert.match(setupCarousel, /sWidth\s*=\s*\(cWidth\s*-\s*2\s*\*\s*CAROUSEL_GAP\)\s*\/\s*2/);
+  });
 });

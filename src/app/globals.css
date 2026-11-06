@@ -211,6 +211,13 @@ body {
   padding: clamp(40px, 7vh, 96px) clamp(20px, 5.2vw, 84px) clamp(48px, 8vh, 104px);
 }
 
+.home-page .home-main {
+  width: 100%;
+  max-width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
 .home-hero {
   max-width: 100%;
   margin-bottom: clamp(32px, 5vw, 64px);
@@ -2630,37 +2637,45 @@ body {
   flex-direction: column;
   gap: clamp(48px, 8vw, 96px);
   width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: clamp(36px, 5vw, 64px) clamp(16px, 3.2vw, 48px) clamp(48px, 8vh, 104px);
 }
 
 .home-hero-section {
   display: flex;
   flex-direction: column;
-  gap: clamp(16px, 2.5vw, 24px);
+  gap: clamp(8px, 1vw, 16px);
   width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 .hero-primary-wrapper {
   width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 .hero-primary-card {
   position: relative;
   display: flex;
   width: 100%;
-  min-height: clamp(280px, 42vw, 520px);
+  min-height: clamp(520px, 82vh, 880px);
+  aspect-ratio: 21 / 9;
   align-items: flex-end;
-  border-radius: 24px;
+  border-radius: 0;
+  border: none;
   overflow: hidden;
-  border: 1px solid var(--line);
   text-decoration: none;
   color: #ffffff;
-  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1), border-color 280ms ease, box-shadow 280ms ease;
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .hero-primary-card:hover {
-  transform: translateY(-3px);
-  border-color: var(--ink);
-  box-shadow: 0 16px 36px var(--shadow);
+  transform: none;
+  border: none;
+  box-shadow: none;
 }
 
 .hero-image-box {
@@ -2690,8 +2705,8 @@ body {
   background: linear-gradient(
     180deg,
     rgba(0, 0, 0, 0.05) 0%,
-    rgba(0, 0, 0, 0.35) 45%,
-    rgba(0, 0, 0, 0.85) 100%
+    rgba(0, 0, 0, 0.32) 45%,
+    rgba(0, 0, 0, 0.86) 100%
   );
 }
 
@@ -2702,19 +2717,19 @@ body {
   flex-direction: column;
   align-items: flex-start;
   gap: 12px;
-  padding: clamp(24px, 4vw, 48px);
-  max-width: 680px;
+  padding: clamp(32px, 5vw, 80px);
+  max-width: 720px;
 }
 
 .hero-badge {
   display: inline-flex;
   align-items: center;
-  padding: 4px 12px;
+  padding: 5px 14px;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   color: #ffffff;
   font-size: 11px;
   font-weight: 700;
@@ -2724,7 +2739,7 @@ body {
 
 .hero-title {
   margin: 0;
-  font-size: clamp(26px, 4vw, 44px);
+  font-size: clamp(28px, 4.4vw, 48px);
   font-weight: 700;
   line-height: 1.15;
   letter-spacing: -0.04em;
@@ -2736,7 +2751,7 @@ body {
   margin: 0;
   font-size: clamp(14px, 1.6vw, 16px);
   line-height: 1.6;
-  color: rgba(255, 255, 255, 0.88);
+  color: rgba(255, 255, 255, 0.9);
   max-width: 52ch;
 }
 
@@ -2744,9 +2759,9 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin-top: 4px;
-  padding: 10px 20px;
-  border-radius: 12px;
+  margin-top: 6px;
+  padding: 12px 24px;
+  border-radius: 9999px;
   background: #ffffff;
   color: #111214;
   font-size: 14px;
@@ -2768,12 +2783,14 @@ body {
   transform: translateX(4px);
 }
 
-/* Dual banners Hero 2 & 3 */
+/* Dual banners Hero 2 & 3 - Tràn viền cạnh nhau */
 .hero-secondary-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(16px, 2.5vw, 24px);
+  gap: clamp(8px, 1vw, 16px);
   width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 @media (max-width: 768px) {
@@ -2786,20 +2803,21 @@ body {
   position: relative;
   display: flex;
   width: 100%;
-  min-height: clamp(220px, 28vw, 340px);
+  min-height: clamp(320px, 38vw, 520px);
+  aspect-ratio: 16 / 9;
   align-items: flex-end;
-  border-radius: 20px;
+  border-radius: 0;
+  border: none;
   overflow: hidden;
-  border: 1px solid var(--line);
   text-decoration: none;
   color: #ffffff;
-  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1), border-color 280ms ease, box-shadow 280ms ease;
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .hero-secondary-card:hover {
-  transform: translateY(-3px);
-  border-color: var(--ink);
-  box-shadow: 0 14px 30px var(--shadow);
+  transform: none;
+  border: none;
+  box-shadow: none;
 }
 
 .hero-secondary-content {
@@ -2809,13 +2827,13 @@ body {
   flex-direction: column;
   align-items: flex-start;
   gap: 8px;
-  padding: clamp(20px, 3vw, 32px);
-  max-width: 520px;
+  padding: clamp(24px, 4vw, 48px);
+  max-width: 560px;
 }
 
 .hero-secondary-title {
   margin: 0;
-  font-size: clamp(20px, 2.6vw, 28px);
+  font-size: clamp(22px, 2.8vw, 32px);
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: -0.03em;
@@ -2825,8 +2843,8 @@ body {
 .hero-secondary-desc {
   margin: 0;
   font-size: 13px;
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.84);
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.88);
 }
 
 .hero-secondary-cta {
@@ -2834,8 +2852,8 @@ body {
   align-items: center;
   gap: 6px;
   margin-top: 6px;
-  padding: 8px 16px;
-  border-radius: 10px;
+  padding: 10px 20px;
+  border-radius: 9999px;
   background: rgba(255, 255, 255, 0.95);
   color: #111214;
   font-size: 13px;
@@ -3006,9 +3024,14 @@ body {
   transform: translateX(3px);
 }
 
-/* Setup Carousel Horizontal Draggable */
+/* Setup Carousel Horizontal Centered Slideshow - Tràn viền, ảnh giữa trọn khung, 2 ảnh bên 1/2 và phủ glass mờ */
 .setup-carousel-section {
+  position: relative;
   width: 100%;
+  margin-top: clamp(8px, 1vw, 16px);
+  margin-bottom: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
 .setup-carousel-header {
@@ -3020,23 +3043,229 @@ body {
   flex-wrap: wrap;
 }
 
-.setup-carousel-controls {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+.setup-carousel-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  user-select: none;
+  cursor: grab;
+  margin: 0;
+  padding: 0;
 }
 
-.setup-carousel-hint {
-  font-size: 12px;
-  color: var(--muted);
+.setup-carousel-container:active {
+  cursor: grabbing;
 }
 
-.setup-carousel-nav {
+.setup-carousel-track {
   display: flex;
   gap: 8px;
+  width: max-content;
+  will-change: transform;
+  margin: 0;
+  padding: 0;
 }
 
-.carousel-nav-btn {
+.setup-carousel-track.is-dragging {
+  cursor: grabbing;
+}
+
+.setup-carousel-item {
+  flex: 0 0 calc((100vw - 16px) / 2);
+  width: calc((100vw - 16px) / 2);
+  min-width: 0;
+  transition: opacity 300ms ease;
+}
+
+@media (max-width: 1023px) {
+  .setup-carousel-item {
+    flex: 0 0 clamp(300px, 68vw, 580px);
+    width: clamp(300px, 68vw, 580px);
+  }
+}
+
+@media (max-width: 640px) {
+  .setup-carousel-item {
+    flex: 0 0 82vw;
+    width: 82vw;
+  }
+}
+
+.setup-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  border-radius: 0;
+  border: none;
+  background: var(--track);
+  overflow: hidden;
+  text-decoration: none;
+  color: #ffffff;
+}
+
+.setup-card:hover {
+  transform: none;
+  border: none;
+  box-shadow: none;
+}
+
+.setup-card-media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  min-height: clamp(320px, 42vw, 580px);
+  width: 100%;
+  overflow: hidden;
+  background: var(--track);
+  display: flex;
+  align-items: flex-end;
+}
+
+.setup-card-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.setup-carousel-item.is-active .setup-card:hover .setup-card-img {
+  transform: scale(1.03);
+}
+
+.setup-card-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.02) 0%,
+    rgba(0, 0, 0, 0.28) 45%,
+    rgba(0, 0, 0, 0.85) 100%
+  );
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Lớp phủ Frosted Glass mờ cho 2 ảnh bên cạnh chuẩn mẫu paste-1793886264 */
+.setup-card-glass-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  opacity: 1;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: opacity 500ms cubic-bezier(0.22, 1, 0.36, 1), backdrop-filter 500ms ease;
+}
+
+.setup-card-glass-overlay.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+}
+
+[data-theme='dark'] .setup-card-glass-overlay {
+  background: rgba(15, 17, 21, 0.55);
+}
+
+.setup-carousel-item:not(.is-active):hover .setup-card-glass-overlay {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+[data-theme='dark'] .setup-carousel-item:not(.is-active):hover .setup-card-glass-overlay {
+  background: rgba(15, 17, 21, 0.45);
+}
+
+.setup-card-tag {
+  position: absolute;
+  top: clamp(16px, 2.4vw, 28px);
+  left: clamp(16px, 2.4vw, 28px);
+  z-index: 4;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.setup-card-body,
+.setup-card-content {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: clamp(24px, 3.6vw, 48px);
+  gap: 10px;
+  color: #ffffff;
+  width: 100%;
+}
+
+.setup-card-title {
+  margin: 0;
+  font-size: clamp(20px, 2.4vw, 32px);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+}
+
+.setup-card-desc {
+  margin: 0;
+  font-size: clamp(13px, 1.3vw, 15px);
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.9);
+  max-width: 50ch;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.setup-card-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  padding: 10px 22px;
+  border-radius: 9999px;
+  background: #ffffff;
+  color: #111214;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  transition: transform 180ms ease, background-color 180ms ease;
+}
+
+.setup-card:hover .setup-card-cta-btn {
+  transform: translateX(3px);
+  background: #f0f0f2;
+}
+
+/* Điều hướng chấm tròn & mũi tên chuẩn HyperWork ở chân cụm 3 ảnh */
+.setup-carousel-bottom-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: clamp(24px, 3vw, 40px) 0 clamp(16px, 2vw, 24px);
+  width: 100%;
+  margin: 0 auto;
+}
+
+.carousel-bottom-btn {
   display: grid;
   place-items: center;
   width: 40px;
@@ -3045,144 +3274,50 @@ body {
   border: 1px solid var(--line);
   background: var(--page);
   color: var(--ink);
-  font-size: 16px;
+  font-size: 20px;
+  line-height: 1;
   cursor: pointer;
-  transition: border-color 180ms ease, background-color 180ms ease, opacity 180ms ease;
+  transition: all 180ms ease;
+  user-select: none;
 }
 
-.carousel-nav-btn:hover:not(:disabled) {
+.carousel-bottom-btn:hover:not(:disabled) {
   border-color: var(--ink);
   background: var(--raise);
 }
 
-.carousel-nav-btn:disabled {
-  opacity: 0.35;
+.carousel-bottom-btn:disabled {
+  opacity: 0.3;
   cursor: not-allowed;
 }
 
-.setup-carousel-track {
+.carousel-dots-group {
   display: flex;
-  gap: clamp(16px, 2.4vw, 24px);
-  overflow-x: auto;
-  scroll-behavior: smooth;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  cursor: grab;
-  user-select: none;
-  padding: 4px 2px 20px;
-  margin: -4px -2px -20px;
-}
-
-.setup-carousel-track::-webkit-scrollbar {
-  display: none;
-}
-
-.setup-carousel-track.is-dragging {
-  cursor: grabbing;
-  scroll-behavior: auto;
-}
-
-.setup-carousel-item {
-  flex: 0 0 clamp(300px, 34vw, 400px);
-  min-width: 0;
-}
-
-@media (max-width: 640px) {
-  .setup-carousel-item {
-    flex: 0 0 85vw;
-  }
-}
-
-.setup-card {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  border-radius: 20px;
-  border: 1px solid var(--line);
-  background: var(--page);
-  overflow: hidden;
-  text-decoration: none;
-  color: inherit;
-  transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
-}
-
-.setup-card:hover {
-  transform: translateY(-4px);
-  border-color: var(--ink);
-  box-shadow: 0 14px 32px var(--shadow);
-}
-
-.setup-card-media {
-  position: relative;
-  aspect-ratio: 16 / 9;
-  width: 100%;
-  overflow: hidden;
-  background: var(--track);
-}
-
-.setup-card-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.setup-card:hover .setup-card-img {
-  transform: scale(1.04);
-}
-
-.setup-card-tag {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  padding: 4px 10px;
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-}
-
-.setup-card-body {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  padding: 20px;
-  gap: 8px;
-}
-
-.setup-card-title {
-  margin: 0;
-  font-size: 17px;
-  font-weight: 700;
-  line-height: 1.3;
-  letter-spacing: -0.02em;
-}
-
-.setup-card-desc {
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--muted);
-  flex: 1;
-}
-
-.setup-card-link {
-  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--accent);
-  transition: transform 180ms ease;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  background: var(--raise);
+  border: 1px solid var(--line);
 }
 
-.setup-card:hover .setup-card-link {
-  transform: translateX(3px);
+.carousel-dot-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  background: var(--muted);
+  opacity: 0.35;
+  cursor: pointer;
+  transition: all 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.carousel-dot-indicator.is-active {
+  width: 24px;
+  border-radius: 9999px;
+  opacity: 1;
+  background: var(--ink);
 }
 
 /* Brand Features / Commitments */

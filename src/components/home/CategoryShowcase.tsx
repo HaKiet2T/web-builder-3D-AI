@@ -58,7 +58,7 @@ export function CategoryShowcase({ categories, counts }: CategoryShowcaseProps) 
   return (
     <section className="category-showcase-section" aria-labelledby="category-showcase-title">
       <div className="section-header">
-        <span className="section-eyebrow">HỆ SINH THÁI THIẾT BỊ</span>
+        <span className="section-eyebrow">Chúng tôi có gì?</span>
         <h2 id="category-showcase-title" className="section-title">
           Danh Mục Sản Phẩm
         </h2>

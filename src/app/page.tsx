@@ -26,10 +26,12 @@ export default function HomePage() {
 function HomeLoading() {
   return (
     <div className="home-page">
-      <main className="home-main" aria-busy="true">
-        <div className="home-hero">
-          <h1>Thiết bị setup góc làm việc</h1>
-          <p className="cart-loading" role="status">Đang tải trang chủ…</p>
+      <main className="home-main home-main-fullbleed" aria-busy="true">
+        <div className="home-container">
+          <div className="home-hero">
+            <h1>Thiết bị setup góc làm việc</h1>
+            <p className="cart-loading" role="status">Đang tải trang chủ…</p>
+          </div>
         </div>
       </main>
       <SiteFooter />
@@ -46,19 +48,20 @@ async function HomeContent() {
 
   return (
     <div className="home-page">
-      <main className="home-main">
-        <div className="home-container">
-          {/* Hero 1 (-> /mau-setup) & Hero 2, 3 (-> /top-san-pham) */}
-          <HomeHeroBanner />
+      <main className="home-main home-main-fullbleed">
+        {/* 1. Hero 1 (ảnh đầu chiếm gần hết trang -> /mau-setup) & 2. Hero 2, 3 (2 ảnh cạnh nhau -> /top-san-pham) - Tràn viền tuyệt đối */}
+        <HomeHeroBanner />
 
-          {/* Hệ sinh thái danh mục sản phẩm */}
+        {/* 3. Không gian trải nghiệm 3 ảnh cạnh nhau - Tràn viền tuyệt đối kéo lướt */}
+        <SetupCarousel />
+
+        {/* 4. Khối nội dung có căn lề: Danh mục sản phẩm, Sản phẩm nổi bật, Cam kết thương hiệu, Bản tin */}
+        <div className="home-container">
+          {/* Hệ sinh thái danh mục sản phẩm (Chúng tôi có gì? / Danh mục sản phẩm) */}
           <CategoryShowcase categories={categories} counts={counts} />
 
           {/* Top sản phẩm nổi bật bán chạy */}
           <FeaturedProductsSection products={featuredProducts} />
-
-          {/* Không gian trải nghiệm 3 ảnh kéo ngang */}
-          <SetupCarousel />
 
           {/* Cam kết thương hiệu chuẩn HyperWork */}
           <BrandFeatures />
