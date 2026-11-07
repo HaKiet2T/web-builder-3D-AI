@@ -1,8 +1,14 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { revalidatePath } from 'next/cache';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { SignInSchema, SignUpSchema } from '@/lib/account/schema';
+import {
+  claimGuestOrderByOrderNumber,
+  claimGuestOrdersByEmail,
+  retryOrderPayment,
+} from '@/lib/orders/dal';
 
 export interface AuthActionState {
   error?: string;
@@ -29,6 +35,7 @@ export async function signInUser(
   _prevState: AuthActionState,
   formData: FormData,
 ): Promise<AuthActionState> {
+  void _prevState;
   const parsed = SignInSchema.safeParse({
     email: formData.get('email'),
     password: formData.get('password'),
@@ -65,6 +72,7 @@ export async function signUpUser(
   _prevState: AuthActionState,
   formData: FormData,
 ): Promise<AuthActionState> {
+  void _prevState;
   const parsed = SignUpSchema.safeParse({
     email: formData.get('email'),
     password: formData.get('password'),
@@ -110,4 +118,78 @@ export async function signOutUser() {
     await supabase.auth.signOut();
   }
   redirect('/account/login');
+}
+
+export async function claimGuestOrderAction(
+  _prevState: AuthActionState,
+  formData: FormData,
+): Promise<AuthActionState> {
+  void _prevState;
+  const user = await getCurrentUser();
+  if (!user) {
+    return { error: 'Bạn cần đăng nhập để liên kết đơn hàng vào tài khoản.' };
+  }
+
+  const orderNumber = formData.get('orderNumber')?.toString().trim();
+  if (!orderNumber) {
+    return { error: 'Vui lòng nhập mã đơn hàng cần liên kết.' };
+  }
+
+  const result = await claimGuestOrderByOrderNumber(orderNumber, user.id, user.email);
+  if (!result.success) {
+    return { error: result.message };
+  }
+
+  revalidatePath('/account');
+  revalidatePath('/account/orders');
+  return { success: result.message };
+}
+
+export async function claimAllGuestOrdersAction(
+  _prevState: AuthActionState,
+  _formData: FormData,
+): Promise<AuthActionState> {
+  void _prevState;
+  void _formData;
+  const user = await getCurrentUser();
+  if (!user || !user.email) {
+    return { error: 'Bạn cần đăng nhập để thực hiện đồng bộ.' };
+  }
+
+  const result = await claimGuestOrdersByEmail(user.email, user.id);
+  if (!result.success) {
+    return { error: result.message };
+  }
+
+  revalidatePath('/account');
+  revalidatePath('/account/orders');
+  return { success: result.message };
+}
+
+export async function retryOrderPaymentAction(
+  _prevState: AuthActionState,
+  formData: FormData,
+): Promise<AuthActionState> {
+  void _prevState;
+  const user = await getCurrentUser();
+  if (!user) {
+    return { error: 'Bạn cần đăng nhập để thao tác.' };
+  }
+
+  const orderId = formData.get('orderId')?.toString().trim();
+  const paymentMethod = formData.get('paymentMethod')?.toString().trim();
+
+  if (!orderId) {
+    return { error: 'Mã đơn hàng không hợp lệ.' };
+  }
+
+  const result = await retryOrderPayment(orderId, paymentMethod);
+  if (!result.success) {
+    return { error: result.message };
+  }
+
+  revalidatePath('/account');
+  revalidatePath('/account/orders');
+  revalidatePath(`/orders/${orderId}`);
+  return { success: result.message };
 }

@@ -266,6 +266,171 @@ export async function persistCheckoutOrder(order: Order): Promise<boolean> {
   return true;
 }
 
+export async function claimGuestOrderByOrderNumber(
+  orderNumber: string,
+  userId: string,
+  userEmail?: string,
+): Promise<{ success: boolean; message: string; order?: Order }> {
+  const supabase = createServiceSupabaseClient();
+  if (!supabase) {
+    return { success: false, message: 'Dịch vụ cơ sở dữ liệu chưa sẵn sàng.' };
+  }
+
+  const cleanOrderNumber = orderNumber.trim();
+  if (!cleanOrderNumber) {
+    return { success: false, message: 'Vui lòng cung cấp mã đơn hàng hợp lệ.' };
+  }
+
+  const { data: orderRow, error: fetchError } = await supabase
+    .from('orders')
+    .select('*')
+    .or(`order_number.eq.${cleanOrderNumber},id.eq.${cleanOrderNumber}`)
+    .maybeSingle();
+
+  if (fetchError || !orderRow) {
+    return { success: false, message: 'Không tìm thấy đơn hàng với mã được cung cấp.' };
+  }
+
+  if (orderRow.user_id) {
+    if (orderRow.user_id === userId) {
+      return { success: true, message: 'Đơn hàng này đã thuộc về tài khoản của bạn.', order: mapOrder(orderRow) };
+    }
+    return { success: false, message: 'Đơn hàng này đã được liên kết với một tài khoản khác.' };
+  }
+
+  // Check email match if userEmail is provided
+  const customer = typeof orderRow.customer === 'object' && orderRow.customer !== null
+    ? (orderRow.customer as Record<string, unknown>)
+    : {};
+  const orderEmail = typeof customer.email === 'string' ? customer.email.trim().toLowerCase() : '';
+  const normalizedUserEmail = userEmail ? userEmail.trim().toLowerCase() : '';
+
+  if (normalizedUserEmail && orderEmail && normalizedUserEmail !== orderEmail) {
+    return {
+      success: false,
+      message: `Email trên đơn hàng (${orderEmail}) không trùng khớp với email tài khoản (${normalizedUserEmail}).`,
+    };
+  }
+
+  const { data: updatedRow, error: updateError } = await supabase
+    .from('orders')
+    .update({ user_id: userId, updated_at: new Date().toISOString() })
+    .eq('id', orderRow.id)
+    .select('*')
+    .maybeSingle();
+
+  if (updateError || !updatedRow) {
+    return { success: false, message: 'Không thể cập nhật liên kết đơn hàng. Vui lòng thử lại sau.' };
+  }
+
+  return {
+    success: true,
+    message: `Đã liên kết thành công đơn hàng #${orderRow.order_number} vào tài khoản!`,
+    order: mapOrder(updatedRow),
+  };
+}
+
+export async function claimGuestOrdersByEmail(
+  email: string,
+  userId: string,
+): Promise<{ success: boolean; message: string; claimedCount: number }> {
+  const supabase = createServiceSupabaseClient();
+  if (!supabase) {
+    return { success: false, message: 'Dịch vụ cơ sở dữ liệu chưa sẵn sàng.', claimedCount: 0 };
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+  if (!normalizedEmail) {
+    return { success: false, message: 'Email không hợp lệ.', claimedCount: 0 };
+  }
+
+  // Find all orders without user_id
+  const { data: guestOrders, error: fetchError } = await supabase
+    .from('orders')
+    .select('*')
+    .is('user_id', null);
+
+  if (fetchError || !guestOrders) {
+    return { success: false, message: 'Không thể kiểm tra đơn hàng vãng lai.', claimedCount: 0 };
+  }
+
+  const matchingOrders = guestOrders.filter((row) => {
+    const customer = typeof row.customer === 'object' && row.customer !== null
+      ? (row.customer as Record<string, unknown>)
+      : {};
+    const orderEmail = typeof customer.email === 'string' ? customer.email.trim().toLowerCase() : '';
+    return orderEmail === normalizedEmail;
+  });
+
+  if (matchingOrders.length === 0) {
+    return {
+      success: true,
+      message: 'Không tìm thấy đơn hàng vãng lai nào khớp với email của bạn.',
+      claimedCount: 0,
+    };
+  }
+
+  const orderIds = matchingOrders.map((o) => o.id);
+  const { error: updateError } = await supabase
+    .from('orders')
+    .update({ user_id: userId, updated_at: new Date().toISOString() })
+    .in('id', orderIds);
+
+  if (updateError) {
+    return { success: false, message: 'Không thể cập nhật liên kết đơn hàng.', claimedCount: 0 };
+  }
+
+  return {
+    success: true,
+    message: `Đã liên kết thành công ${matchingOrders.length} đơn hàng vào tài khoản của bạn!`,
+    claimedCount: matchingOrders.length,
+  };
+}
+
+export async function retryOrderPayment(
+  orderId: string,
+  newPaymentMethod?: string,
+): Promise<{ success: boolean; message: string; paymentUrl?: string }> {
+  const supabase = createServiceSupabaseClient();
+  if (!supabase) {
+    return { success: false, message: 'Dịch vụ cơ sở dữ liệu chưa sẵn sàng.' };
+  }
+
+  const { data: orderRow, error: fetchError } = await supabase
+    .from('orders')
+    .select('*')
+    .eq('id', orderId)
+    .maybeSingle();
+
+  if (fetchError || !orderRow) {
+    return { success: false, message: 'Không tìm thấy đơn hàng.' };
+  }
+
+  if (orderRow.payment_status === 'paid' || orderRow.status === 'paid') {
+    return { success: false, message: 'Đơn hàng này đã được thanh toán hoàn tất.' };
+  }
+
+  if (orderRow.status === 'cancelled') {
+    return { success: false, message: 'Đơn hàng này đã bị hủy, không thể thanh toán lại.' };
+  }
+
+  const updateData: Database['public']['Tables']['orders']['Update'] = {
+    updated_at: new Date().toISOString(),
+  };
+
+  if (newPaymentMethod) {
+    updateData.payment_method = newPaymentMethod;
+  }
+
+  await supabase.from('orders').update(updateData).eq('id', orderId);
+
+  return {
+    success: true,
+    message: `Đã cập nhật phương thức thanh toán cho đơn hàng #${orderRow.order_number}.`,
+    paymentUrl: `/orders/${orderRow.id}`,
+  };
+}
+
 export async function applyPaymentWebhookUpdate(input: {
   orderId: string;
   status?: OrderStatus;

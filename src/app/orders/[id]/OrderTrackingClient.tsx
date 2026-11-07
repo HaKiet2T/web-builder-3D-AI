@@ -1,9 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useActionState, useEffect, useState } from 'react';
 import { useRealtimeOrderStatus } from '@/lib/orders/realtime';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
+import { useCartStore } from '@/store/cart';
+import { claimGuestOrderAction, retryOrderPaymentAction } from '@/lib/account/actions';
 import type { Order, OrderStatus } from '@/types/order';
 
 function formatPrice(price: number) {
@@ -35,13 +37,39 @@ export function OrderTrackingClient({ initialOrder }: OrderTrackingClientProps) 
   const { order, realtimeStatus, justPaid } = useRealtimeOrderStatus(initialOrder);
   const triggerCelebration = useWorkspaceStore((state) => state.triggerPaymentSuccess);
   const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [isRepayOpen, setIsRepayOpen] = useState(false);
+  const [repaySuccess, setRepaySuccess] = useState<string | null>(null);
+
+  const addItem = useCartStore((state) => state.addItem);
+  const openCart = useCartStore((state) => state.openCart);
+
+  const [claimState, claimAction, isClaiming] = useActionState(claimGuestOrderAction, {});
+  const [, repayAction, isRepaying] = useActionState(retryOrderPaymentAction, {});
+
   const showCelebrationBanner = justPaid && !bannerDismissed;
+  const isUnpaid = order.status === 'pending' || order.paymentStatus === 'pending' || order.paymentStatus === 'failed';
 
   useEffect(() => {
     if (justPaid) {
       triggerCelebration();
     }
   }, [justPaid, triggerCelebration]);
+
+  const handleReorder = () => {
+    for (const item of order.items) {
+      addItem({
+        productId: item.productId,
+        variantId: item.variantId || item.id,
+        name: item.name,
+        variantName: item.variant,
+        imageUrl: null,
+        unitPrice: item.price,
+        stockStatus: item.stockStatus,
+        quantity: item.quantity,
+      });
+    }
+    openCart();
+  };
 
   const currentStatusMeta = STATUS_LABELS[order.status] ?? STATUS_LABELS.pending;
 
@@ -76,6 +104,112 @@ export function OrderTrackingClient({ initialOrder }: OrderTrackingClientProps) 
           </button>
         </aside>
       ) : null}
+
+      {/* Unpaid Warning Banner & Repay Action */}
+      {isUnpaid && (
+        <aside
+          role="region"
+          aria-label="Nhắc nhở thanh toán"
+          style={{
+            padding: '1rem 1.25rem',
+            borderRadius: '8px',
+            backgroundColor: '#fffbeb',
+            border: '1px solid #f59e0b',
+            color: '#92400e',
+            marginBottom: '1.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '0.75rem',
+          }}
+        >
+          <div>
+            <strong>Đơn hàng đang chờ thanh toán ({formatPrice(order.totalAmount)})</strong>
+            <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.85rem' }}>
+              Vui lòng hoàn tất thanh toán để đơn hàng được đóng gói và giao hàng trong thời gian sớm nhất.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsRepayOpen(true)}
+            style={{
+              padding: '0.5rem 1rem',
+              backgroundColor: '#d97706',
+              color: '#ffffff',
+              borderRadius: '6px',
+              border: 'none',
+              fontWeight: 600,
+              fontSize: '0.85rem',
+              cursor: 'pointer',
+            }}
+          >
+            Thanh toán lại ngay
+          </button>
+        </aside>
+      )}
+
+      {/* Guest Claim Order Banner */}
+      {!order.userId && (
+        <aside
+          role="region"
+          aria-label="Liên kết đơn hàng"
+          style={{
+            padding: '1rem 1.25rem',
+            borderRadius: '8px',
+            backgroundColor: '#f9fafb',
+            border: '1px solid #e5e7eb',
+            marginBottom: '1.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '0.75rem',
+          }}
+        >
+          <div>
+            <strong style={{ fontSize: '0.9rem', color: '#111827' }}>Bạn đã có tài khoản?</strong>
+            <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.8rem', color: '#6b7280' }}>
+              Liên kết đơn hàng này vào tài khoản của bạn để dễ dàng theo dõi và hưởng ưu đãi bảo hành.
+            </p>
+          </div>
+          <form action={claimAction} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <input type="hidden" name="orderNumber" value={order.orderNumber} />
+            <button
+              type="submit"
+              disabled={isClaiming}
+              style={{
+                padding: '0.5rem 1rem',
+                backgroundColor: '#111827',
+                color: '#ffffff',
+                borderRadius: '6px',
+                border: 'none',
+                fontWeight: 600,
+                fontSize: '0.8rem',
+                cursor: 'pointer',
+              }}
+            >
+              {isClaiming ? 'Đang liên kết...' : 'Liên kết vào tài khoản'}
+            </button>
+          </form>
+        </aside>
+      )}
+
+      {(claimState.error || claimState.success) && (
+        <div
+          style={{
+            padding: '0.75rem 1rem',
+            borderRadius: '6px',
+            fontSize: '0.85rem',
+            marginBottom: '1.5rem',
+            backgroundColor: claimState.error ? '#fee2e2' : '#d1fae5',
+            color: claimState.error ? '#991b1b' : '#065f46',
+            border: claimState.error ? '1px solid #f87171' : '1px solid #34d399',
+          }}
+        >
+          {claimState.error || claimState.success}
+        </div>
+      )}
 
       {/* Header */}
       <header
@@ -354,7 +488,7 @@ export function OrderTrackingClient({ initialOrder }: OrderTrackingClientProps) 
       </section>
 
       {/* Action buttons */}
-      <footer style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
+      <footer style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '1rem', marginTop: '2rem' }}>
         <Link
           href="/"
           style={{
@@ -362,14 +496,158 @@ export function OrderTrackingClient({ initialOrder }: OrderTrackingClientProps) 
             padding: '0.75rem 1.75rem',
             backgroundColor: '#111827',
             color: '#ffffff',
-            borderRadius: '6px',
+            borderRadius: '8px',
             textDecoration: 'none',
             fontWeight: 600,
+            fontSize: '0.9rem',
           }}
         >
           Tiếp tục mua sắm
         </Link>
+
+        <button
+          type="button"
+          onClick={handleReorder}
+          style={{
+            display: 'inline-block',
+            padding: '0.75rem 1.5rem',
+            backgroundColor: '#ffffff',
+            color: '#111827',
+            border: '1px solid #d1d5db',
+            borderRadius: '8px',
+            fontWeight: 600,
+            fontSize: '0.9rem',
+            cursor: 'pointer',
+          }}
+        >
+          Mua lại đơn này
+        </button>
+
+        <Link
+          href="/account/orders"
+          style={{
+            display: 'inline-block',
+            padding: '0.75rem 1.5rem',
+            backgroundColor: '#f3f4f6',
+            color: '#374151',
+            borderRadius: '8px',
+            textDecoration: 'none',
+            fontWeight: 600,
+            fontSize: '0.9rem',
+          }}
+        >
+          Đơn hàng của tôi →
+        </Link>
       </footer>
+
+      {/* Repay Modal */}
+      {isRepayOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 100,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1rem',
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '16px',
+              maxWidth: '440px',
+              width: '100%',
+              padding: '1.5rem',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>
+                Thanh toán lại đơn hàng
+              </h3>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsRepayOpen(false);
+                  setRepaySuccess(null);
+                }}
+                style={{ background: 'transparent', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ backgroundColor: '#f9fafb', padding: '1rem', borderRadius: '8px', marginBottom: '1rem' }}>
+              <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>Số tiền thanh toán:</div>
+              <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#111827' }}>
+                {formatPrice(order.totalAmount)}
+              </div>
+            </div>
+
+            {repaySuccess ? (
+              <div style={{ padding: '0.75rem', borderRadius: '6px', backgroundColor: '#d1fae5', color: '#065f46', fontSize: '0.85rem' }}>
+                ✓ {repaySuccess}
+              </div>
+            ) : (
+              <form
+                action={async (formData) => {
+                  await repayAction(formData);
+                  setRepaySuccess('Đã cập nhật phương thức thanh toán!');
+                  setTimeout(() => {
+                    setIsRepayOpen(false);
+                    setRepaySuccess(null);
+                  }, 1500);
+                }}
+              >
+                <input type="hidden" name="orderId" value={order.id} />
+
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem' }}>
+                  Chọn hình thức thanh toán:
+                </label>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '1.25rem' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem', border: '1px solid #e5e7eb', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem' }}>
+                    <input type="radio" name="paymentMethod" value="vnpay" defaultChecked />
+                    <span>VNPAY-QR</span>
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem', border: '1px solid #e5e7eb', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem' }}>
+                    <input type="radio" name="paymentMethod" value="momo" />
+                    <span>Ví MoMo</span>
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem', border: '1px solid #e5e7eb', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem' }}>
+                    <input type="radio" name="paymentMethod" value="cod" />
+                    <span>COD khi nhận</span>
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem', border: '1px solid #e5e7eb', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem' }}>
+                    <input type="radio" name="paymentMethod" value="card" />
+                    <span>Thẻ Visa/Master</span>
+                  </label>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => setIsRepayOpen(false)}
+                    style={{ padding: '0.5rem 1rem', background: 'transparent', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '0.85rem' }}
+                  >
+                    Đóng
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isRepaying}
+                    style={{ padding: '0.5rem 1.25rem', backgroundColor: '#111827', color: '#ffffff', borderRadius: '6px', border: 'none', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}
+                  >
+                    {isRepaying ? 'Đang lưu...' : 'Xác nhận thanh toán'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

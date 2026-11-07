@@ -80,6 +80,25 @@ async function AccountContent() {
         </form>
       </div>
 
+      {/* Account Navigation Tabs */}
+      <div className="flex items-center gap-2 mt-6 border-b border-neutral-200/80 dark:border-neutral-800 pb-2">
+        <Link
+          href="/account"
+          className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-xs"
+        >
+          Tổng quan
+        </Link>
+        <Link
+          href="/account/orders"
+          className="px-3.5 py-1.5 text-xs font-semibold rounded-lg text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-1.5"
+        >
+          <span>Đơn hàng của tôi</span>
+          <span className="text-[10px] font-mono px-1.5 py-0.2 bg-neutral-100 dark:bg-neutral-800 rounded-full text-neutral-500">
+            {orders.length}
+          </span>
+        </Link>
+      </div>
+
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-8">
         <div className="p-5 bg-white dark:bg-[#111214] border border-neutral-200/80 dark:border-neutral-800 rounded-xl">
@@ -126,9 +145,13 @@ async function AccountContent() {
             Đơn hàng gần đây
           </h2>
           {orders.length > 0 && (
-            <span className="text-xs text-neutral-500">
-              Tổng cộng {orders.length} đơn
-            </span>
+            <Link
+              href="/account/orders"
+              className="text-xs font-semibold text-neutral-900 dark:text-white hover:underline flex items-center gap-1"
+            >
+              <span>Xem tất cả ({orders.length})</span>
+              <span>→</span>
+            </Link>
           )}
         </div>
 
