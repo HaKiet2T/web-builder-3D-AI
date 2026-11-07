@@ -14,6 +14,7 @@ const adminActions = readFileSync('src/app/admin/(dashboard)/actions.ts', 'utf8'
 const imageProcessor = readFileSync('src/lib/catalog/image-processing.ts', 'utf8');
 const bgScript = readFileSync('scripts/remove_background_and_standardize.py', 'utf8');
 const globalStyles = readFileSync('src/app/globals.css', 'utf8');
+const nextConfigFile = readFileSync('next.config.ts', 'utf8');
 
 describe('admin navigation and product editing experience', () => {
   it('streams product data below a route-local Suspense boundary', () => {
@@ -141,5 +142,19 @@ describe('admin navigation and product editing experience', () => {
     assert.match(globalStyles, /\.admin-filter-select\s*\{[\s\S]*appearance:\s*none/);
     assert.match(globalStyles, /\.admin-select-chevron\s*\{[\s\S]*position:\s*absolute/);
     assert.match(globalStyles, /\.admin-select-chevron\s*\{[\s\S]*pointer-events:\s*none/);
+  });
+
+  it('configures Server Actions request headroom and validates upload payload boundaries', () => {
+    // The request limit includes multipart overhead beyond the 25 MB image batch.
+    assert.match(nextConfigFile, /experimental:\s*\{[\s\S]*serverActions:\s*\{[\s\S]*bodySizeLimit:\s*['"]30mb['"]/);
+
+    // Backend actions validate both single file and total batch payload boundaries
+    assert.match(adminActions, /file\.size > 15 \* 1024 \* 1024/);
+    assert.match(adminActions, /totalBatchSize > 25 \* 1024 \* 1024/);
+
+    // Client drawer provides proactive size limit safeguards and handles 413/Body exceeded errors gracefully
+    assert.match(drawerComponent, /currentTotalSize \+ addedTotalSize > 25 \* 1024 \* 1024/);
+    assert.match(drawerComponent, /totalBatchSize > 25 \* 1024 \* 1024/);
+    assert.match(drawerComponent, /Body exceeded.*413/);
   });
 });

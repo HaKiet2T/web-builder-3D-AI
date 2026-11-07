@@ -112,6 +112,11 @@ export async function uploadMediaAction(formData: FormData) {
     throw new Error('Vui lòng chọn ít nhất một file ảnh để tải lên.');
   }
 
+  const totalBatchSize = rawFiles.reduce((acc, file) => acc + file.size, 0);
+  if (totalBatchSize > 25 * 1024 * 1024) {
+    throw new Error('Tổng dung lượng các file ảnh tải lên trong một mẻ vượt quá giới hạn 25 MB.');
+  }
+
   const fileInputs: Array<{ name: string; buffer: Buffer }> = [];
 
   for (const file of rawFiles) {

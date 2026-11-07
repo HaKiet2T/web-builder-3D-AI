@@ -90,6 +90,23 @@ function ProductMediaUploader({ product }: ProductMediaUploaderProps) {
       });
     }
 
+    const currentTotalSize = pendingFiles.reduce((acc, item) => acc + item.file.size, 0);
+    const addedTotalSize = newItems.reduce((acc, item) => acc + item.file.size, 0);
+    if (currentTotalSize + addedTotalSize > 25 * 1024 * 1024) {
+      setUploadError(
+        `Tổng dung lượng các file ảnh (${formatFileSize(
+          currentTotalSize + addedTotalSize,
+        )}) vượt quá giới hạn 25MB cho mỗi lần tải. Vui lòng giảm bớt ảnh.`,
+      );
+      for (const item of newItems) {
+        URL.revokeObjectURL(item.previewUrl);
+      }
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
+    }
+
     setPendingFiles((prev) => [...prev, ...newItems]);
 
     if (fileInputRef.current) {
@@ -112,6 +129,14 @@ function ProductMediaUploader({ product }: ProductMediaUploaderProps) {
 
     if (pendingFiles.length === 0) {
       setUploadError('Vui lòng chọn ít nhất một file ảnh để tải lên.');
+      return;
+    }
+
+    const totalBatchSize = pendingFiles.reduce((acc, item) => acc + item.file.size, 0);
+    if (totalBatchSize > 25 * 1024 * 1024) {
+      setUploadError(
+        `Tổng dung lượng các file ảnh (${formatFileSize(totalBatchSize)}) vượt quá giới hạn 25MB cho mỗi lần tải. Vui lòng giảm bớt ảnh.`,
+      );
       return;
     }
 
@@ -140,7 +165,14 @@ function ProductMediaUploader({ product }: ProductMediaUploaderProps) {
         throw err;
       }
       console.error('Lỗi upload media:', err);
-      setUploadError(err instanceof Error ? err.message : 'Có lỗi xảy ra khi xử lý xóa phông AI rembg.');
+      const rawMessage = err instanceof Error ? err.message : '';
+      if (rawMessage.includes('Body exceeded') || rawMessage.includes('413') || rawMessage.includes('exceeded limit')) {
+        setUploadError(
+          'Dung lượng request vượt quá giới hạn 30MB của máy chủ. Mỗi mẻ ảnh được phép tối đa 25MB; vui lòng giảm bớt kích thước hoặc số lượng ảnh.',
+        );
+      } else {
+        setUploadError(rawMessage || 'Có lỗi xảy ra khi xử lý xóa phông AI rembg.');
+      }
       setIsUploading(false);
     }
   }
@@ -195,7 +227,7 @@ function ProductMediaUploader({ product }: ProductMediaUploaderProps) {
                 : 'Nhấp để chọn file ảnh hoặc kéo thả vào đây'}
             </span>
             <span className="admin-dropzone-hint">
-              Hỗ trợ tải nhiều ảnh đồng thời: JPEG, PNG, WebP (Tối đa 15MB/ảnh)
+              Hỗ trợ tải nhiều ảnh đồng thời: JPEG, PNG, WebP (Tối đa 15MB/ảnh, tổng mẻ 25MB)
             </span>
           </label>
         </div>
