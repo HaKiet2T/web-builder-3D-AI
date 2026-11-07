@@ -106,11 +106,18 @@ export function CheckoutForm() {
             </li>
           ))}
         </ul>
-        <p>
-          <Link className="page-inline-link" href="/">
+        <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
+          <Link
+            className="add-to-cart-button"
+            href={`/orders/${order.id}`}
+            style={{ textDecoration: 'none', display: 'inline-block', width: 'auto', padding: '0.75rem 1.25rem' }}
+          >
+            Theo dõi đơn hàng thời gian thực →
+          </Link>
+          <Link className="page-inline-link" href="/" style={{ alignSelf: 'center' }}>
             Tiếp tục chọn thiết bị
           </Link>
-        </p>
+        </div>
       </section>
     );
   }

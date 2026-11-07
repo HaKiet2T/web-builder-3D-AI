@@ -29,6 +29,7 @@ export type StockStatus = 'in-stock' | 'preorder';
 export interface OrderItem {
   id: string;
   productId: string;
+  variantId?: string;
   name: string;
   variant: string;
   price: number;

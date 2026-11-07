@@ -34,6 +34,7 @@ const CustomerSchema: z.ZodType<Order['customer']> = z.object({
 const OrderItemSchema: z.ZodType<OrderItem> = z.object({
   id: z.string(),
   productId: z.string(),
+  variantId: z.string().optional(),
   name: z.string(),
   variant: z.string(),
   price: z.number(),
@@ -140,6 +141,54 @@ export async function updateAdminOrderStatus(
   if (!data) throw new Error('Order was not found or cannot be updated.');
 }
 
+export async function decrementVariantInventory(
+  order: Order,
+  client?: ReturnType<typeof createServiceSupabaseClient>,
+): Promise<void> {
+  const supabase = client ?? createServiceSupabaseClient();
+  if (!supabase) return;
+
+  const inStockItems = order.items.filter((item) => item.stockStatus === 'in-stock');
+  for (const item of inStockItems) {
+    if (!item.variantId) continue;
+
+    const { data: variant, error: fetchError } = await supabase
+      .from('product_variants')
+      .select('id, stock_quantity, stock_status')
+      .eq('id', item.variantId)
+      .maybeSingle();
+
+    if (fetchError || !variant) continue;
+
+    const newQuantity = Math.max(0, variant.stock_quantity - item.quantity);
+    const newStatus = newQuantity === 0 ? 'out-of-stock' : variant.stock_status;
+
+    await supabase
+      .from('product_variants')
+      .update({
+        stock_quantity: newQuantity,
+        stock_status: newStatus,
+      })
+      .eq('id', item.variantId);
+  }
+}
+
+export async function getOrderByIdOrNumber(idOrNumber: string): Promise<Order | null> {
+  const supabase = createServiceSupabaseClient();
+  if (!supabase) return null;
+
+  const { data, error } = await supabase
+    .from('orders')
+    .select('*')
+    .or(`id.eq.${idOrNumber},order_number.eq.${idOrNumber}`)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  return mapOrder(data);
+}
+
+export const getOrderById = getOrderByIdOrNumber;
+
 export async function persistCheckoutOrder(order: Order): Promise<boolean> {
   if (!getSupabaseConfig()) return false;
 
@@ -170,6 +219,14 @@ export async function persistCheckoutOrder(order: Order): Promise<boolean> {
   });
 
   if (error) throw new OrderPersistenceError(`Could not persist checkout order: ${error.message}`);
+
+  // Automatically sync inventory for in-stock items
+  try {
+    await decrementVariantInventory(order, supabase);
+  } catch (inventoryError) {
+    console.error('[Inventory] Could not decrement variant inventory:', inventoryError);
+  }
+
   return true;
 }
 

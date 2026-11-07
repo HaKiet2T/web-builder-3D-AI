@@ -35,6 +35,7 @@ export function buildOrder({
   const orderItems: OrderItem[] = items.map((item, index) => ({
     id: `${orderId}_item_${index + 1}`,
     productId: item.productId,
+    variantId: item.variantId,
     name: item.name,
     variant: item.variantName,
     price: item.unitPrice,
