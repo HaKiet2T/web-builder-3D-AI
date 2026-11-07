@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
     },
   },
   turbopack: {
+    root: process.env.TURBOPACK_ROOT || (process.platform === "win32" ? "C:\\Users\\LEGION" : process.cwd()),
     rules: {
       "*.css": {
         loaders: ["@tailwindcss/turbopack"],
