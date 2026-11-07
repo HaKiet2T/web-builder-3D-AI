@@ -13,6 +13,7 @@ export function mapOrderRowToOrder(row: Record<string, unknown>): Order {
   return {
     id: String(row.id),
     orderNumber: String(row.order_number ?? row.orderNumber ?? ''),
+    userId: (row.user_id ?? row.userId) as string | undefined,
     customer: customer as Order['customer'],
     items: items as Order['items'],
     fulfillments: fulfillments as Order['fulfillments'],

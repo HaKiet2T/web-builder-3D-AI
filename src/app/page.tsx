@@ -5,6 +5,7 @@ import { HomeHeroBanner } from '@/components/home/HomeHeroBanner';
 import { CategoryShowcase } from '@/components/home/CategoryShowcase';
 import { FeaturedProductsSection } from '@/components/home/FeaturedProductsSection';
 import { SetupCarousel } from '@/components/home/SetupCarousel';
+import { KineticMarquee } from '@/components/ui/KineticMarquee';
 import { BrandFeatures } from '@/components/home/BrandFeatures';
 import { NewsletterSection } from '@/components/home/NewsletterSection';
 import { countProductsByCategory, listCategories, listFeaturedProducts } from '@/lib/catalog/dal';
@@ -55,7 +56,10 @@ async function HomeContent() {
         {/* 3. Không gian trải nghiệm 3 ảnh cạnh nhau - Tràn viền tuyệt đối kéo lướt */}
         <SetupCarousel />
 
-        {/* 4. Khối nội dung có căn lề: Danh mục sản phẩm, Sản phẩm nổi bật, Cam kết thương hiệu, Bản tin */}
+        {/* 4. Kinetic Typography Marquee: Ticker thông số công nghệ flagship 2026 */}
+        <KineticMarquee />
+
+        {/* 5. Khối nội dung có căn lề: Danh mục sản phẩm, Sản phẩm nổi bật, Cam kết thương hiệu, Bản tin */}
         <div className="home-container">
           {/* Hệ sinh thái danh mục sản phẩm (Chúng tôi có gì? / Danh mục sản phẩm) */}
           <CategoryShowcase categories={categories} counts={counts} />

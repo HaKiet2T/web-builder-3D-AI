@@ -18,6 +18,7 @@ export function AddToCartForm({ product }: AddToCartFormProps) {
   const [quantity, setQuantity] = useState(1);
   const [announcement, setAnnouncement] = useState('');
   const addItem = useCartStore((state) => state.addItem);
+  const openCart = useCartStore((state) => state.openCart);
   const ids = useId();
 
   const variant = product.variants.find((item) => item.id === variantId) ?? product.variants[0];
@@ -41,6 +42,7 @@ export function AddToCartForm({ product }: AddToCartFormProps) {
       quantity,
     });
     setAnnouncement(`Đã thêm ${quantity} × ${product.name} (${variant.name}) vào giỏ hàng.`);
+    openCart();
   };
 
   return (

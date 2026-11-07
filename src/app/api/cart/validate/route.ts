@@ -26,6 +26,7 @@ export async function POST(request: Request) {
         ok: false,
         error: 'Dữ liệu giỏ hàng không hợp lệ',
         issues: parsed.error.issues.map((issue) => ({
+          code: 'validation_error',
           field: issue.path.join('.'),
           message: issue.message,
         })),

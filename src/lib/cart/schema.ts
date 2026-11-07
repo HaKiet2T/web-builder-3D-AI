@@ -27,13 +27,19 @@ export const CartPayloadSchema = z
 export type CartPayload = z.infer<typeof CartPayloadSchema>;
 
 export const CustomerSchema = z.object({
-  fullName: z.string().min(2, 'Họ tên phải có ít nhất 2 ký tự'),
-  email: z.string().email('Email không hợp lệ'),
-  phone: z.string().regex(/^[0-9+() -]{9,15}$/, 'Số điện thoại không hợp lệ'),
-  address: z.string().min(5, 'Địa chỉ giao hàng quá ngắn'),
-  city: z.string().min(2, 'Tỉnh/Thành phố không hợp lệ'),
-  postalCode: z.string().optional(),
-  notes: z.string().max(500, 'Ghi chú tối đa 500 ký tự').optional(),
+  fullName: z.string().trim().min(2, 'Họ tên phải có ít nhất 2 ký tự'),
+  email: z.string().trim().email('Email không hợp lệ'),
+  phone: z
+    .string()
+    .trim()
+    .refine(
+      (val) => /^[0-9+(). -]{9,18}$/.test(val) && val.replace(/\D/g, '').length >= 9,
+      'Số điện thoại không hợp lệ',
+    ),
+  address: z.string().trim().min(5, 'Địa chỉ giao hàng quá ngắn'),
+  city: z.string().trim().min(2, 'Tỉnh/Thành phố không hợp lệ'),
+  postalCode: z.string().trim().optional(),
+  notes: z.string().trim().max(500, 'Ghi chú tối đa 500 ký tự').optional(),
 });
 
 export type CustomerInput = z.infer<typeof CustomerSchema>;

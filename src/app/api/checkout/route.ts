@@ -3,6 +3,8 @@ import { priceCart } from '@/lib/cart/server';
 import { CheckoutPayloadSchema } from '@/lib/cart/schema';
 import { buildOrder } from '@/lib/orders/build-order';
 import { OrderPersistenceError, persistCheckoutOrder } from '@/lib/orders/dal';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createUserNotification } from '@/lib/account/dal';
 
 export { CheckoutPayloadSchema };
 
@@ -30,6 +32,7 @@ export async function POST(request: Request) {
         ok: false,
         error: 'Dữ liệu đơn hàng không hợp lệ',
         issues: parsed.error.issues.map((issue) => ({
+          code: 'validation_error',
           field: issue.path.join('.'),
           message: issue.message,
         })),
@@ -54,16 +57,43 @@ export async function POST(request: Request) {
     );
   }
 
-  // 2. Build the order from server-priced lines, splitting when needed.
+  // 2. Check if customer is authenticated
+  let userId: string | undefined;
+  try {
+    const supabase = await createServerSupabaseClient();
+    if (supabase) {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) userId = user.id;
+    }
+  } catch {
+    // Guest checkout proceeds smoothly if auth check fails
+  }
+
+  // 3. Build the order from server-priced lines, splitting when needed.
   const order = buildOrder({
     items: priced.items,
     customer,
     paymentMethod,
+    userId,
   });
 
   let persisted: boolean;
   try {
     persisted = await persistCheckoutOrder(order);
+    if (persisted && userId) {
+      // Async trigger order placed notification for user
+      createUserNotification({
+        userId,
+        orderId: order.id,
+        title: 'Đơn hàng mới đã tạo',
+        message: `Đơn hàng #${order.orderNumber} đã được ghi nhận thành công.`,
+        type: 'order',
+      }).catch((notifError) => {
+        console.error('[Notification] Failed to create order notification:', notifError);
+      });
+    }
   } catch (error) {
     if (!(error instanceof OrderPersistenceError)) throw error;
     console.error('[Checkout] Order persistence failed:', error.message);

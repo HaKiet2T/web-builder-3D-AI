@@ -10,6 +10,7 @@ export type Json =
   | Json[];
 
 export type ProductStatus = 'active' | 'draft' | 'archived';
+export type NotificationType = 'order' | 'payment' | 'system' | 'promo';
 
 export interface Database {
   public: {
@@ -186,6 +187,7 @@ export interface Database {
         Row: {
           id: string;
           order_number: string;
+          user_id: string | null;
           customer: Json;
           items: Json;
           fulfillments: Json;
@@ -204,6 +206,7 @@ export interface Database {
         Insert: {
           id?: string;
           order_number: string;
+          user_id?: string | null;
           customer: Json;
           items: Json;
           fulfillments: Json;
@@ -222,6 +225,7 @@ export interface Database {
         Update: {
           id?: string;
           order_number?: string;
+          user_id?: string | null;
           customer?: Json;
           items?: Json;
           fulfillments?: Json;
@@ -236,6 +240,78 @@ export interface Database {
           is_split_shipment?: boolean;
           created_at?: string;
           updated_at?: string;
+        };
+        Relationships: [];
+      };
+      user_addresses: {
+        Row: {
+          id: string;
+          user_id: string;
+          recipient_name: string;
+          phone: string;
+          street_address: string;
+          city: string;
+          postal_code: string | null;
+          is_default: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          recipient_name: string;
+          phone: string;
+          street_address: string;
+          city: string;
+          postal_code?: string | null;
+          is_default?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          recipient_name?: string;
+          phone?: string;
+          street_address?: string;
+          city?: string;
+          postal_code?: string | null;
+          is_default?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      user_notifications: {
+        Row: {
+          id: string;
+          user_id: string;
+          order_id: string | null;
+          title: string;
+          message: string;
+          type: NotificationType;
+          is_read: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          order_id?: string | null;
+          title: string;
+          message: string;
+          type?: NotificationType;
+          is_read?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          order_id?: string | null;
+          title?: string;
+          message?: string;
+          type?: NotificationType;
+          is_read?: boolean;
+          created_at?: string;
         };
         Relationships: [];
       };
@@ -261,3 +337,5 @@ export type ProductRow = Tables<'products'>;
 export type ProductVariantRow = Tables<'product_variants'>;
 export type ProductMediaRow = Tables<'product_media'>;
 export type OrderRow = Tables<'orders'>;
+export type UserAddressRow = Tables<'user_addresses'>;
+export type UserNotificationRow = Tables<'user_notifications'>;

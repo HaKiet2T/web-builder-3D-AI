@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *, .dark, .dark *));
+
 :root {
   color-scheme: light;
   --page: #ffffff;
@@ -5282,3 +5284,201 @@ body {
   font-weight: 500;
   color: var(--ink);
 }
+
+/* ==========================================================================
+   2026 Tactile Brutalism & Kinetic Typography System
+   - Ultra-crisp 1px hairline borders
+   - Hardware-accelerated Film Grain physical material overlay
+   - Velocity-driven GSAP Kinetic Marquee ticker
+   - Micro-tactile interactive cursor reflection & spring press feedback
+   ========================================================================== */
+
+/* 1. Tactile Film Grain Overlay (Simulating brushed CNC aluminum & matte paper) */
+.tactile-grain-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.024;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 160px 160px;
+  mix-blend-mode: multiply;
+  transform: translateZ(0);
+}
+
+html[data-theme='dark'] .tactile-grain-overlay {
+  opacity: 0.038;
+  mix-blend-mode: screen;
+}
+
+/* 2. GSAP Kinetic Typography Marquee Ticker */
+.kinetic-marquee-section {
+  position: relative;
+  width: 100%;
+  margin-top: clamp(16px, 2.5vw, 32px);
+  margin-bottom: clamp(16px, 2.5vw, 32px);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: var(--page);
+  color: var(--ink);
+  overflow: hidden;
+  user-select: none;
+}
+
+.kinetic-marquee-inner {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 52px;
+  padding: 8px 0;
+}
+
+.kinetic-marquee-viewport {
+  position: relative;
+  display: flex;
+  width: 100%;
+  overflow: hidden;
+}
+
+.kinetic-marquee-track {
+  display: flex;
+  flex: none;
+  align-items: center;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+.kinetic-spec-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 18px;
+  cursor: default;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.kinetic-spec-item:hover {
+  transform: translateY(-1px);
+}
+
+.kinetic-spec-category {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+  background: var(--raise);
+  color: var(--soft);
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.kinetic-spec-label {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.kinetic-spec-item.is-highlight .kinetic-spec-label {
+  color: var(--ink);
+}
+
+.kinetic-spec-item.is-highlight .kinetic-spec-category {
+  border-color: var(--ink);
+  color: var(--ink);
+  background: var(--raise);
+}
+
+.kinetic-spec-divider {
+  display: inline-block;
+  margin-left: 8px;
+  color: var(--line);
+  font-size: 9px;
+  opacity: 0.8;
+}
+
+/* 3. Tactile Card & Micro-interactions */
+.tactile-card-wrapper {
+  position: relative;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--page);
+  overflow: hidden;
+  transform-style: preserve-3d;
+}
+
+.tactile-card-wrapper:hover {
+  border-color: var(--ink);
+}
+
+.tactile-cursor-reflection {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 70%);
+  pointer-events: none;
+  z-index: 2;
+  transition: opacity 240ms ease;
+}
+
+html[data-theme='light'] .tactile-cursor-reflection {
+  background: radial-gradient(circle, rgba(0, 0, 0, 0.04) 0%, rgba(0, 0, 0, 0) 70%);
+}
+
+.tactile-card-inner {
+  position: relative;
+  z-index: 1;
+}
+
+/* 4. Tactile Badges */
+.tactile-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  border: 1px solid var(--line);
+  background: var(--raise);
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.tactile-badge:hover {
+  border-color: var(--ink);
+}
+
+.tactile-badge-mono {
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.tactile-badge-accent {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(190, 18, 60, 0.06);
+}
+
+/* 5. Tactile press feedback on interactive elements */
+.button-primary:active,
+.button-secondary:active,
+.product-card:active,
+.hero-cta:active {
+  transform: scale(0.985);
+  transition: transform 60ms ease;
+}
+

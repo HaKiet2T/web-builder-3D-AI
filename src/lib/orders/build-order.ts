@@ -15,6 +15,7 @@ export interface BuildOrderOptions {
   items: CartItem[];
   customer: CustomerInfo;
   paymentMethod: string;
+  userId?: string;
   /** Injected so tests are deterministic; defaults to now. */
   now?: Date;
   /** Injected so tests are deterministic; defaults to a random suffix. */
@@ -25,6 +26,7 @@ export function buildOrder({
   items,
   customer,
   paymentMethod,
+  userId,
   now = new Date(),
   idSuffix = Math.random().toString(36).slice(2, 8),
 }: BuildOrderOptions): Order {
@@ -109,6 +111,7 @@ export function buildOrder({
   return {
     id: orderId,
     orderNumber,
+    userId,
     customer,
     items: orderItems,
     fulfillments,

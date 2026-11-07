@@ -1,11 +1,16 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 
 const rootDir = process.cwd();
-const migrationPath = resolve(rootDir, 'supabase/migrations/20261104180000_storefront.sql');
+const migrationsDir = resolve(rootDir, 'supabase/migrations');
 const typesPath = resolve(rootDir, 'src/lib/supabase/database.types.ts');
 
-const migrationSql = readFileSync(migrationPath, 'utf8');
+const migrationFiles = readdirSync(migrationsDir)
+  .filter((file) => file.endsWith('.sql'))
+  .sort();
+const migrationSql = migrationFiles
+  .map((file) => readFileSync(join(migrationsDir, file), 'utf8'))
+  .join('\n');
 const typesContent = readFileSync(typesPath, 'utf8');
 
 const EXPECTED_TABLES = [
@@ -67,6 +72,7 @@ const EXPECTED_TABLES = [
     columns: [
       'id',
       'order_number',
+      'user_id',
       'customer',
       'items',
       'fulfillments',
@@ -81,6 +87,34 @@ const EXPECTED_TABLES = [
       'is_split_shipment',
       'created_at',
       'updated_at',
+    ],
+  },
+  {
+    name: 'user_addresses',
+    columns: [
+      'id',
+      'user_id',
+      'recipient_name',
+      'phone',
+      'street_address',
+      'city',
+      'postal_code',
+      'is_default',
+      'created_at',
+      'updated_at',
+    ],
+  },
+  {
+    name: 'user_notifications',
+    columns: [
+      'id',
+      'user_id',
+      'order_id',
+      'title',
+      'message',
+      'type',
+      'is_read',
+      'created_at',
     ],
   },
 ];

@@ -66,6 +66,7 @@ export interface CustomerInfo {
 export interface Order {
   id: string;
   orderNumber: string;
+  userId?: string;
   customer: CustomerInfo;
   items: OrderItem[];
   fulfillments: Fulfillment[];
@@ -83,6 +84,7 @@ export interface Order {
 }
 
 export interface CreateOrderInput {
+  userId?: string;
   customer: CustomerInfo;
   items: Omit<OrderItem, 'id' | 'fulfillmentId'>[];
   paymentMethod: string;

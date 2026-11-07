@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { requireAdminSupabaseClient } from '@/lib/admin/auth';
 import { createServiceSupabaseClient } from '@/lib/supabase/service';
 import { getSupabaseConfig } from '@/lib/supabase/config';
-import type { OrderRow } from '@/lib/supabase/database.types';
+import type { Database, OrderRow } from '@/lib/supabase/database.types';
 import type { Fulfillment, Order, OrderItem, OrderStatus } from '@/types/order';
 
 type Json =
@@ -85,6 +85,7 @@ function mapOrder(row: OrderRow): Order {
   return {
     id: row.id,
     orderNumber: row.order_number,
+    userId: row.user_id ?? undefined,
     customer: parseJson(CustomerSchema, row.customer, 'order customer'),
     items: parseJson(z.array(OrderItemSchema), row.items, 'order items'),
     fulfillments: parseJson(z.array(FulfillmentSchema), row.fulfillments, 'order fulfillments'),
@@ -110,6 +111,23 @@ export async function listAdminOrders(): Promise<Order[]> {
     .order('created_at', { ascending: false });
 
   if (error) throw new Error(`Could not load orders: ${error.message}`);
+  return (data ?? []).map(mapOrder);
+}
+
+export async function listUserOrders(userId: string): Promise<Order[]> {
+  const supabase = createServiceSupabaseClient();
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from('orders')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.warn('[listUserOrders] Notice (orders.user_id not yet created in Supabase):', error.message);
+    return [];
+  }
   return (data ?? []).map(mapOrder);
 }
 
@@ -199,7 +217,7 @@ export async function persistCheckoutOrder(order: Order): Promise<boolean> {
     );
   }
 
-  const { error } = await supabase.from('orders').insert({
+  const orderPayload: Database['public']['Tables']['orders']['Insert'] = {
     id: order.id,
     order_number: order.orderNumber,
     customer: toJson(order.customer),
@@ -216,9 +234,27 @@ export async function persistCheckoutOrder(order: Order): Promise<boolean> {
     is_split_shipment: order.isSplitShipment,
     created_at: order.createdAt,
     updated_at: order.updatedAt,
-  });
+  };
 
-  if (error) throw new OrderPersistenceError(`Could not persist checkout order: ${error.message}`);
+  if (order.userId) {
+    orderPayload.user_id = order.userId;
+  }
+
+  const { error } = await supabase.from('orders').insert(orderPayload);
+
+  if (error) {
+    if (error.message.includes('user_id')) {
+      console.warn('[persistCheckoutOrder] Retrying order insertion without user_id column');
+      const fallbackPayload = { ...orderPayload };
+      delete fallbackPayload.user_id;
+      const retry = await supabase.from('orders').insert(fallbackPayload as typeof orderPayload);
+      if (retry.error) {
+        throw new OrderPersistenceError(`Could not persist checkout order: ${retry.error.message}`);
+      }
+    } else {
+      throw new OrderPersistenceError(`Could not persist checkout order: ${error.message}`);
+    }
+  }
 
   // Automatically sync inventory for in-stock items
   try {

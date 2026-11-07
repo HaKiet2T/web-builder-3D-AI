@@ -28,8 +28,13 @@ export interface CartLineInput {
 
 interface CartState {
   items: CartItem[];
+  /** Whether the slide-out cart popup drawer is open */
+  isOpen: boolean;
   /** Set while a line was added, so the header/announcement can react. */
   lastAddedVariantId: string | null;
+  openCart: () => void;
+  closeCart: () => void;
+  toggleCart: () => void;
   addItem: (line: CartLineInput) => void;
   removeItem: (variantId: string) => void;
   setQuantity: (variantId: string, quantity: number) => void;
@@ -47,7 +52,12 @@ export const useCartStore = create<CartState>()(
   persist(
     (set) => ({
       items: [],
+      isOpen: false,
       lastAddedVariantId: null,
+
+      openCart: () => set({ isOpen: true }),
+      closeCart: () => set({ isOpen: false }),
+      toggleCart: () => set((state) => ({ isOpen: !state.isOpen })),
 
       addItem: (line) =>
         set((state) => {
@@ -124,7 +134,7 @@ export function cartSubtotal(items: CartItem[]) {
  * Whether the persisted cart has been read from storage yet.
  *
  * Persisted state is only available in the browser, so components that render
- * cart contents must render a neutral shell until this flips — otherwise the
+ * cart contents must render a neutral shell until this flips - otherwise the
  * server HTML ("empty") and the first client render (stored items) disagree and
  * React reports a hydration mismatch. Reading it through `useSyncExternalStore`
  * avoids the `setState`-in-effect pattern.

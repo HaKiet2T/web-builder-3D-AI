@@ -142,9 +142,12 @@ export function CartView() {
 
       {issues.length > 0 ? (
         <ul className="cart-issues" role="alert">
-          {issues.map((issue) => (
-            <li key={`${issue.code}-${issue.variantId}`}>{issue.message}</li>
-          ))}
+          {issues.map((issue, index) => {
+            const key = issue.variantId && issue.code
+              ? `${issue.code}-${issue.variantId}-${index}`
+              : `cart-issue-${index}-${issue.message || 'error'}`;
+            return <li key={key}>{issue.message}</li>;
+          })}
         </ul>
       ) : null}
 
