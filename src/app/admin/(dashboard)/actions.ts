@@ -10,37 +10,12 @@ import {
   uploadCatalogMedia,
 } from '@/lib/catalog/dal';
 import { processProductImages } from '@/lib/catalog/image-processing';
+import { ProductInputSchema as ProductSchema } from '@/lib/catalog/schema';
 import { updateAdminOrderStatus } from '@/lib/orders/dal';
 
 export interface AdminFormState {
   error?: string;
 }
-
-const VariantSchema = z.object({
-  id: z.string().optional(),
-  slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
-  name: z.string().min(1),
-  sku: z.string().min(1),
-  price: z.number().int().nonnegative(),
-  compareAtPrice: z.number().int().nonnegative().nullable(),
-  stockStatus: z.enum(['in-stock', 'preorder', 'out-of-stock']),
-  stockQuantity: z.number().int().nonnegative(),
-  options: z.record(z.string(), z.string()),
-});
-
-const ProductSchema = z.object({
-  id: z.string().optional(),
-  slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug chỉ gồm chữ thường, số và dấu gạch ngang.'),
-  name: z.string().trim().min(2),
-  categoryId: z.enum(['monitor', 'speaker', 'mouse', 'keyboard', 'monitor-led']),
-  summary: z.string().trim().min(1),
-  description: z.string().trim().min(1),
-  highlights: z.array(z.string().trim().min(1)).min(1),
-  brand: z.string().trim().min(1),
-  sourceUrl: z.string().url().nullable(),
-  status: z.enum(['active', 'draft', 'archived']),
-  variants: z.array(VariantSchema).min(1),
-});
 
 export async function saveProductAction(
   _previousState: AdminFormState,

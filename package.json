@@ -8,6 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
+    "types:supabase": "node scripts/sync-supabase-types.mjs",
+    "types:check": "node scripts/sync-supabase-types.mjs --check",
     "test": "node --conditions=react-server --import ./tests/register-hooks.mjs --test tests/*.test.ts",
     "seed:supabase": "node --import ./tests/register-hooks.mjs ./scripts/seed-supabase.mjs",
     "test:e2e": "node scripts/verify-e2e.mjs",
