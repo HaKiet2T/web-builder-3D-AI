@@ -29,6 +29,7 @@ export type StockStatus = 'in-stock' | 'preorder';
 export interface OrderItem {
   id: string;
   productId: string;
+  variantId?: string;
   name: string;
   variant: string;
   price: number;
@@ -65,6 +66,7 @@ export interface CustomerInfo {
 export interface Order {
   id: string;
   orderNumber: string;
+  userId?: string;
   customer: CustomerInfo;
   items: OrderItem[];
   fulfillments: Fulfillment[];
@@ -82,6 +84,7 @@ export interface Order {
 }
 
 export interface CreateOrderInput {
+  userId?: string;
   customer: CustomerInfo;
   items: Omit<OrderItem, 'id' | 'fulfillmentId'>[];
   paymentMethod: string;

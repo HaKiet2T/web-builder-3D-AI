@@ -1,52 +1,81 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { CATEGORIES } from '@/data/categories';
-import { monitors } from '@/data/monitors';
+import { Suspense } from 'react';
+import { SiteFooter } from '@/components/layout/SiteFooter';
+import { HomeHeroBanner } from '@/components/home/HomeHeroBanner';
+import { CategoryShowcase } from '@/components/home/CategoryShowcase';
+import { FeaturedProductsSection } from '@/components/home/FeaturedProductsSection';
+import { SetupCarousel } from '@/components/home/SetupCarousel';
+import { KineticMarquee } from '@/components/ui/KineticMarquee';
+import { BrandFeatures } from '@/components/home/BrandFeatures';
+import { NewsletterSection } from '@/components/home/NewsletterSection';
+import { countProductsByCategory, listCategories, listFeaturedProducts } from '@/lib/catalog/dal';
+import { SITE } from '@/lib/site';
 
 export const metadata: Metadata = {
-  title: 'Thiết bị góc máy',
-  description: 'Chọn nhóm thiết bị bạn cần: màn hình, loa, chuột, bàn phím và đèn màn hình.',
+  title: `${SITE.name} | ${SITE.tagline}`,
+  description: SITE.description,
 };
-
-function categoryMeta(categoryId: string) {
-  if (categoryId === 'monitor') return monitors.length + ' mẫu';
-  return 'Đang cập nhật';
-}
 
 export default function HomePage() {
   return (
-    <div className="home-page">
-      <main className="home-main">
-        <section className="home-hero" aria-labelledby="home-title">
-          <h1 id="home-title">Chọn thiết bị</h1>
-          <p className="home-intro">
-            Năm nhóm thiết bị cho một góc máy. Bộ sưu tập màn hình đã sẵn sàng, bốn nhóm còn lại
-            đang được hoàn thiện.
-          </p>
-        </section>
+    <Suspense fallback={<HomeLoading />}>
+      <HomeContent />
+    </Suspense>
+  );
+}
 
-        <ul className="home-index">
-          {CATEGORIES.map((category) => (
-            <li key={category.id}>
-              <Link className="home-row" href={category.href}>
-                <span className="home-row-name">{category.label}</span>
-                <span className="home-row-description">{category.description}</span>
-                <span className="home-row-tail">
-                  <span className="home-row-meta">{categoryMeta(category.id)}</span>
-                  <span className="home-row-arrow" aria-hidden="true">
-                    ↗
-                  </span>
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+function HomeLoading() {
+  return (
+    <div className="home-page">
+      <main className="home-main home-main-fullbleed" aria-busy="true">
+        <div className="home-container">
+          <div className="home-hero">
+            <h1>Thiết bị setup góc làm việc</h1>
+            <p className="cart-loading" role="status">Đang tải trang chủ…</p>
+          </div>
+        </div>
+      </main>
+      <SiteFooter />
+    </div>
+  );
+}
+
+async function HomeContent() {
+  const [counts, categories, featuredProducts] = await Promise.all([
+    countProductsByCategory(),
+    listCategories(),
+    listFeaturedProducts(6),
+  ]);
+
+  return (
+    <div className="home-page">
+      <main className="home-main home-main-fullbleed">
+        {/* 1. Hero 1 (ảnh đầu chiếm gần hết trang -> /mau-setup) & 2. Hero 2, 3 (2 ảnh cạnh nhau -> /top-san-pham) - Tràn viền tuyệt đối */}
+        <HomeHeroBanner />
+
+        {/* 3. Không gian trải nghiệm 3 ảnh cạnh nhau - Tràn viền tuyệt đối kéo lướt */}
+        <SetupCarousel />
+
+        {/* 4. Kinetic Typography Marquee: Ticker thông số công nghệ flagship 2026 */}
+        <KineticMarquee />
+
+        {/* 5. Khối nội dung có căn lề: Danh mục sản phẩm, Sản phẩm nổi bật, Cam kết thương hiệu, Bản tin */}
+        <div className="home-container">
+          {/* Hệ sinh thái danh mục sản phẩm (Chúng tôi có gì? / Danh mục sản phẩm) */}
+          <CategoryShowcase categories={categories} counts={counts} />
+
+          {/* Top sản phẩm nổi bật bán chạy */}
+          <FeaturedProductsSection products={featuredProducts} />
+
+          {/* Cam kết thương hiệu chuẩn HyperWork */}
+          <BrandFeatures />
+
+          {/* Bản tin & tư vấn góc làm việc */}
+          <NewsletterSection />
+        </div>
       </main>
 
-      <footer className="home-footer">
-        <span>Forma</span>
-        <span>Thiết bị góc máy</span>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

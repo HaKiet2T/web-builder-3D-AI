@@ -28,6 +28,11 @@ function subscribe(listener: () => void) {
     if (event.key !== THEME_STORAGE_KEY) return;
     const next = event.newValue === 'dark' ? 'dark' : 'light';
     document.documentElement.dataset.theme = next;
+    if (next === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
     listeners.forEach((notify) => notify());
   };
 
@@ -40,6 +45,11 @@ function subscribe(listener: () => void) {
 
 function applyTheme(theme: Theme) {
   document.documentElement.dataset.theme = theme;
+  if (theme === 'dark') {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
   try {
     window.localStorage.setItem(THEME_STORAGE_KEY, theme);
   } catch {
