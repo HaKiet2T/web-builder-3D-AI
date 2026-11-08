@@ -36,6 +36,7 @@ alter table public.user_addresses enable row level security;
 grant select, insert, update, delete on public.user_addresses to authenticated;
 grant all on public.user_addresses to service_role;
 
+drop policy if exists "Users manage own addresses" on public.user_addresses;
 create policy "Users manage own addresses"
   on public.user_addresses for all
   using (auth.uid() = user_id)
@@ -62,10 +63,12 @@ alter table public.user_notifications enable row level security;
 grant select, update on public.user_notifications to authenticated;
 grant all on public.user_notifications to service_role;
 
+drop policy if exists "Users read own notifications" on public.user_notifications;
 create policy "Users read own notifications"
   on public.user_notifications for select
   using (auth.uid() = user_id);
 
+drop policy if exists "Users update own notifications" on public.user_notifications;
 create policy "Users update own notifications"
   on public.user_notifications for update
   using (auth.uid() = user_id)
