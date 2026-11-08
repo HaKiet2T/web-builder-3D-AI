@@ -103,15 +103,19 @@ grant select, update on public.orders to authenticated;
 grant all on public.categories, public.products, public.product_variants, public.product_media, public.orders
   to service_role;
 
+drop policy if exists "Categories are readable by everyone" on public.categories;
 create policy "Categories are readable by everyone"
   on public.categories for select using (true);
 
+drop policy if exists "Active products are readable by everyone" on public.products;
 create policy "Active products are readable by everyone"
   on public.products for select using (status = 'active' or public.is_store_admin());
+drop policy if exists "Admins manage products" on public.products;
 create policy "Admins manage products"
   on public.products for all using (public.is_store_admin())
   with check (public.is_store_admin());
 
+drop policy if exists "Variants of active products are readable" on public.product_variants;
 create policy "Variants of active products are readable"
   on public.product_variants for select using (
     public.is_store_admin() or exists (
@@ -119,10 +123,12 @@ create policy "Variants of active products are readable"
       where products.id = product_variants.product_id and products.status = 'active'
     )
   );
+drop policy if exists "Admins manage product variants" on public.product_variants;
 create policy "Admins manage product variants"
   on public.product_variants for all using (public.is_store_admin())
   with check (public.is_store_admin());
 
+drop policy if exists "Media of active products is readable" on public.product_media;
 create policy "Media of active products is readable"
   on public.product_media for select using (
     public.is_store_admin() or exists (
@@ -130,12 +136,15 @@ create policy "Media of active products is readable"
       where products.id = product_media.product_id and products.status = 'active'
     )
   );
+drop policy if exists "Admins manage product media" on public.product_media;
 create policy "Admins manage product media"
   on public.product_media for all using (public.is_store_admin())
   with check (public.is_store_admin());
 
+drop policy if exists "Admins read orders" on public.orders;
 create policy "Admins read orders"
   on public.orders for select using (public.is_store_admin());
+drop policy if exists "Admins update orders" on public.orders;
 create policy "Admins update orders"
   on public.orders for update using (public.is_store_admin())
   with check (public.is_store_admin());
@@ -153,16 +162,20 @@ set public = excluded.public,
     file_size_limit = excluded.file_size_limit,
     allowed_mime_types = excluded.allowed_mime_types;
 
+drop policy if exists "Admins can list product media" on storage.objects;
 create policy "Admins can list product media"
   on storage.objects for select
   using (bucket_id = 'product-media' and public.is_store_admin());
+drop policy if exists "Admins upload product media" on storage.objects;
 create policy "Admins upload product media"
   on storage.objects for insert
   with check (bucket_id = 'product-media' and public.is_store_admin());
+drop policy if exists "Admins update product media" on storage.objects;
 create policy "Admins update product media"
   on storage.objects for update
   using (bucket_id = 'product-media' and public.is_store_admin())
   with check (bucket_id = 'product-media' and public.is_store_admin());
+drop policy if exists "Admins delete product media" on storage.objects;
 create policy "Admins delete product media"
   on storage.objects for delete
   using (bucket_id = 'product-media' and public.is_store_admin());
