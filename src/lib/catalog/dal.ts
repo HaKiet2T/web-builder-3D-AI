@@ -137,34 +137,60 @@ async function loadProducts(
     ? await requireAdminSupabaseClient()
     : createPublicSupabaseClient();
 
+  const getSample = (): AdminProduct[] => {
+    const sample = PRODUCT_RECORDS.map((product) => ({ ...product, status: 'active' as const }));
+    return categoryId ? sample.filter((product) => product.categoryId === categoryId) : sample;
+  };
+
   if (!supabase) {
-    return PRODUCT_RECORDS.map((product) => ({ ...product, status: 'active' }));
+    return getSample();
   }
 
-  let productQuery = supabase.from('products').select('*').order('created_at', { ascending: false });
-  if (!includeInactive) productQuery = productQuery.eq('status', 'active');
-  if (categoryId) productQuery = productQuery.eq('category_id', categoryId);
+  try {
+    let productQuery = supabase.from('products').select('*').order('created_at', { ascending: false });
+    if (!includeInactive) productQuery = productQuery.eq('status', 'active');
+    if (categoryId) productQuery = productQuery.eq('category_id', categoryId);
 
-  const { data: productRows, error: productError } = await productQuery;
+    const { data: productRows, error: productError } = await productQuery;
 
-  if (productError) throw new Error(`Could not load products: ${productError.message}`);
-  if (!productRows?.length) return [];
+    if (productError) {
+      if (includeInactive) throw new Error(`Could not load products: ${productError.message}`);
+      console.warn('[loadProducts] Notice (falling back to sample products):', productError.message);
+      return getSample();
+    }
+    if (!productRows?.length) {
+      if (includeInactive) return [];
+      return getSample();
+    }
 
-  const productIds = productRows.map((product) => product.id);
-  const [
-    { data: variantRows, error: variantError },
-    { data: mediaRows, error: mediaError },
-  ] = await Promise.all([
-    supabase.from('product_variants').select('*').in('product_id', productIds),
-    supabase.from('product_media').select('*').in('product_id', productIds),
-  ]);
+    const productIds = productRows.map((product) => product.id);
+    const [
+      { data: variantRows, error: variantError },
+      { data: mediaRows, error: mediaError },
+    ] = await Promise.all([
+      supabase.from('product_variants').select('*').in('product_id', productIds),
+      supabase.from('product_media').select('*').in('product_id', productIds),
+    ]);
 
-  if (variantError) throw new Error(`Could not load product variants: ${variantError.message}`);
-  if (mediaError) throw new Error(`Could not load product media: ${mediaError.message}`);
+    if (variantError) {
+      if (includeInactive) throw new Error(`Could not load product variants: ${variantError.message}`);
+      console.warn('[loadProducts] Notice (falling back to sample variants):', variantError.message);
+      return getSample();
+    }
+    if (mediaError) {
+      if (includeInactive) throw new Error(`Could not load product media: ${mediaError.message}`);
+      console.warn('[loadProducts] Notice (falling back to sample media):', mediaError.message);
+      return getSample();
+    }
 
-  return (productRows ?? []).map((product) =>
-    mapProduct(product, variantRows ?? [], mediaRows ?? []),
-  );
+    return (productRows ?? []).map((product) =>
+      mapProduct(product, variantRows ?? [], mediaRows ?? []),
+    );
+  } catch (err) {
+    if (includeInactive) throw err;
+    console.warn('[loadProducts] Network error (falling back to sample products):', (err as Error)?.message);
+    return getSample();
+  }
 }
 
 export async function listCategories(): Promise<Category[]> {
@@ -173,15 +199,27 @@ export async function listCategories(): Promise<Category[]> {
   cacheTag('catalog');
 
   const supabase = createPublicSupabaseClient();
-  if (!supabase) return [...CATEGORY_RECORDS].sort((a, b) => a.position - b.position);
+  const fallback = () => [...CATEGORY_RECORDS].sort((a, b) => a.position - b.position);
+  if (!supabase) return fallback();
 
-  const { data, error } = await supabase
-    .from('categories')
-    .select('*')
-    .order('position', { ascending: true });
+  try {
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .order('position', { ascending: true });
 
-  if (error) throw new Error(`Could not load categories: ${error.message}`);
-  return (data ?? []).map(mapCategory);
+    if (error) {
+      console.warn('[listCategories] Notice (falling back to sample catalogue):', error.message);
+      return fallback();
+    }
+    if (!data?.length) {
+      return fallback();
+    }
+    return data.map(mapCategory);
+  } catch (err) {
+    console.warn('[listCategories] Network error (falling back to sample catalogue):', (err as Error)?.message);
+    return fallback();
+  }
 }
 
 export function getSampleCategories(): Category[] {
@@ -198,32 +236,44 @@ export async function getCategory(idOrSlug: CategoryId | string): Promise<Catego
   cacheTag('catalog');
 
   const supabase = createPublicSupabaseClient();
-  if (!supabase) {
-    return CATEGORY_RECORDS.find(
+  const fallback = () =>
+    CATEGORY_RECORDS.find(
       (category) => category.id === idOrSlug || category.slug === idOrSlug,
     ) ?? null;
-  }
 
-  const knownId = CATEGORY_RECORDS.find((category) => category.id === idOrSlug)?.id;
-  if (knownId) {
-    const { data: byId, error: idError } = await supabase
+  if (!supabase) return fallback();
+
+  try {
+    const knownId = CATEGORY_RECORDS.find((category) => category.id === idOrSlug)?.id;
+    if (knownId) {
+      const { data: byId, error: idError } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('id', knownId)
+        .maybeSingle();
+
+      if (idError) {
+        console.warn('[getCategory] Notice (falling back to sample category):', idError.message);
+        return fallback();
+      }
+      if (byId) return mapCategory(byId);
+    }
+
+    const { data: bySlug, error: slugError } = await supabase
       .from('categories')
       .select('*')
-      .eq('id', knownId)
+      .eq('slug', idOrSlug)
       .maybeSingle();
 
-    if (idError) throw new Error(`Could not load category: ${idError.message}`);
-    if (byId) return mapCategory(byId);
+    if (slugError) {
+      console.warn('[getCategory] Notice (falling back to sample category):', slugError.message);
+      return fallback();
+    }
+    return bySlug ? mapCategory(bySlug) : fallback();
+  } catch (err) {
+    console.warn('[getCategory] Network error (falling back to sample category):', (err as Error)?.message);
+    return fallback();
   }
-
-  const { data: bySlug, error: slugError } = await supabase
-    .from('categories')
-    .select('*')
-    .eq('slug', idOrSlug)
-    .maybeSingle();
-
-  if (slugError) throw new Error(`Could not load category: ${slugError.message}`);
-  return bySlug ? mapCategory(bySlug) : null;
 }
 
 export async function listProductsByCategory(categoryIdOrSlug: CategoryId | string): Promise<Product[]> {
@@ -250,26 +300,37 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
   cacheTag('catalog');
 
   const supabase = createPublicSupabaseClient();
-  if (!supabase) return PRODUCT_RECORDS.find((item) => item.slug === slug) ?? null;
+  const fallback = () => PRODUCT_RECORDS.find((item) => item.slug === slug) ?? null;
+  if (!supabase) return fallback();
 
-  const { data: productRow, error: productError } = await supabase
-    .from('products')
-    .select('*')
-    .eq('slug', slug)
-    .eq('status', 'active')
-    .maybeSingle();
-  if (productError) throw new Error(`Could not load product: ${productError.message}`);
-  if (!productRow) return null;
+  try {
+    const { data: productRow, error: productError } = await supabase
+      .from('products')
+      .select('*')
+      .eq('slug', slug)
+      .eq('status', 'active')
+      .maybeSingle();
+    if (productError) {
+      console.warn('[getProductBySlug] Notice (falling back to sample product):', productError.message);
+      return fallback();
+    }
+    if (!productRow) return fallback();
 
-  const [{ data: variants, error: variantError }, { data: media, error: mediaError }] =
-    await Promise.all([
-      supabase.from('product_variants').select('*').eq('product_id', productRow.id),
-      supabase.from('product_media').select('*').eq('product_id', productRow.id),
-    ]);
-  if (variantError) throw new Error(`Could not load product variants: ${variantError.message}`);
-  if (mediaError) throw new Error(`Could not load product media: ${mediaError.message}`);
+    const [{ data: variants, error: variantError }, { data: media, error: mediaError }] =
+      await Promise.all([
+        supabase.from('product_variants').select('*').eq('product_id', productRow.id),
+        supabase.from('product_media').select('*').eq('product_id', productRow.id),
+      ]);
+    if (variantError || mediaError) {
+      console.warn('[getProductBySlug] Notice (falling back on variant/media error):', variantError?.message ?? mediaError?.message);
+      return fallback();
+    }
 
-  return mapProduct(productRow, variants ?? [], media ?? []);
+    return mapProduct(productRow, variants ?? [], media ?? []);
+  } catch (err) {
+    console.warn('[getProductBySlug] Network error (falling back to sample product):', (err as Error)?.message);
+    return fallback();
+  }
 }
 
 export async function getProductById(id: string): Promise<Product | null> {
@@ -278,53 +339,73 @@ export async function getProductById(id: string): Promise<Product | null> {
   cacheTag('catalog');
 
   const supabase = createPublicSupabaseClient();
-  if (!supabase) return PRODUCT_RECORDS.find((item) => item.id === id) ?? null;
+  const fallback = () => PRODUCT_RECORDS.find((item) => item.id === id) ?? null;
+  if (!supabase) return fallback();
 
-  const { data: productRow, error: productError } = await supabase
-    .from('products')
-    .select('*')
-    .eq('id', id)
-    .eq('status', 'active')
-    .maybeSingle();
-  if (productError) throw new Error(`Could not load product: ${productError.message}`);
-  if (!productRow) return null;
+  try {
+    const { data: productRow, error: productError } = await supabase
+      .from('products')
+      .select('*')
+      .eq('id', id)
+      .eq('status', 'active')
+      .maybeSingle();
+    if (productError) {
+      console.warn('[getProductById] Notice (falling back to sample product):', productError.message);
+      return fallback();
+    }
+    if (!productRow) return fallback();
 
-  const [{ data: variants, error: variantError }, { data: media, error: mediaError }] =
-    await Promise.all([
-      supabase.from('product_variants').select('*').eq('product_id', id),
-      supabase.from('product_media').select('*').eq('product_id', id),
-    ]);
-  if (variantError) throw new Error(`Could not load product variants: ${variantError.message}`);
-  if (mediaError) throw new Error(`Could not load product media: ${mediaError.message}`);
+    const [{ data: variants, error: variantError }, { data: media, error: mediaError }] =
+      await Promise.all([
+        supabase.from('product_variants').select('*').eq('product_id', id),
+        supabase.from('product_media').select('*').eq('product_id', id),
+      ]);
+    if (variantError || mediaError) {
+      console.warn('[getProductById] Notice (falling back on variant/media error):', variantError?.message ?? mediaError?.message);
+      return fallback();
+    }
 
-  return mapProduct(productRow, variants ?? [], media ?? []);
+    return mapProduct(productRow, variants ?? [], media ?? []);
+  } catch (err) {
+    console.warn('[getProductById] Network error (falling back to sample product):', (err as Error)?.message);
+    return fallback();
+  }
 }
 
 export async function getVariant(
   variantId: string,
 ): Promise<{ product: Product; variant: Variant } | null> {
   const supabase = createPublicSupabaseClient();
-  if (!supabase) {
+  const fallback = () => {
     for (const product of PRODUCT_RECORDS) {
       const variant = product.variants.find((candidate) => candidate.id === variantId);
       if (variant) return { product, variant };
     }
     return null;
+  };
+  if (!supabase) return fallback();
+
+  try {
+    const { data, error } = await supabase
+      .from('product_variants')
+      .select('*')
+      .eq('id', variantId)
+      .maybeSingle();
+
+    if (error) {
+      console.warn('[getVariant] Notice (falling back to sample variant):', error.message);
+      return fallback();
+    }
+    if (!data) return fallback();
+
+    const product = await getProductById(data.product_id);
+    return product
+      ? { product, variant: product.variants.find((variant) => variant.id === data.id) ?? mapVariant(data) }
+      : fallback();
+  } catch (err) {
+    console.warn('[getVariant] Network error (falling back to sample variant):', (err as Error)?.message);
+    return fallback();
   }
-
-  const { data, error } = await supabase
-    .from('product_variants')
-    .select('*')
-    .eq('id', variantId)
-    .maybeSingle();
-
-  if (error) throw new Error(`Could not load product variant: ${error.message}`);
-  if (!data) return null;
-
-  const product = await getProductById(data.product_id);
-  return product
-    ? { product, variant: product.variants.find((variant) => variant.id === data.id) ?? mapVariant(data) }
-    : null;
 }
 
 export async function listPurchasableProducts(
