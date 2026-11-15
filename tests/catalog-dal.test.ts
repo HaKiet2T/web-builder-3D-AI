@@ -85,4 +85,20 @@ describe('catalogue DAL sample fallback', () => {
 
     assert.equal(persisted, false);
   });
+
+  it('falls back to sample catalogue when Supabase endpoint fails to fetch', async () => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://unreachable-test-project.supabase.co';
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
+
+    const [categories, products] = await Promise.all([listCategories(), listProducts()]);
+    assert.equal(categories.length, 5);
+    assert.ok(products.length >= 10);
+    assert.equal(categories[0].id, 'monitor');
+
+    const product = await getProductBySlug('rog-strix-xg259cms');
+    assert.ok(product);
+
+    const category = await getCategory('monitor');
+    assert.ok(category);
+  });
 });
