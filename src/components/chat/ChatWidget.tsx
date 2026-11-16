@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { QuickReply } from '@/lib/chat/schema';
+import { useCartStore } from '@/store/cart';
 
 interface Message {
   id: string;
@@ -12,6 +13,9 @@ interface Message {
 }
 
 const STORAGE_SESSION_KEY = 'ecommerce_3d_chat_session_id';
+const STORAGE_DOCK_KEY = 'ecommerce_3d_chat_dock_pos';
+
+type DockPosition = 'bottom-right' | 'bottom-left';
 
 const DEFAULT_VI_QUICK_REPLIES: QuickReply[] = [
   { label: '🔍 Tra cứu đơn hàng', prompt: 'Tôi muốn tra cứu tình trạng đơn hàng' },
@@ -40,7 +44,24 @@ function createWelcomeMessage(lang: 'vi' | 'en'): Message {
 }
 
 export function ChatWidget() {
+  const isCartOpen = useCartStore((state) => state.isOpen);
   const [isOpen, setIsOpen] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
+  const [dockPosition, setDockPosition] = useState<DockPosition>(() => {
+    if (typeof window === 'undefined') return 'bottom-right';
+    try {
+      const savedDock = localStorage.getItem(STORAGE_DOCK_KEY);
+      if (savedDock === 'bottom-right' || savedDock === 'bottom-left') {
+        return savedDock;
+      }
+    } catch {
+      // Ignore localStorage errors
+    }
+    return 'bottom-right';
+  });
+  const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
   const [lang, setLang] = useState<'vi' | 'en'>('vi');
   const [messages, setMessages] = useState<Message[]>(() => [createWelcomeMessage('vi')]);
   const [input, setInput] = useState('');
@@ -50,6 +71,8 @@ export function ChatWidget() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const dragStartRef = useRef<{ startX: number; startY: number; initX: number; initY: number } | null>(null);
+  const hasMovedRef = useRef(false);
 
   // Restore session asynchronously on mount
   useEffect(() => {
@@ -81,16 +104,80 @@ export function ChatWidget() {
   }, []);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !isMinimized) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
       inputRef.current?.focus();
     }
-  }, [isOpen, messages, isLoading]);
+  }, [isOpen, isMinimized, messages, isLoading]);
 
   const handleToggleLang = () => {
     const nextLang = lang === 'vi' ? 'en' : 'vi';
     setLang(nextLang);
     setQuickReplies(nextLang === 'vi' ? DEFAULT_VI_QUICK_REPLIES : DEFAULT_EN_QUICK_REPLIES);
+  };
+
+  const handleToggleDock = () => {
+    setDragOffset(null);
+    const nextDock: DockPosition = dockPosition === 'bottom-right' ? 'bottom-left' : 'bottom-right';
+    setDockPosition(nextDock);
+    try {
+      localStorage.setItem(STORAGE_DOCK_KEY, nextDock);
+    } catch {
+      // Ignore
+    }
+  };
+
+  const handleToggleMinimize = () => {
+    setIsMinimized((prev) => !prev);
+  };
+
+  const handleResetPosition = () => {
+    setDragOffset(null);
+  };
+
+  // Drag and drop handlers with screen clamping
+  const handlePointerDown = (e: React.PointerEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.closest('button, input, textarea, a, form')) return;
+
+    e.preventDefault();
+    setIsDragging(true);
+    hasMovedRef.current = false;
+
+    const currentX = dragOffset?.x ?? 0;
+    const currentY = dragOffset?.y ?? 0;
+
+    dragStartRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      initX: currentX,
+      initY: currentY,
+    };
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      if (!dragStartRef.current) return;
+      const deltaX = moveEvent.clientX - dragStartRef.current.startX;
+      const deltaY = moveEvent.clientY - dragStartRef.current.startY;
+
+      if (Math.abs(deltaX) > 4 || Math.abs(deltaY) > 4) {
+        hasMovedRef.current = true;
+      }
+
+      const nextX = dragStartRef.current.initX + deltaX;
+      const nextY = dragStartRef.current.initY + deltaY;
+
+      setDragOffset({ x: nextX, y: nextY });
+    };
+
+    const handlePointerUp = () => {
+      setIsDragging(false);
+      dragStartRef.current = null;
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
   };
 
   const handleSend = async (messageText?: string) => {
@@ -178,45 +265,161 @@ export function ChatWidget() {
     setMessages([createWelcomeMessage(lang)]);
   };
 
+  // Determine effective dock placement:
+  // When Cart Drawer is open, automatically switch to bottom-left if no manual drag offset exists,
+  // preventing any overlap with the cart drawer and its checkout button.
+  const effectiveDock: DockPosition = isCartOpen && !dragOffset ? 'bottom-left' : dockPosition;
+
+  // On mobile screens (< sm), if the Cart Drawer is open (taking 100vw),
+  // hide the launcher to guarantee completely unobstructed checkout tap target.
+  const mobileVisibilityClass = isCartOpen ? 'hidden sm:block' : 'block';
+
+  // Base positioning styling depending on effective dock
+  const dockPositionClasses =
+    effectiveDock === 'bottom-left'
+      ? 'left-4 sm:left-6 bottom-4 sm:bottom-6'
+      : 'right-4 sm:right-6 bottom-4 sm:bottom-6';
+
+  const transformStyle = dragOffset
+    ? { transform: `translate3d(${dragOffset.x}px, ${dragOffset.y}px, 0px)` }
+    : undefined;
+
+  const draggingClass = isDragging ? 'opacity-90 ring-2 ring-[var(--accent)] shadow-2xl' : '';
+
   return (
-    <div className="fixed bottom-6 right-6 z-50 font-sans print:hidden">
+    <div
+      style={transformStyle}
+      className={`fixed ${dockPositionClasses} z-40 font-sans print:hidden select-none transition-all duration-300 ease-out ${mobileVisibilityClass} ${draggingClass}`}
+    >
       {/* Floating Launcher Button */}
       {!isOpen && (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="group relative flex items-center gap-2.5 px-4 py-3 rounded-full bg-[var(--page)] text-[var(--ink)] border border-[var(--line)] shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200"
-          aria-label="Mở khung chat hỗ trợ"
-        >
-          <span className="relative flex h-3 w-3">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500" />
-          </span>
-          <span className="font-medium text-sm tracking-tight">Trợ lý AI 3D</span>
-          <svg
-            className="w-4 h-4 text-[var(--muted)] group-hover:text-[var(--accent)] transition-colors"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth="2"
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => {
+              if (!hasMovedRef.current) {
+                setIsOpen(true);
+                setIsMinimized(false);
+              }
+            }}
+            onPointerDown={handlePointerDown}
+            className={`group relative flex items-center gap-2.5 px-4 py-3 rounded-full bg-[var(--page)] text-[var(--ink)] border border-[var(--line)] shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 ${
+              isDragging ? 'cursor-grabbing' : 'cursor-grab'
+            }`}
+            aria-label="Mở khung chat hỗ trợ"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-            />
-          </svg>
-        </button>
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500" />
+            </span>
+            <span className="font-medium text-sm tracking-tight">Trợ lý AI 3D</span>
+            <svg
+              className="w-4 h-4 text-[var(--muted)] group-hover:text-[var(--accent)] transition-colors"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+              />
+            </svg>
+          </button>
+
+          {/* Quick Dock Switch Button on Launcher */}
+          <button
+            type="button"
+            onClick={handleToggleDock}
+            title={
+              effectiveDock === 'bottom-right'
+                ? lang === 'vi'
+                  ? 'Chuyển sang góc trái'
+                  : 'Dock to left'
+                : lang === 'vi'
+                  ? 'Chuyển sang góc phải'
+                  : 'Dock to right'
+            }
+            aria-label="Đổi vị trí dock (trái / phải)"
+            className="p-2.5 rounded-full bg-[var(--page)] text-[var(--muted)] hover:text-[var(--ink)] border border-[var(--line)] shadow-md hover:shadow-lg transition-all active:scale-95"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+            </svg>
+          </button>
+        </div>
       )}
 
-      {/* Chat Popover Window */}
-      {isOpen && (
+      {/* Chat Popover Window (Minimized State) */}
+      {isOpen && isMinimized && (
+        <div
+          role="dialog"
+          aria-label="Khung chat hỗ trợ (thu nhỏ)"
+          className={`flex items-center justify-between w-[300px] sm:w-[340px] px-3.5 py-2.5 rounded-2xl bg-[var(--page)] text-[var(--ink)] border border-[var(--line)] shadow-2xl animate-in fade-in duration-200 ${
+            isDragging ? 'cursor-grabbing' : 'cursor-grab'
+          }`}
+          onPointerDown={handlePointerDown}
+        >
+          <div className="flex items-center gap-2 cursor-pointer" onClick={handleToggleMinimize}>
+            <div className="relative w-6 h-6 rounded-full bg-[var(--accent)] text-white flex items-center justify-center font-bold text-[10px]">
+              AI
+              <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 ring-1 ring-[var(--page)]" />
+            </div>
+            <span className="font-semibold text-xs truncate">E-commerce 3D Bot</span>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={handleToggleDock}
+              title={lang === 'vi' ? 'Đổi vị trí trái / phải' : 'Toggle dock'}
+              aria-label="Đổi vị trí dock (trái / phải)"
+              className="p-1 text-[var(--muted)] hover:text-[var(--ink)] rounded hover:bg-[var(--line)] transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={handleToggleMinimize}
+              title={lang === 'vi' ? 'Mở rộng khung chat' : 'Expand chat'}
+              aria-label="Mở rộng khung chat"
+              className="p-1 text-[var(--muted)] hover:text-[var(--ink)] rounded hover:bg-[var(--line)] transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              title={lang === 'vi' ? 'Đóng chat' : 'Close chat'}
+              aria-label="Đóng chat"
+              className="p-1 text-[var(--muted)] hover:text-[var(--ink)] rounded hover:bg-[var(--line)] transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Chat Popover Window (Expanded State) */}
+      {isOpen && !isMinimized && (
         <div
           role="dialog"
           aria-label="Khung chat hỗ trợ"
-          className="flex flex-col w-[380px] sm:w-[420px] h-[580px] max-h-[85vh] rounded-2xl bg-[var(--page)] text-[var(--ink)] border border-[var(--line)] shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200"
+          className="flex flex-col w-[360px] sm:w-[420px] h-[560px] max-h-[82vh] rounded-2xl bg-[var(--page)] text-[var(--ink)] border border-[var(--line)] shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200"
         >
-          {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3.5 border-b border-[var(--line)] bg-[var(--track)]">
+          {/* Header (with drag handle) */}
+          <div
+            onPointerDown={handlePointerDown}
+            className={`flex items-center justify-between px-4 py-3 border-b border-[var(--line)] bg-[var(--track)] select-none ${
+              isDragging ? 'cursor-grabbing' : 'cursor-grab'
+            }`}
+          >
             <div className="flex items-center gap-2.5">
               <div className="relative w-8 h-8 rounded-full bg-[var(--accent)] text-white flex items-center justify-center font-bold text-xs shadow-sm">
                 AI
@@ -236,15 +439,51 @@ export function ChatWidget() {
             </div>
 
             <div className="flex items-center gap-1">
+              {dragOffset && (
+                <button
+                  type="button"
+                  onClick={handleResetPosition}
+                  title={lang === 'vi' ? 'Đặt lại vị trí mặc định' : 'Reset position'}
+                  aria-label="Đặt lại vị trí"
+                  className="p-1.5 text-[var(--muted)] hover:text-[var(--ink)] rounded hover:bg-[var(--line)] transition-colors text-xs"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 15v-1a4 4 0 00-4-4H4m0 0l3-3m-3 3l3 3m5 4v1a4 4 0 004 4h8m0 0l-3-3m3 3l-3 3" />
+                  </svg>
+                </button>
+              )}
+
               <button
+                type="button"
+                onClick={handleToggleDock}
+                title={
+                  effectiveDock === 'bottom-right'
+                    ? lang === 'vi'
+                      ? 'Chuyển sang góc trái'
+                      : 'Dock left'
+                    : lang === 'vi'
+                      ? 'Chuyển sang góc phải'
+                      : 'Dock right'
+                }
+                aria-label="Đổi vị trí dock (trái / phải)"
+                className="p-1.5 text-[var(--muted)] hover:text-[var(--ink)] rounded hover:bg-[var(--line)] transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                </svg>
+              </button>
+
+              <button
+                type="button"
                 onClick={handleToggleLang}
                 title="Đổi ngôn ngữ (VI / EN)"
-                className="px-2 py-1 text-xs font-mono font-medium rounded border border-[var(--line)] hover:bg-[var(--line)] transition-colors"
+                className="px-1.5 py-0.5 text-xs font-mono font-medium rounded border border-[var(--line)] hover:bg-[var(--line)] transition-colors"
               >
                 {lang.toUpperCase()}
               </button>
 
               <button
+                type="button"
                 onClick={handleClearHistory}
                 title="Làm mới cuộc trò chuyện"
                 className="p-1.5 text-[var(--muted)] hover:text-[var(--ink)] rounded hover:bg-[var(--line)] transition-colors"
@@ -259,6 +498,19 @@ export function ChatWidget() {
               </button>
 
               <button
+                type="button"
+                onClick={handleToggleMinimize}
+                title={lang === 'vi' ? 'Thu nhỏ khung chat' : 'Minimize chat'}
+                aria-label="Thu nhỏ khung chat"
+                className="p-1.5 text-[var(--muted)] hover:text-[var(--ink)] rounded hover:bg-[var(--line)] transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" />
+                </svg>
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setIsOpen(false)}
                 title="Đóng chat"
                 className="p-1.5 text-[var(--muted)] hover:text-[var(--ink)] rounded hover:bg-[var(--line)] transition-colors"
