@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { QuickReply } from '@/lib/chat/schema';
+import { clampDragOffset, type DockPosition } from '@/lib/chat/positioning';
 import { useCartStore } from '@/store/cart';
 
 interface Message {
@@ -14,8 +15,6 @@ interface Message {
 
 const STORAGE_SESSION_KEY = 'ecommerce_3d_chat_session_id';
 const STORAGE_DOCK_KEY = 'ecommerce_3d_chat_dock_pos';
-
-type DockPosition = 'bottom-right' | 'bottom-left';
 
 const DEFAULT_VI_QUICK_REPLIES: QuickReply[] = [
   { label: '🔍 Tra cứu đơn hàng', prompt: 'Tôi muốn tra cứu tình trạng đơn hàng' },
@@ -62,6 +61,11 @@ export function ChatWidget() {
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
+  // Determine effective dock placement:
+  // When Cart Drawer is open, automatically switch to bottom-left if no manual drag offset exists,
+  // preventing any overlap with the cart drawer and its checkout button.
+  const effectiveDock: DockPosition = isCartOpen && !dragOffset ? 'bottom-left' : dockPosition;
+
   const [lang, setLang] = useState<'vi' | 'en'>('vi');
   const [messages, setMessages] = useState<Message[]>(() => [createWelcomeMessage('vi')]);
   const [input, setInput] = useState('');
@@ -69,6 +73,7 @@ export function ChatWidget() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [quickReplies, setQuickReplies] = useState<QuickReply[]>(DEFAULT_VI_QUICK_REPLIES);
 
+  const containerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const dragStartRef = useRef<{ startX: number; startY: number; initX: number; initY: number } | null>(null);
@@ -110,6 +115,31 @@ export function ChatWidget() {
     }
   }, [isOpen, isMinimized, messages, isLoading]);
 
+  // Keep widget clamped when window is resized
+  useEffect(() => {
+    const handleResize = () => {
+      setDragOffset((prev) => {
+        if (!prev) return null;
+        return clampDragOffset(prev.x, prev.y, effectiveDock, containerRef.current);
+      });
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [effectiveDock]);
+
+  const handleOpen = () => {
+    hasMovedRef.current = false;
+    setIsDragging(false);
+    setIsOpen(true);
+    setIsMinimized(false);
+  };
+
+  const handleClose = () => {
+    hasMovedRef.current = false;
+    setIsDragging(false);
+    setIsOpen(false);
+  };
+
   const handleToggleLang = () => {
     const nextLang = lang === 'vi' ? 'en' : 'vi';
     setLang(nextLang);
@@ -117,6 +147,8 @@ export function ChatWidget() {
   };
 
   const handleToggleDock = () => {
+    hasMovedRef.current = false;
+    setIsDragging(false);
     setDragOffset(null);
     const nextDock: DockPosition = dockPosition === 'bottom-right' ? 'bottom-left' : 'bottom-right';
     setDockPosition(nextDock);
@@ -128,14 +160,18 @@ export function ChatWidget() {
   };
 
   const handleToggleMinimize = () => {
+    hasMovedRef.current = false;
+    setIsDragging(false);
     setIsMinimized((prev) => !prev);
   };
 
   const handleResetPosition = () => {
+    hasMovedRef.current = false;
+    setIsDragging(false);
     setDragOffset(null);
   };
 
-  // Drag and drop handlers with screen clamping
+  // Drag and drop handlers with screen boundary clamping
   const handlePointerDown = (e: React.PointerEvent) => {
     const target = e.target as HTMLElement;
     if (target.closest('button, input, textarea, a, form')) return;
@@ -163,21 +199,24 @@ export function ChatWidget() {
         hasMovedRef.current = true;
       }
 
-      const nextX = dragStartRef.current.initX + deltaX;
-      const nextY = dragStartRef.current.initY + deltaY;
+      const nextRawX = dragStartRef.current.initX + deltaX;
+      const nextRawY = dragStartRef.current.initY + deltaY;
 
-      setDragOffset({ x: nextX, y: nextY });
+      const clamped = clampDragOffset(nextRawX, nextRawY, effectiveDock, containerRef.current);
+      setDragOffset(clamped);
     };
 
-    const handlePointerUp = () => {
+    const handlePointerEnd = () => {
       setIsDragging(false);
       dragStartRef.current = null;
       window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('pointerup', handlePointerEnd);
+      window.removeEventListener('pointercancel', handlePointerEnd);
     };
 
     window.addEventListener('pointermove', handlePointerMove);
-    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener('pointerup', handlePointerEnd);
+    window.addEventListener('pointercancel', handlePointerEnd);
   };
 
   const handleSend = async (messageText?: string) => {
@@ -265,11 +304,6 @@ export function ChatWidget() {
     setMessages([createWelcomeMessage(lang)]);
   };
 
-  // Determine effective dock placement:
-  // When Cart Drawer is open, automatically switch to bottom-left if no manual drag offset exists,
-  // preventing any overlap with the cart drawer and its checkout button.
-  const effectiveDock: DockPosition = isCartOpen && !dragOffset ? 'bottom-left' : dockPosition;
-
   // On mobile screens (< sm), if the Cart Drawer is open (taking 100vw),
   // hide the launcher to guarantee completely unobstructed checkout tap target.
   const mobileVisibilityClass = isCartOpen ? 'hidden sm:block' : 'block';
@@ -285,26 +319,22 @@ export function ChatWidget() {
     : undefined;
 
   const draggingClass = isDragging ? 'opacity-90 ring-2 ring-[var(--accent)] shadow-2xl' : '';
+  const transitionClass = isDragging
+    ? 'transition-none select-none'
+    : 'transition-all duration-300 ease-out select-none';
 
   return (
     <div
+      ref={containerRef}
       style={transformStyle}
-      className={`fixed ${dockPositionClasses} z-40 font-sans print:hidden select-none transition-all duration-300 ease-out ${mobileVisibilityClass} ${draggingClass}`}
+      className={`fixed ${dockPositionClasses} z-40 font-sans print:hidden ${transitionClass} ${mobileVisibilityClass} ${draggingClass}`}
     >
       {/* Floating Launcher Button */}
       {!isOpen && (
         <div className="flex items-center gap-1.5">
           <button
-            onClick={() => {
-              if (!hasMovedRef.current) {
-                setIsOpen(true);
-                setIsMinimized(false);
-              }
-            }}
-            onPointerDown={handlePointerDown}
-            className={`group relative flex items-center gap-2.5 px-4 py-3 rounded-full bg-[var(--page)] text-[var(--ink)] border border-[var(--line)] shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 ${
-              isDragging ? 'cursor-grabbing' : 'cursor-grab'
-            }`}
+            onClick={handleOpen}
+            className="group relative flex items-center gap-2.5 px-4 py-3 rounded-full bg-[var(--page)] text-[var(--ink)] border border-[var(--line)] shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
             aria-label="Mở khung chat hỗ trợ"
           >
             <span className="relative flex h-3 w-3">
@@ -341,7 +371,7 @@ export function ChatWidget() {
                   : 'Dock to right'
             }
             aria-label="Đổi vị trí dock (trái / phải)"
-            className="p-2.5 rounded-full bg-[var(--page)] text-[var(--muted)] hover:text-[var(--ink)] border border-[var(--line)] shadow-md hover:shadow-lg transition-all active:scale-95"
+            className="p-2.5 rounded-full bg-[var(--page)] text-[var(--muted)] hover:text-[var(--ink)] border border-[var(--line)] shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
@@ -355,7 +385,7 @@ export function ChatWidget() {
         <div
           role="dialog"
           aria-label="Khung chat hỗ trợ (thu nhỏ)"
-          className={`flex items-center justify-between w-[300px] sm:w-[340px] px-3.5 py-2.5 rounded-2xl bg-[var(--page)] text-[var(--ink)] border border-[var(--line)] shadow-2xl animate-in fade-in duration-200 ${
+          className={`flex items-center justify-between w-[300px] sm:w-[340px] px-3.5 py-2.5 rounded-2xl bg-[var(--page)] text-[var(--ink)] border border-[var(--line)] shadow-2xl animate-in fade-in duration-200 touch-none ${
             isDragging ? 'cursor-grabbing' : 'cursor-grab'
           }`}
           onPointerDown={handlePointerDown}
@@ -393,7 +423,7 @@ export function ChatWidget() {
             </button>
             <button
               type="button"
-              onClick={() => setIsOpen(false)}
+              onClick={handleClose}
               title={lang === 'vi' ? 'Đóng chat' : 'Close chat'}
               aria-label="Đóng chat"
               className="p-1 text-[var(--muted)] hover:text-[var(--ink)] rounded hover:bg-[var(--line)] transition-colors"
@@ -416,7 +446,7 @@ export function ChatWidget() {
           {/* Header (with drag handle) */}
           <div
             onPointerDown={handlePointerDown}
-            className={`flex items-center justify-between px-4 py-3 border-b border-[var(--line)] bg-[var(--track)] select-none ${
+            className={`flex items-center justify-between px-4 py-3 border-b border-[var(--line)] bg-[var(--track)] select-none touch-none ${
               isDragging ? 'cursor-grabbing' : 'cursor-grab'
             }`}
           >
@@ -511,8 +541,9 @@ export function ChatWidget() {
 
               <button
                 type="button"
-                onClick={() => setIsOpen(false)}
-                title="Đóng chat"
+                onClick={handleClose}
+                title={lang === 'vi' ? 'Đóng chat' : 'Close chat'}
+                aria-label="Đóng chat"
                 className="p-1.5 text-[var(--muted)] hover:text-[var(--ink)] rounded hover:bg-[var(--line)] transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
