@@ -117,6 +117,14 @@ const EXPECTED_TABLES = [
       'created_at',
     ],
   },
+  {
+    name: 'chat_sessions',
+    columns: ['id', 'user_id', 'title', 'created_at', 'updated_at'],
+  },
+  {
+    name: 'chat_messages',
+    columns: ['id', 'session_id', 'sender', 'content', 'intent', 'metadata', 'created_at'],
+  },
 ];
 
 console.log('[Supabase Type Sync] Auditing schema against database.types.ts...');
