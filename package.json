@@ -16,6 +16,7 @@
     "test:monitor-orbit": "node scripts/verify-monitor-orbit.mjs"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^7.0.1",
     "@react-email/components": "^1.0.12",
     "@react-three/drei": "^10.7.9",

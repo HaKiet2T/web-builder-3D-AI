@@ -11,6 +11,8 @@ export type Json =
 
 export type ProductStatus = 'active' | 'draft' | 'archived';
 export type NotificationType = 'order' | 'payment' | 'system' | 'promo';
+export type ChatSender = 'user' | 'assistant' | 'system';
+export type ChatIntent = 'product' | 'order' | 'payment' | 'greeting' | 'rejected' | 'general';
 
 export interface Database {
   public: {
@@ -315,6 +317,68 @@ export interface Database {
         };
         Relationships: [];
       };
+      chat_sessions: {
+        Row: {
+          id: string;
+          user_id: string | null;
+          title: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          title?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string | null;
+          title?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      chat_messages: {
+        Row: {
+          id: string;
+          session_id: string;
+          sender: ChatSender;
+          content: string;
+          intent: ChatIntent | null;
+          metadata: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          session_id: string;
+          sender: ChatSender;
+          content: string;
+          intent?: ChatIntent | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          session_id?: string;
+          sender?: ChatSender;
+          content?: string;
+          intent?: ChatIntent | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'chat_messages_session_id_fkey';
+            columns: ['session_id'];
+            isOneToOne: false;
+            referencedRelation: 'chat_sessions';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -339,3 +403,5 @@ export type ProductMediaRow = Tables<'product_media'>;
 export type OrderRow = Tables<'orders'>;
 export type UserAddressRow = Tables<'user_addresses'>;
 export type UserNotificationRow = Tables<'user_notifications'>;
+export type ChatSessionRow = Tables<'chat_sessions'>;
+export type ChatMessageRow = Tables<'chat_messages'>;
