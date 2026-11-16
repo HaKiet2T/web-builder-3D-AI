@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { FilmGrain } from "@/components/ui/FilmGrain";
 import { CartDrawer } from "@/components/cart/CartDrawer";
+import { ChatWidget } from "@/components/chat/ChatWidget";
 import { listCategories } from "@/lib/catalog/dal";
 import { LEGACY_THEME_STORAGE_KEY, THEME_STORAGE_KEY } from "@/lib/theme";
 import { SITE, SITE_TITLE, SITE_TITLE_TEMPLATE } from "@/lib/site";
@@ -49,6 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider>
           <FilmGrain />
           <CartDrawer />
+          <ChatWidget />
           {/* The header reads usePathname() to highlight the current category,
               which suspends on routes whose dynamic params are not prerendered.
               Wrapping it keeps the rest of the layout prerenderable. The
