@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { connection } from 'next/server';
 import { signOutAdmin } from '@/app/admin/login/actions';
 import { getCurrentAdmin } from '@/lib/admin/auth';
+import { AdminCopilotTrigger, AdminCopilotDrawer } from '@/components/admin/copilot';
 
 export const instant = false;
 
@@ -19,6 +20,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <Link href="/admin">Tổng quan</Link>
           <Link href="/admin/products">Sản phẩm & media</Link>
           <Link href="/admin/orders">Đơn hàng</Link>
+          <AdminCopilotTrigger />
         </nav>
         <div className="admin-account">
           <span>{admin.user.email}</span>
@@ -28,6 +30,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </div>
       </aside>
       <main className="admin-main">{children}</main>
+      <AdminCopilotDrawer />
     </div>
   );
 }
