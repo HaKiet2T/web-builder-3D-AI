@@ -124,4 +124,36 @@ describe('ChatWidget Flexible Positioning & Cart Collision Avoidance', () => {
     const positioningContent = readFileSync('src/lib/chat/positioning.ts', 'utf8');
     assert.doesNotMatch(positioningContent, /\u2014/);
   });
+
+  it('hides ChatWidget on admin routes and keeps it strictly for customer storefront', () => {
+    assert.match(widgetContent, /usePathname/);
+    assert.match(
+      widgetContent,
+      /pathname\?\.startsWith\(['"]\/admin['"]\)\)\s*\{\s*return null;/,
+      'ChatWidget must return null and hide completely on all /admin routes'
+    );
+    assert.match(
+      widgetContent,
+      /if\s*\(pathname\?\.startsWith\(['"]\/admin['"]\)\)\s*return;/,
+      'ChatWidget must skip session restore fetch on admin routes'
+    );
+  });
+
+  it('renames customer chat widget to "Trợ lí"', () => {
+    // Launcher button label must be "Trợ lí"
+    assert.match(widgetContent, /<span[^>]*className="[^"]*tracking-tight[^"]*"[^>]*>Trợ lí<\/span>/);
+    // Minimized popover header title must be "Trợ lí"
+    assert.match(widgetContent, /<span[^>]*className="[^"]*truncate[^"]*"[^>]*>Trợ lí<\/span>/);
+    // Expanded popover header title must be "Trợ lí"
+    assert.match(widgetContent, /<h3[^>]*className="[^"]*leading-none[^"]*"[^>]*>Trợ lí<\/h3>/);
+    // Welcome message greeting must say "trợ lí"
+    assert.match(widgetContent, /Tôi là trợ lí của E-commerce 3D/);
+  });
+
+  it('ensures admin dashboard layout exclusively mounts Admin BI Copilot and never customer ChatWidget', () => {
+    const adminLayoutContent = readFileSync('src/app/admin/(dashboard)/layout.tsx', 'utf8');
+    assert.match(adminLayoutContent, /AdminCopilotTrigger/);
+    assert.match(adminLayoutContent, /AdminCopilotDrawer/);
+    assert.doesNotMatch(adminLayoutContent, /ChatWidget/);
+  });
 });
