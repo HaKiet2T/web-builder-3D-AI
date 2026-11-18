@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import type { QuickReply } from '@/lib/chat/schema';
 import { clampDragOffset, type DockPosition } from '@/lib/chat/positioning';
 import { useCartStore } from '@/store/cart';
@@ -36,13 +37,14 @@ function createWelcomeMessage(lang: 'vi' | 'en'): Message {
     sender: 'assistant',
     content:
       lang === 'vi'
-        ? 'Xin chào! Tôi là trợ lý AI của E-commerce 3D. Tôi có thể hỗ trợ bạn tìm kiếm và tư vấn thông số **sản phẩm 3D**, **tra cứu đơn hàng** hoặc **hướng dẫn thanh toán**. Bạn cần hỗ trợ gì hôm nay?'
-        : 'Hello! I am the AI assistant of E-commerce 3D. I can assist you with **3D product specifications**, **order tracking**, or **payment support**. How can I help you today?',
+        ? 'Xin chào! Tôi là trợ lí của E-commerce 3D. Tôi có thể hỗ trợ bạn tìm kiếm và tư vấn thông số **sản phẩm 3D**, **tra cứu đơn hàng** hoặc **hướng dẫn thanh toán**. Bạn cần hỗ trợ gì hôm nay?'
+        : 'Hello! I am the assistant of E-commerce 3D. I can assist you with **3D product specifications**, **order tracking**, or **payment support**. How can I help you today?',
     intent: 'greeting',
   };
 }
 
 export function ChatWidget() {
+  const pathname = usePathname();
   const isCartOpen = useCartStore((state) => state.isOpen);
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
@@ -81,6 +83,7 @@ export function ChatWidget() {
 
   // Restore session asynchronously on mount
   useEffect(() => {
+    if (pathname?.startsWith('/admin')) return;
     let isMounted = true;
     try {
       const storedSession = localStorage.getItem(STORAGE_SESSION_KEY);
@@ -106,7 +109,7 @@ export function ChatWidget() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [pathname]);
 
   useEffect(() => {
     if (isOpen && !isMinimized) {
@@ -323,6 +326,13 @@ export function ChatWidget() {
     ? 'transition-none select-none'
     : 'transition-all duration-300 ease-out select-none';
 
+  // Customer assistant bot is exclusively for customer-facing storefront pages.
+  // In the admin section (/admin, /admin/*), it is completely hidden;
+  // the admin section uses its own Admin BI Copilot (Slide-over Drawer).
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
+
   return (
     <div
       ref={containerRef}
@@ -335,13 +345,13 @@ export function ChatWidget() {
           <button
             onClick={handleOpen}
             className="group relative flex items-center gap-2.5 px-4 py-3 rounded-full bg-[var(--page)] text-[var(--ink)] border border-[var(--line)] shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
-            aria-label="Mở khung chat hỗ trợ"
+            aria-label="Mở khung chat trợ lí"
           >
             <span className="relative flex h-3 w-3">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500" />
             </span>
-            <span className="font-medium text-sm tracking-tight">Trợ lý AI 3D</span>
+            <span className="font-medium text-sm tracking-tight">Trợ lí</span>
             <svg
               className="w-4 h-4 text-[var(--muted)] group-hover:text-[var(--accent)] transition-colors"
               fill="none"
@@ -384,7 +394,7 @@ export function ChatWidget() {
       {isOpen && isMinimized && (
         <div
           role="dialog"
-          aria-label="Khung chat hỗ trợ (thu nhỏ)"
+          aria-label="Khung chat trợ lí (thu nhỏ)"
           className={`flex items-center justify-between w-[300px] sm:w-[340px] px-3.5 py-2.5 rounded-2xl bg-[var(--page)] text-[var(--ink)] border border-[var(--line)] shadow-2xl animate-in fade-in duration-200 touch-none ${
             isDragging ? 'cursor-grabbing' : 'cursor-grab'
           }`}
@@ -395,7 +405,7 @@ export function ChatWidget() {
               AI
               <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 ring-1 ring-[var(--page)]" />
             </div>
-            <span className="font-semibold text-xs truncate">E-commerce 3D Bot</span>
+            <span className="font-semibold text-xs truncate">Trợ lí</span>
           </div>
 
           <div className="flex items-center gap-1">
@@ -440,7 +450,7 @@ export function ChatWidget() {
       {isOpen && !isMinimized && (
         <div
           role="dialog"
-          aria-label="Khung chat hỗ trợ"
+          aria-label="Khung chat trợ lí"
           className="flex flex-col w-[360px] sm:w-[420px] h-[560px] max-h-[82vh] rounded-2xl bg-[var(--page)] text-[var(--ink)] border border-[var(--line)] shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200"
         >
           {/* Header (with drag handle) */}
@@ -457,7 +467,7 @@ export function ChatWidget() {
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h3 className="font-semibold text-sm leading-none">E-commerce 3D Bot</h3>
+                  <h3 className="font-semibold text-sm leading-none">Trợ lí</h3>
                   <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--line)] text-[var(--muted)] font-mono">
                     Gemini 2.0
                   </span>

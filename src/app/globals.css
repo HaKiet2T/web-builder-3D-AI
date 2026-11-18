@@ -2103,6 +2103,7 @@ body {
 }
 
 .admin-sidebar nav a,
+.admin-sidebar nav button,
 .admin-account button {
   min-height: 42px;
   border: 0;
@@ -5482,3 +5483,1162 @@ html[data-theme='light'] .tactile-cursor-reflection {
   transition: transform 60ms ease;
 }
 
+
+/* === ADMIN SALES ANALYTICS DASHBOARD (GIAI ĐOẠN 2) === */
+.admin-dashboard-stack {
+  display: grid;
+  gap: 24px;
+}
+
+/* Period Filter Bar */
+.admin-period-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--page);
+}
+
+.admin-period-bar-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-period-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.admin-period-active-hint {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.admin-period-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.admin-period-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border: 1px solid var(--line);
+  border-radius: 9999px;
+  background: var(--raise);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 140ms ease;
+}
+
+.admin-period-pill:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.admin-period-pill.is-active {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--page);
+  font-weight: 600;
+}
+
+/* Executive KPI Grid */
+.admin-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.admin-kpi-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--page);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.admin-kpi-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.admin-kpi-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.admin-kpi-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.admin-kpi-badge.growth-up {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+}
+
+.admin-kpi-badge.growth-down {
+  background: rgba(225, 29, 72, 0.12);
+  color: #e11d48;
+}
+
+.admin-kpi-badge.growth-neutral {
+  background: var(--raise);
+  color: var(--muted);
+}
+
+.admin-kpi-badge.info {
+  background: rgba(37, 99, 235, 0.1);
+  color: #2563eb;
+}
+
+.admin-kpi-badge.warning {
+  background: rgba(217, 119, 6, 0.12);
+  color: #d97706;
+}
+
+.admin-kpi-badge.success {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+}
+
+.admin-kpi-value {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  line-height: 1.2;
+}
+
+.admin-kpi-unit {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.admin-kpi-subtext {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.admin-kpi-subtext span {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* Charts Section */
+.admin-analytics-charts-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(0, 1.2fr);
+  gap: 16px;
+}
+
+.admin-charts-sidebar {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-chart-card {
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--page);
+}
+
+.admin-chart-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.admin-chart-title {
+  font-size: 16px;
+  font-weight: 650;
+  color: var(--ink);
+}
+
+.admin-chart-subtitle {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.admin-chart-subtitle strong {
+  color: var(--ink);
+}
+
+.admin-chart-legend {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.legend-indicator {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 4px;
+}
+
+.legend-indicator.bar-color {
+  background: var(--accent, #be123c);
+}
+
+.legend-indicator.order-color {
+  background: var(--ink, #0f172a);
+}
+
+.admin-svg-chart-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.admin-svg-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-width: 520px;
+}
+
+.chart-bar-group:hover .admin-chart-bar {
+  opacity: 0.85;
+}
+
+.chart-bar-group:hover .bar-hover-backdrop {
+  fill: var(--raise);
+}
+
+/* Donut Chart Layout */
+.admin-donut-layout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 20px;
+}
+
+.admin-donut-wrapper {
+  width: 170px;
+  flex-shrink: 0;
+  margin: 0 auto;
+}
+
+.admin-donut-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.donut-segment {
+  transition: stroke-width 180ms ease;
+  cursor: pointer;
+}
+
+.donut-segment:hover {
+  stroke-width: 26px;
+}
+
+.admin-donut-legend-table {
+  flex: 1;
+  min-width: 200px;
+  display: grid;
+  gap: 10px;
+}
+
+.donut-legend-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: var(--raise);
+  font-size: 12px;
+}
+
+.donut-legend-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.donut-color-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.donut-category-name {
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.donut-legend-stats {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.donut-category-revenue {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.donut-category-pct {
+  color: var(--muted);
+}
+
+.donut-category-items {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+/* Payment Method Card */
+.admin-payment-bar {
+  display: flex;
+  height: 12px;
+  width: 100%;
+  border-radius: 9999px;
+  overflow: hidden;
+  background: var(--raise);
+  margin-bottom: 16px;
+}
+
+.admin-payment-segment.segment-vietqr {
+  background: #2563eb;
+}
+
+.admin-payment-segment.segment-cod {
+  background: #f59e0b;
+}
+
+.admin-payment-items {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.admin-payment-item {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--raise);
+}
+
+.payment-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.payment-pill {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.payment-pill.is-vietqr {
+  color: #2563eb;
+}
+
+.payment-pill.is-cod {
+  color: #d97706;
+}
+
+.payment-pct {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.payment-item-body {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.payment-amount {
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--ink);
+}
+
+.payment-count {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* Operational Alerts & Bottlenecks */
+.admin-alerts-layout {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.admin-alerts-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.admin-panel-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-panel-heading {
+  font-size: 16px;
+  font-weight: 650;
+  color: var(--ink);
+}
+
+.admin-counter-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.admin-counter-badge.warning {
+  background: rgba(217, 119, 6, 0.12);
+  color: #d97706;
+}
+
+.admin-counter-badge.danger {
+  background: rgba(225, 29, 72, 0.12);
+  color: #e11d48;
+}
+
+.admin-panel-link {
+  font-size: 13px;
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.admin-panel-link:hover {
+  text-decoration: underline;
+}
+
+.admin-table-container {
+  overflow-x: auto;
+}
+
+.table-item-name {
+  display: block;
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.table-item-variant {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.table-sku-code {
+  font-size: 11px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  background: var(--raise);
+}
+
+.table-category-label {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.table-stock-qty {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.table-stock-unit {
+  font-size: 11px;
+  color: var(--muted);
+  margin-left: 4px;
+}
+
+.table-alert-pill {
+  display: inline-flex;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.table-alert-pill.is-critical {
+  background: rgba(225, 29, 72, 0.12);
+  color: #e11d48;
+}
+
+.table-alert-pill.is-warning {
+  background: rgba(217, 119, 6, 0.12);
+  color: #d97706;
+}
+
+.table-alert-pill.is-preorder {
+  background: rgba(37, 99, 235, 0.1);
+  color: #2563eb;
+}
+
+.table-order-num {
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.table-customer-name {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.table-waiting-time {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e11d48;
+}
+
+.table-status-hint {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.table-order-amount {
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.table-split-pill {
+  display: inline-flex;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: rgba(147, 51, 234, 0.1);
+  color: #7c3aed;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.table-standard-pill {
+  display: inline-flex;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: var(--raise);
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.admin-empty-state {
+  padding: 24px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 1024px) {
+  .admin-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-analytics-charts-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-alerts-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-kpi-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-period-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-payment-items {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+
+/* === ADMIN BI COPILOT SLIDE-OVER DRAWER (GIAI ĐOẠN 4) === */
+.admin-copilot-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--page);
+  padding: 9px 12px;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-top: 4px;
+}
+
+.admin-copilot-trigger:hover,
+.admin-copilot-trigger.is-active {
+  background: var(--raise);
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.admin-copilot-trigger-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-copilot-trigger-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--ink);
+  flex-shrink: 0;
+}
+
+.admin-copilot-kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
+  background: var(--raise);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--muted);
+  line-height: 1.2;
+}
+
+/* Copilot Drawer Overlay & Panel */
+.admin-copilot-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  animation: admin-fade-in 0.2s ease-out;
+}
+
+.admin-copilot-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(520px, 100vw);
+  background: var(--page);
+  border-left: 1px solid var(--line);
+  box-shadow: -12px 0 36px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  animation: admin-drawer-slide-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Copilot Drawer Header */
+.admin-copilot-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--page);
+  flex-shrink: 0;
+}
+
+.admin-copilot-header-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-copilot-status-indicator {
+  position: relative;
+  width: 10px;
+  height: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.admin-copilot-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: #10b981;
+}
+
+.admin-copilot-status-pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: #10b981;
+  opacity: 0.75;
+  animation: admin-copilot-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes admin-copilot-ping {
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+.admin-copilot-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+.admin-copilot-subtitle {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.3;
+}
+
+.admin-copilot-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-copilot-icon-btn,
+.admin-copilot-close-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.admin-copilot-icon-btn:hover,
+.admin-copilot-close-btn:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+  background: var(--raise);
+}
+
+/* Quick Action Chips Bar */
+.admin-copilot-chips-bar {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--raise);
+  flex-shrink: 0;
+}
+
+.admin-copilot-chips-scroll {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.admin-copilot-chips-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.admin-copilot-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  border: 1px solid var(--line);
+  background: var(--page);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.admin-copilot-chip:hover:not(:disabled) {
+  border-color: var(--ink);
+  background: var(--raise);
+  transform: translateY(-1px);
+}
+
+.admin-copilot-chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.admin-copilot-chip-icon {
+  font-size: 13px;
+  line-height: 1;
+}
+
+/* Messages Stream */
+.admin-copilot-messages-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: var(--track);
+}
+
+.admin-copilot-message-row {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.admin-copilot-message-row.is-user {
+  align-items: flex-end;
+}
+
+.admin-copilot-message-row.is-assistant {
+  align-items: flex-start;
+}
+
+.admin-copilot-bubble {
+  max-width: 92%;
+  padding: 12px 16px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.admin-copilot-message-row.is-user .admin-copilot-bubble {
+  background: var(--ink);
+  color: var(--page);
+  border-radius: 16px 16px 4px 16px;
+  word-break: break-word;
+}
+
+.admin-copilot-message-row.is-user .admin-copilot-bubble p {
+  margin: 0;
+  color: var(--page);
+}
+
+.admin-copilot-message-row.is-assistant .admin-copilot-bubble {
+  background: var(--page);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 16px 16px 16px 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  width: 100%;
+}
+
+.admin-copilot-bubble.is-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  width: auto;
+}
+
+.admin-copilot-loading-dots {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.admin-copilot-loading-dots .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--ink);
+  animation: admin-copilot-bounce 1.2s infinite ease-in-out;
+}
+
+.admin-copilot-loading-dots .dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.admin-copilot-loading-dots .dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes admin-copilot-bounce {
+  0%, 80%, 100% {
+    transform: scale(0);
+    opacity: 0.4;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.admin-copilot-loading-text {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Tools Used Badges */
+.admin-copilot-tools-used {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed var(--line);
+}
+
+.admin-copilot-tools-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.admin-copilot-tool-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  font-size: 11px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  background: var(--raise);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--ink);
+}
+
+/* Tactile Markdown inside Copilot */
+.admin-copilot-markdown {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-copilot-h2,
+.admin-copilot-h3 {
+  margin: 12px 0 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+.admin-copilot-p {
+  margin: 0;
+  color: var(--ink);
+  line-height: 1.6;
+}
+
+.admin-copilot-bold {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.admin-copilot-code {
+  display: inline-block;
+  padding: 1px 5px;
+  font-size: 11px;
+  font-family: var(--font-mono, monospace);
+  background: var(--raise);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--ink);
+}
+
+.admin-copilot-list {
+  margin: 4px 0 8px;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-copilot-list-item {
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.admin-copilot-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  margin: 8px 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--page);
+}
+
+.admin-copilot-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  text-align: left;
+}
+
+.admin-copilot-table th {
+  padding: 8px 10px;
+  background: var(--raise);
+  border-bottom: 1px solid var(--line);
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.admin-copilot-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  line-height: 1.4;
+}
+
+.admin-copilot-table tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-copilot-table tr:hover td {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+/* Footer Input Area */
+.admin-copilot-footer {
+  padding: 14px 16px;
+  border-top: 1px solid var(--line);
+  background: var(--page);
+  flex-shrink: 0;
+}
+
+.admin-copilot-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-copilot-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  background: var(--track);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 8px 10px;
+  transition: border-color 0.15s ease;
+}
+
+.admin-copilot-input-wrapper:focus-within {
+  border-color: var(--ink);
+  background: var(--page);
+}
+
+.admin-copilot-textarea {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  resize: none;
+  outline: none;
+  padding-right: 36px;
+}
+
+.admin-copilot-textarea::placeholder {
+  color: var(--muted);
+}
+
+.admin-copilot-send-btn {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--ink);
+  color: var(--page);
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.admin-copilot-send-btn:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.admin-copilot-send-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.admin-copilot-hints {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.admin-copilot-hints .separator {
+  opacity: 0.5;
+}

@@ -27,7 +27,7 @@
     "clsx": "^2.1.1",
     "gsap": "^3.15.0",
     "maath": "^0.10.8",
-    "next": "16.4.3",
+    "next": "16.4.6",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-hook-form": "^7.91.0",
@@ -45,7 +45,7 @@
     "@types/react-dom": "^19",
     "@types/three": "^0.187.0",
     "eslint": "^9",
-    "eslint-config-next": "16.4.3",
+    "eslint-config-next": "16.4.6",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
