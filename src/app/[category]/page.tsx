@@ -16,13 +16,13 @@ interface CategoryPageProps {
 /**
  * One category route for every category in the catalogue.
  *
- * `/monitor` is the exception: it keeps its bespoke full-screen ring gallery and
- * is served by `app/monitor/page.tsx`, which sits above this dynamic segment and
- * therefore wins.
+ * `/monitor` and `/keyboard` are the exceptions: they keep their bespoke
+ * interactive showcase pages and are served by `app/monitor/page.tsx` and
+ * `app/keyboard/page.tsx`, which sit above this dynamic segment and win.
  */
 export function generateStaticParams() {
   return getSampleCategories()
-    .filter((category) => category.id !== 'monitor')
+    .filter((category) => category.id !== 'monitor' && category.id !== 'keyboard')
     .map((category) => ({ category: category.slug }));
 }
 
