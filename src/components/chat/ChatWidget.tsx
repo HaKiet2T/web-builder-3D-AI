@@ -337,7 +337,7 @@ export function ChatWidget() {
     <div
       ref={containerRef}
       style={transformStyle}
-      className={`fixed ${dockPositionClasses} z-40 font-sans print:hidden ${transitionClass} ${mobileVisibilityClass} ${draggingClass}`}
+      className={`fixed ${dockPositionClasses} ${isOpen ? 'z-[1000]' : 'z-[60]'} font-sans print:hidden ${transitionClass} ${mobileVisibilityClass} ${draggingClass}`}
     >
       {/* Floating Launcher Button */}
       {!isOpen && (
