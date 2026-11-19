@@ -50,7 +50,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider>
           <FilmGrain />
           <CartDrawer />
-          <ChatWidget />
+          <Suspense fallback={null}>
+            <ChatWidget />
+          </Suspense>
           {/* The header reads usePathname() to highlight the current category,
               which suspends on routes whose dynamic params are not prerendered.
               Wrapping it keeps the rest of the layout prerenderable. The
