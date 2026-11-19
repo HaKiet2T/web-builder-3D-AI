@@ -6642,3 +6642,671 @@ html[data-theme='light'] .tactile-cursor-reflection {
 .admin-copilot-hints .separator {
   opacity: 0.5;
 }
+
+/* ==========================================================================
+   Keyboard Interactive Storefront Scoped Styles
+   Zero-dependency, tactile brutalism & virtual physics rail zoom
+   ========================================================================== */
+
+.keyboard-storefront-wrapper {
+  width: 100%;
+  min-height: calc(100vh - var(--header-h, 78px));
+  height: calc(100vh - var(--header-h, 78px));
+  max-height: calc(100vh - var(--header-h, 78px));
+  background: var(--page);
+  color: var(--ink);
+  overflow: hidden;
+  position: relative;
+}
+
+.keyboard-storefront-main {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  width: 100%;
+  height: 100%;
+  max-width: 1540px;
+  margin: 0 auto;
+  padding: 0 36px;
+  gap: 48px;
+  box-sizing: border-box;
+}
+
+/* --------------------------------------------------------------------------
+   Left Column: Information Panel
+   -------------------------------------------------------------------------- */
+
+.keyboard-info-column {
+  flex: 0 0 460px;
+  width: 460px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0;
+  z-index: 10;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.keyboard-pinned-header {
+  flex-shrink: 0;
+  width: 100%;
+  padding: 16px 0 14px 0;
+  background: var(--page);
+  border-bottom: 1px solid var(--line);
+  z-index: 20;
+}
+
+.keyboard-top-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 0;
+}
+
+.keyboard-info-scroll-body {
+  flex: 1;
+  overflow-y: auto;
+  padding-top: 20px;
+  padding-right: 6px;
+  padding-bottom: 28px;
+  display: flex;
+  flex-direction: column;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+  box-sizing: border-box;
+}
+
+.keyboard-info-scroll-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.keyboard-info-scroll-body::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 4px;
+}
+
+.keyboard-back-link {
+  font-size: 13px;
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+.keyboard-back-link:hover {
+  color: var(--ink);
+}
+
+.keyboard-collection-badge {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  background: var(--track);
+  color: var(--soft);
+}
+
+.keyboard-brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.keyboard-brand-tag {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.keyboard-counter-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.keyboard-counter-text {
+  font-size: 13px;
+  color: var(--muted);
+  font-feature-settings: 'tnum';
+  font-family: var(--font-geist-mono, monospace);
+}
+
+.keyboard-counter-text strong {
+  color: var(--ink);
+  font-size: 15px;
+}
+
+.keyboard-arrow-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.keyboard-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--page);
+  color: var(--ink);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.keyboard-nav-btn:hover:not(:disabled) {
+  background: var(--track);
+  border-color: var(--ink);
+}
+
+.keyboard-nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.keyboard-title {
+  font-size: 32px;
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  margin: 0 0 12px 0;
+}
+
+.keyboard-summary {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 0 0 24px 0;
+}
+
+/* Pricing Card */
+.keyboard-pricing-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-radius: 14px;
+  background: var(--track);
+  border: 1px solid var(--line);
+  margin-bottom: 24px;
+}
+
+.keyboard-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.keyboard-price {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--ink);
+  font-feature-settings: 'tnum';
+}
+
+.keyboard-compare-price {
+  font-size: 14px;
+  color: var(--soft);
+  text-decoration: line-through;
+  font-feature-settings: 'tnum';
+}
+
+.keyboard-discount-pill {
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+  background: var(--accent);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.keyboard-stock-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.keyboard-stock-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.keyboard-stock-dot.in {
+  background: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+.keyboard-stock-dot.out {
+  background: #ef4444;
+}
+
+.keyboard-stock-label {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--soft);
+}
+
+/* Highlights */
+.keyboard-highlights-block {
+  margin-bottom: 24px;
+}
+
+.keyboard-block-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--soft);
+  margin: 0 0 12px 0;
+}
+
+.keyboard-highlights-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.keyboard-highlight-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  padding: 7px 13px;
+  border-radius: 10px;
+  background: var(--track);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.keyboard-check-icon {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+/* Switch & Variant Selector */
+.keyboard-variants-block {
+  margin-bottom: 24px;
+}
+
+.keyboard-variant-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.keyboard-variant-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 7px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--page);
+  color: var(--ink);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.keyboard-variant-pill:hover:not(:disabled) {
+  border-color: var(--ink);
+}
+
+.keyboard-variant-pill.selected {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--page);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
+}
+
+.keyboard-variant-pill.selected .keyboard-variant-price {
+  color: var(--muted);
+}
+
+.keyboard-variant-pill.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+.keyboard-variant-name {
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.keyboard-variant-price {
+  font-size: 10.5px;
+  color: var(--soft);
+  margin-top: 2px;
+  font-feature-settings: 'tnum';
+}
+
+/* Actions */
+.keyboard-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.keyboard-add-cart-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 48px;
+  padding: 0 20px;
+  border-radius: 12px;
+  border: none;
+  background: var(--ink);
+  color: var(--page);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-shadow: 0 4px 14px var(--shadow);
+}
+
+.keyboard-add-cart-btn:hover:not(:disabled) {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.keyboard-add-cart-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.keyboard-add-cart-btn.success {
+  background: #10b981;
+  color: #ffffff;
+}
+
+.keyboard-view-details-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  padding: 0 20px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--page);
+  color: var(--ink);
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.keyboard-view-details-btn:hover {
+  background: var(--track);
+  border-color: var(--ink);
+}
+
+/* Service Trust & Reassurance Badges */
+.keyboard-trust-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  margin-top: 4px;
+  gap: 8px;
+}
+
+.keyboard-trust-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--soft);
+}
+
+.keyboard-trust-icon {
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Right Column: Vertical Sliding Rail with Zoom-at-Center
+   -------------------------------------------------------------------------- */
+
+.keyboard-rail-column {
+  flex: 1;
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+/* Subtle Stage Backdrop for center hero */
+.keyboard-rail-target-guide {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(860px, 92%);
+  height: 420px;
+  border-radius: 28px;
+  background: radial-gradient(
+    ellipse at center,
+    var(--track) 0%,
+    transparent 72%
+  );
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.keyboard-rail-viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  perspective: 1200px;
+  cursor: grab;
+  touch-action: none;
+}
+
+.keyboard-rail-viewport:active {
+  cursor: grabbing;
+}
+
+.keyboard-rail-track {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 0;
+  pointer-events: none;
+}
+
+.keyboard-rail-card {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: min(860px, 92%);
+  height: 440px;
+  margin-top: -220px;
+  margin-left: max(-430px, -46%);
+  pointer-events: auto;
+  cursor: pointer;
+  transform: translate3d(0, var(--kb-y, 0px), 0) scale(var(--kb-scale, 1))
+    perspective(900px) rotateX(var(--kb-tilt, 0deg));
+  opacity: var(--kb-opacity, 1);
+  will-change: transform, opacity;
+  transition: filter 0.2s ease, opacity 0.15s ease;
+  outline: none;
+}
+
+.keyboard-card-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  border-radius: 20px;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.keyboard-artwork-wrap {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  pointer-events: auto;
+}
+
+.keyboard-artwork-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  text-decoration: none;
+  cursor: pointer;
+  outline: none;
+  pointer-events: auto;
+  position: relative;
+  z-index: 5;
+}
+
+.keyboard-artwork-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 16px;
+}
+
+.keyboard-artwork-img {
+  max-width: 96%;
+  max-height: 420px;
+  object-fit: contain;
+  cursor: pointer;
+  pointer-events: auto;
+  filter: drop-shadow(0 20px 36px rgba(0, 0, 0, 0.18));
+  transition: transform 0.25s ease, filter 0.25s ease;
+}
+
+.keyboard-rail-card[data-focused='true'] .keyboard-artwork-img {
+  filter: drop-shadow(0 28px 48px rgba(0, 0, 0, 0.26));
+}
+
+.keyboard-artwork-link:hover .keyboard-artwork-img {
+  filter: drop-shadow(0 32px 56px rgba(0, 0, 0, 0.32));
+  transform: scale(1.02);
+}
+
+.keyboard-artwork-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--soft);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: var(--track);
+  padding: 24px 40px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+}
+
+/* Dots Nav on the far right */
+.keyboard-rail-dots {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 20;
+}
+
+.keyboard-dot-nav {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: none;
+  background: var(--line);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.keyboard-dot-nav:hover {
+  background: var(--soft);
+  transform: scale(1.3);
+}
+
+.keyboard-dot-nav.active {
+  height: 20px;
+  border-radius: 9999px;
+  background: var(--ink);
+}
+
+/* --------------------------------------------------------------------------
+   Responsive Breakpoints
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 1024px) {
+  .keyboard-storefront-wrapper {
+    height: auto;
+    max-height: none;
+    overflow-y: auto;
+  }
+
+  .keyboard-storefront-main {
+    flex-direction: column-reverse;
+    gap: 24px;
+    padding: 16px;
+    height: auto;
+  }
+
+  .keyboard-info-column {
+    flex: 1;
+    width: 100%;
+    height: auto;
+    padding: 0;
+  }
+
+  .keyboard-rail-column {
+    height: 480px;
+  }
+
+  .keyboard-rail-card {
+    width: 95%;
+    height: 380px;
+    margin-top: -190px;
+    margin-left: -47.5%;
+  }
+
+  .keyboard-artwork-img {
+    max-height: 340px;
+  }
+
+  .keyboard-title {
+    font-size: 24px;
+  }
+}
