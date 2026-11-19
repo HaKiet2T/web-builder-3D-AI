@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="100%" height="100%" fill="none">
+  <defs>
+    <filter id="shadow-gladius" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#000000" flood-opacity="0.45" />
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#06b6d4" flood-opacity="0.22" />
+    </filter>
+    <linearGradient id="body-grad-gladius" x1="170" y1="80" x2="430" y2="520" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2c2e36" />
+      <stop offset="45%" stop-color="#181a20" />
+      <stop offset="100%" stop-color="#0b0c0f" />
+    </linearGradient>
+    <linearGradient id="wheel-glow-gladius" x1="300" y1="130" x2="300" y2="210" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#22d3ee" />
+      <stop offset="50%" stop-color="#06b6d4" />
+      <stop offset="100%" stop-color="#0891b2" />
+    </linearGradient>
+    <linearGradient id="rog-glow-gladius" x1="260" y1="390" x2="340" y2="470" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#22d3ee" />
+      <stop offset="50%" stop-color="#06b6d4" />
+      <stop offset="100%" stop-color="#0e7490" />
+    </linearGradient>
+  </defs>
+
+  <g filter="url(#shadow-gladius)">
+    <!-- Classic Ergonomic Silhouette (Gladius Iconic Curve) -->
+    <path d="M 285 76 C 228 78 174 130 162 225 C 150 295 146 370 170 445 C 190 508 248 528 308 528 C 368 528 418 502 432 435 C 446 355 436 270 422 205 C 408 128 355 74 285 76 Z" fill="url(#body-grad-gladius)" stroke="#3e4350" stroke-width="1.8" />
+
+    <!-- Laser-Engraved Cyber Grip Text on Left Flank -->
+    <g opacity="0.75">
+      <text x="168" y="275" fill="#06b6d4" font-family="monospace" font-size="8" font-weight="700" letter-spacing="1">ROG</text>
+      <text x="166" y="290" fill="#06b6d4" font-family="monospace" font-size="8" font-weight="700" letter-spacing="1">AIMPOINT</text>
+      <text x="168" y="305" fill="#06b6d4" font-family="monospace" font-size="8" font-weight="700" letter-spacing="1">GAMING</text>
+      <text x="170" y="320" fill="#06b6d4" font-family="monospace" font-size="8" font-weight="700" letter-spacing="1">AURA</text>
+      <text x="172" y="335" fill="#06b6d4" font-family="monospace" font-size="8" font-weight="700" letter-spacing="1">SYNC</text>
+      <text x="174" y="350" fill="#06b6d4" font-family="monospace" font-size="8" font-weight="700" letter-spacing="1">GLADIUS</text>
+    </g>
+
+    <!-- Side Buttons (Push-Fit II Ergonomic Thumb Placement) -->
+    <path d="M 152 255 C 150 242 158 235 167 235 L 176 270 C 166 270 154 265 152 255 Z" fill="#090a0d" stroke="#06b6d4" stroke-width="1.3" />
+    <path d="M 155 280 C 153 273 160 268 170 268 L 178 305 C 168 305 156 298 155 280 Z" fill="#090a0d" stroke="#06b6d4" stroke-width="1.3" />
+
+    <!-- Left & Right Click Triggers -->
+    <path d="M 280 86 C 228 90 186 135 178 215 C 176 235 177 252 180 268 L 280 268 Z" fill="#252831" stroke="#424755" stroke-width="1.2" />
+    <path d="M 296 92 C 348 96 394 138 404 215 C 406 235 405 252 402 268 L 296 268 Z" fill="#252831" stroke="#424755" stroke-width="1.2" />
+
+    <!-- Center Separation Groove -->
+    <rect x="284" y="82" width="8" height="190" rx="4" fill="#090a0d" />
+    <rect x="276" y="130" width="24" height="85" rx="12" fill="#0f1115" stroke="#2c303c" stroke-width="1.5" />
+
+    <!-- Scroll Wheel -->
+    <rect x="280" y="136" width="16" height="72" rx="8" fill="#15171d" stroke="url(#wheel-glow-gladius)" stroke-width="1.8" />
+    <line x1="282" y1="146" x2="294" y2="146" stroke="#22d3ee" stroke-width="1.8" />
+    <line x1="282" y1="156" x2="294" y2="156" stroke="#22d3ee" stroke-width="1.8" />
+    <line x1="282" y1="166" x2="294" y2="166" stroke="#22d3ee" stroke-width="1.8" />
+    <line x1="282" y1="176" x2="294" y2="176" stroke="#22d3ee" stroke-width="1.8" />
+    <line x1="282" y1="186" x2="294" y2="186" stroke="#22d3ee" stroke-width="1.8" />
+    <line x1="282" y1="196" x2="294" y2="196" stroke="#22d3ee" stroke-width="1.8" />
+
+    <!-- DPI Button -->
+    <rect x="282" y="224" width="12" height="18" rx="4" fill="#1d2027" stroke="#363b48" stroke-width="1.2" />
+    <circle cx="288" cy="233" r="2" fill="#06b6d4" />
+
+    <!-- ROG Fearless Eye Emblem -->
+    <g transform="translate(252, 395) scale(0.92)">
+      <!-- Left Eye Wing -->
+      <path d="M 8 36 L 42 16 L 38 24 L 18 36 Z" fill="url(#rog-glow-gladius)" />
+      <!-- Right Eye Wing / Pupil Slash -->
+      <path d="M 45 15 L 94 36 L 90 42 L 56 22 L 54 38 L 48 38 Z" fill="url(#rog-glow-gladius)" />
+      <!-- Bottom Angular Fangs -->
+      <path d="M 24 42 L 40 54 L 34 56 L 20 44 Z" fill="url(#rog-glow-gladius)" />
+      <path d="M 76 42 L 60 54 L 66 56 L 80 44 Z" fill="url(#rog-glow-gladius)" />
+    </g>
+
+    <text x="294" y="490" text-anchor="middle" fill="#67e8f9" font-family="system-ui, sans-serif" font-size="11" font-weight="700" letter-spacing="3.5">GLADIUS III AIMPOINT</text>
+  </g>
+</svg>

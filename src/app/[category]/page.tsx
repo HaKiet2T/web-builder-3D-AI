@@ -16,13 +16,16 @@ interface CategoryPageProps {
 /**
  * One category route for every category in the catalogue.
  *
- * `/monitor` and `/keyboard` are the exceptions: they keep their bespoke
- * interactive showcase pages and are served by `app/monitor/page.tsx` and
- * `app/keyboard/page.tsx`, which sit above this dynamic segment and win.
+ * `/monitor`, `/keyboard` and `/mouse` are the exceptions: they keep their bespoke
+ * interactive showcase pages and are served by `app/monitor/page.tsx`,
+ * `app/keyboard/page.tsx`, and `app/mouse/page.tsx`, which sit above this dynamic segment and win.
  */
 export function generateStaticParams() {
   return getSampleCategories()
-    .filter((category) => category.id !== 'monitor' && category.id !== 'keyboard')
+    .filter(
+      (category) =>
+        category.id !== 'monitor' && category.id !== 'keyboard' && category.id !== 'mouse',
+    )
     .map((category) => ({ category: category.slug }));
 }
 
