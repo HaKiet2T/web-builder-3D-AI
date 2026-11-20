@@ -140,6 +140,28 @@ describe('Keyboard Storefront Architecture & Interactive Rail UI', () => {
     });
   });
 
+  describe('Entrance Slide-Down & Deceleration Animation on Page Load', () => {
+    it('defines GPU-accelerated entrance keyframes with cubic-bezier deceleration curve in CSS', () => {
+      assert.match(globalsCss, /@keyframes keyboard-rail-slide-down/);
+      assert.match(globalsCss, /transform: translateY\(-28px\)/);
+      assert.match(globalsCss, /cubic-bezier\(0\.16,\s*1,\s*0\.3,\s*1\)/);
+      assert.match(globalsCss, /\.keyboard-rail-column\s*\{[^}]*animation:[^}]*keyboard-rail-slide-down/);
+      assert.match(globalsCss, /animation:[^}]*keyboard-rail-slide-down\s+1\.7s/);
+    });
+
+    it('implements physics-driven downward slide with smooth spring damping in KeyboardStorefront', () => {
+      assert.match(keyboardStorefront, /ENTRANCE_OFFSET_PX/);
+      assert.match(keyboardStorefront, /entranceOffsetRef/);
+      assert.match(keyboardStorefront, /isEnteringRef/);
+      assert.match(keyboardStorefront, /entranceOffsetRef\.current\s*\+=\s*\(0\s*-\s*entranceOffsetRef\.current\)\s*\*\s*0\.041/);
+    });
+
+    it('smoothly hands over entrance animation when user interacts via pointer or wheel', () => {
+      assert.match(keyboardStorefront, /handlePointerDown[\s\S]*?entranceOffsetRef\.current\s*=\s*0/);
+      assert.match(keyboardStorefront, /onWheel[\s\S]*?entranceOffsetRef\.current\s*=\s*0/);
+    });
+  });
+
   describe('Strict Em Dash Ban (U+2014) Compliance', () => {
     it('guarantees zero em dash characters across all new keyboard storefront files', () => {
       assert.doesNotMatch(keyboardStorefront, /\u2014/, 'KeyboardStorefront must not contain em dash');

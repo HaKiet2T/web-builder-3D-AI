@@ -7087,6 +7087,17 @@ html[data-theme='light'] .tactile-cursor-reflection {
    Right Column: Vertical Sliding Rail with Zoom-at-Center
    -------------------------------------------------------------------------- */
 
+@keyframes keyboard-rail-slide-down {
+  0% {
+    opacity: 0.85;
+    transform: translateY(-28px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .keyboard-rail-column {
   flex: 1;
   position: relative;
@@ -7096,6 +7107,7 @@ html[data-theme='light'] .tactile-cursor-reflection {
   align-items: center;
   justify-content: center;
   user-select: none;
+  animation: keyboard-rail-slide-down 1.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* Subtle Stage Backdrop for center hero */
@@ -7153,7 +7165,7 @@ html[data-theme='light'] .tactile-cursor-reflection {
     perspective(900px) rotateX(var(--kb-tilt, 0deg));
   opacity: var(--kb-opacity, 1);
   will-change: transform, opacity;
-  transition: filter 0.2s ease, opacity 0.15s ease;
+  transition: filter 0.2s ease;
   outline: none;
 }
 
@@ -7165,7 +7177,7 @@ html[data-theme='light'] .tactile-cursor-reflection {
   justify-content: center;
   position: relative;
   border-radius: 20px;
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.22s ease;
 }
 
 .keyboard-artwork-wrap {

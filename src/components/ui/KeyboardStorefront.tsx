@@ -15,6 +15,7 @@ interface KeyboardStorefrontProps {
 }
 
 const ITEM_HEIGHT = 380; // Distance between items in pixels (scaled for 2x hero cards)
+const ENTRANCE_OFFSET_PX = -280; // Initial upward offset for smooth slide-down entrance
 
 export function KeyboardStorefront({ products }: KeyboardStorefrontProps) {
   const router = useRouter();
@@ -30,6 +31,8 @@ export function KeyboardStorefront({ products }: KeyboardStorefrontProps) {
 
   const currentPosRef = useRef(0); // in pixels
   const targetPosRef = useRef(0); // in pixels
+  const entranceOffsetRef = useRef(ENTRANCE_OFFSET_PX);
+  const isEnteringRef = useRef(true);
   const velocityRef = useRef(0);
   const isPointerDownRef = useRef(false);
   const isDraggingRef = useRef(false);
@@ -46,6 +49,17 @@ export function KeyboardStorefront({ products }: KeyboardStorefrontProps) {
   const productCount = products.length;
   const currentProduct = products[activeIndex] ?? products[0];
 
+  // Respect user preference for reduced motion
+  useEffect(() => {
+    if (
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      entranceOffsetRef.current = 0;
+      isEnteringRef.current = false;
+    }
+  }, []);
+
   // Pick active variant (derived cleanly without cascading effects)
   const activeVariant: Variant | undefined =
     currentProduct?.variants.find((v) => v.id === userSelectedVariantId) ??
@@ -58,35 +72,58 @@ export function KeyboardStorefront({ products }: KeyboardStorefrontProps) {
       if (!viewportRef.current) return;
       const viewportHeight = viewportRef.current.clientHeight || 650;
       const centerY = viewportHeight / 2;
+      const entranceOffset = entranceOffsetRef.current;
+      const isEntering = isEnteringRef.current && Math.abs(entranceOffset) > 0.1;
+      const entranceRatio = isEntering ? Math.abs(entranceOffset) / Math.abs(ENTRANCE_OFFSET_PX) : 0;
+      const progress = Math.max(0, Math.min(1, 1 - entranceRatio));
 
       itemRefs.current.forEach((el, index) => {
         if (!el) return;
-        // Position of this item center relative to viewport top
-        const itemCenter = centerY + index * ITEM_HEIGHT - pos;
+        // Position of this item center relative to viewport top including entrance slide
+        const itemCenter = centerY + index * ITEM_HEIGHT - pos + entranceOffset;
         const distFromCenter = itemCenter - centerY;
         const absDist = Math.abs(distFromCenter);
 
         // Proximity factor: 1.0 at center, drops to 0.0 at distance >= (viewportHeight * 0.52)
         const maxDist = Math.max(viewportHeight * 0.52, 1);
-        const proximity = Math.max(0, 1 - absDist / maxDist);
+        const naturalDist = Math.abs(index * ITEM_HEIGHT - pos);
+        const naturalProximity = Math.max(0, 1 - naturalDist / maxDist);
 
-        // Smooth zoom: 1.18 at center, 0.74 at far edges
-        const scale = (0.74 + 0.44 * proximity).toFixed(3);
-        // Opacity: 1.0 at center, 0.36 at far edges
-        const opacity = (0.36 + 0.64 * proximity).toFixed(3);
-        // 3D tilt: subtle rotateX up to 22deg
-        const tilt = Math.max(-22, Math.min(22, -(distFromCenter / maxDist) * 22)).toFixed(2);
-        // Z-Index: higher near center
-        const zIndex = Math.round(10 + proximity * 40);
+        let scale: string;
+        let opacity: string;
+        let tilt: string;
+        let zIndex: number;
+
+        if (isEntering && index === 0) {
+          // Hero item expands smoothly into full focus as it lands at center
+          scale = (0.92 + 0.26 * progress).toFixed(3);
+          opacity = (0.75 + 0.25 * progress).toFixed(3);
+          tilt = (-(1 - progress) * 8).toFixed(2);
+          zIndex = Math.round(20 + progress * 30);
+        } else if (isEntering) {
+          // Secondary items slide down smoothly in their natural resting scale
+          scale = (0.74 + 0.44 * naturalProximity * progress).toFixed(3);
+          opacity = (0.36 + 0.64 * naturalProximity * progress).toFixed(3);
+          tilt = Math.max(-22, Math.min(22, -((index * ITEM_HEIGHT - pos) / maxDist) * 22)).toFixed(2);
+          zIndex = Math.round(10 + naturalProximity * 20);
+        } else {
+          // Regular interactive proximity logic
+          const proximity = Math.max(0, 1 - absDist / maxDist);
+          scale = (0.74 + 0.44 * proximity).toFixed(3);
+          opacity = (0.36 + 0.64 * proximity).toFixed(3);
+          tilt = Math.max(-22, Math.min(22, -(distFromCenter / maxDist) * 22)).toFixed(2);
+          zIndex = Math.round(10 + proximity * 40);
+        }
 
         // Write directly to CSS variables on DOM element for guaranteed 60-120 FPS
-        el.style.setProperty('--kb-y', `${(index * ITEM_HEIGHT - pos).toFixed(1)}px`);
+        el.style.setProperty('--kb-y', `${(index * ITEM_HEIGHT - pos + entranceOffset).toFixed(1)}px`);
         el.style.setProperty('--kb-scale', scale);
         el.style.setProperty('--kb-opacity', opacity);
         el.style.setProperty('--kb-tilt', `${tilt}deg`);
         el.style.zIndex = String(zIndex);
 
-        if (proximity > 0.82) {
+        const activeProximity = isEntering ? (index === 0 ? progress : 0) : Math.max(0, 1 - absDist / maxDist);
+        if (activeProximity > 0.82) {
           el.setAttribute('data-focused', 'true');
         } else {
           el.removeAttribute('data-focused');
@@ -105,6 +142,16 @@ export function KeyboardStorefront({ products }: KeyboardStorefrontProps) {
 
     const tick = () => {
       if (!running) return;
+
+      // Handle smooth deceleration of entrance slide-down offset (doubled duration & silky smooth glide)
+      if (isEnteringRef.current) {
+        if (Math.abs(entranceOffsetRef.current) > 0.1) {
+          entranceOffsetRef.current += (0 - entranceOffsetRef.current) * 0.041;
+        } else {
+          entranceOffsetRef.current = 0;
+          isEnteringRef.current = false;
+        }
+      }
 
       if (!isDraggingRef.current) {
         // Apply inertia when not dragging
@@ -163,6 +210,8 @@ export function KeyboardStorefront({ products }: KeyboardStorefrontProps) {
 
   // Jump smoothly to a specific item index
   const scrollToIndex = useCallback((index: number) => {
+    entranceOffsetRef.current = 0;
+    isEnteringRef.current = false;
     const clamped = Math.max(0, Math.min(productCount - 1, index));
     targetPosRef.current = clamped * ITEM_HEIGHT;
     velocityRef.current = 0;
@@ -175,6 +224,8 @@ export function KeyboardStorefront({ products }: KeyboardStorefrontProps) {
 
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
+      entranceOffsetRef.current = 0;
+      isEnteringRef.current = false;
       // Accumulate velocity based on scroll direction
       const delta = e.deltaY;
       velocityRef.current += Math.max(-50, Math.min(50, delta * 0.35));
@@ -206,6 +257,8 @@ export function KeyboardStorefront({ products }: KeyboardStorefrontProps) {
   // Pointer drag handling - resilient threshold to differentiate intentional drag from click
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (e.button !== 0) return; // Main button only
+    entranceOffsetRef.current = 0;
+    isEnteringRef.current = false;
     isPointerDownRef.current = true;
     isDraggingRef.current = false;
     hasMovedRef.current = false;
@@ -690,10 +743,10 @@ export function KeyboardStorefront({ products }: KeyboardStorefrontProps) {
                     aria-label={`Chọn bàn phím ${product.name}`}
                     style={
                       {
-                        '--kb-y': `${idx * ITEM_HEIGHT}px`,
-                        '--kb-scale': idx === 0 ? '1.18' : '0.74',
-                        '--kb-opacity': idx === 0 ? '1.0' : '0.36',
-                        '--kb-tilt': '0deg',
+                        '--kb-y': `${idx * ITEM_HEIGHT + ENTRANCE_OFFSET_PX}px`,
+                        '--kb-scale': idx === 0 ? '0.92' : '0.74',
+                        '--kb-opacity': idx === 0 ? '0.75' : '0.36',
+                        '--kb-tilt': idx === 0 ? '-8deg' : '0deg',
                       } as React.CSSProperties
                     }
                     onKeyDown={(e) => {
