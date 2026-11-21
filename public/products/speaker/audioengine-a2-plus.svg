@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="100%" height="100%" fill="none">
+  <defs>
+    <filter id="shadow-a2" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="16" stdDeviation="18" flood-color="#000000" flood-opacity="0.38" />
+    </filter>
+    <linearGradient id="a2-white" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="60%" stop-color="#f5f6f8" />
+      <stop offset="100%" stop-color="#e2e4e8" />
+    </linearGradient>
+    <radialGradient id="aramid-woofer" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#2a2928" />
+      <stop offset="70%" stop-color="#141312" />
+      <stop offset="100%" stop-color="#080706" />
+    </radialGradient>
+    <radialGradient id="silk-tweeter" cx="45%" cy="45%" r="55%">
+      <stop offset="0%" stop-color="#323438" />
+      <stop offset="60%" stop-color="#18191c" />
+      <stop offset="100%" stop-color="#0a0a0c" />
+    </radialGradient>
+  </defs>
+
+  <g filter="url(#shadow-a2)">
+    <!-- LEFT SPEAKER (Passive Desk Monitor) -->
+    <g transform="translate(70, 60)">
+      <!-- Acoustic Wedge Riser (Foam pad) -->
+      <polygon points="65,400 205,400 215,435 55,435" fill="#1b1c20" stroke="#2c2d33" stroke-width="1.2" />
+
+      <!-- Speaker Cabinet (Hand-finished satin white) -->
+      <rect x="70" y="140" width="135" height="265" rx="8" fill="url(#a2-white)" stroke="#d2d5dc" stroke-width="1.5" />
+
+      <!-- 0.75" Silk Dome Tweeter with Neodymium Magnets -->
+      <circle cx="137" cy="205" r="22" fill="url(#silk-tweeter)" stroke="#989ca8" stroke-width="1.2" />
+      <circle cx="137" cy="205" r="14" fill="#0c0d0f" />
+      <circle cx="134" cy="201" r="4" fill="#ffffff" opacity="0.35" />
+
+      <!-- 2.75" Custom Aramid Fiber Woofer -->
+      <circle cx="137" cy="305" r="44" fill="url(#aramid-woofer)" stroke="#525660" stroke-width="2" />
+      <circle cx="137" cy="305" r="36" stroke="#2a2b30" stroke-width="3" fill="none" />
+      <circle cx="137" cy="305" r="16" fill="#121316" stroke="#3c3f47" stroke-width="1" />
+      
+      <!-- Front Slot Port (Bass Reflex) -->
+      <rect x="100" y="375" width="75" height="8" rx="4" fill="#101114" stroke="#26272d" stroke-width="1" />
+    </g>
+
+    <!-- RIGHT SPEAKER (Powered Master with Volume Knob) -->
+    <g transform="translate(260, 60)">
+      <!-- Acoustic Wedge Riser -->
+      <polygon points="65,400 205,400 215,435 55,435" fill="#1b1c20" stroke="#2c2d33" stroke-width="1.2" />
+
+      <!-- Speaker Cabinet -->
+      <rect x="70" y="140" width="135" height="265" rx="8" fill="url(#a2-white)" stroke="#d2d5dc" stroke-width="1.5" />
+
+      <!-- Silk Dome Tweeter -->
+      <circle cx="137" cy="205" r="22" fill="url(#silk-tweeter)" stroke="#989ca8" stroke-width="1.2" />
+      <circle cx="137" cy="205" r="14" fill="#0c0d0f" />
+      <circle cx="134" cy="201" r="4" fill="#ffffff" opacity="0.35" />
+
+      <!-- Aramid Fiber Woofer -->
+      <circle cx="137" cy="305" r="44" fill="url(#aramid-woofer)" stroke="#525660" stroke-width="2" />
+      <circle cx="137" cy="305" r="36" stroke="#2a2b30" stroke-width="3" fill="none" />
+      <circle cx="137" cy="305" r="16" fill="#121316" stroke="#3c3f47" stroke-width="1" />
+
+      <!-- Front Slot Port -->
+      <rect x="100" y="375" width="75" height="8" rx="4" fill="#101114" stroke="#26272d" stroke-width="1" />
+
+      <!-- Small Power/Bluetooth Status LED -->
+      <circle cx="137" cy="392" r="2.5" fill="#00e5ff" />
+    </g>
+  </g>
+</svg>

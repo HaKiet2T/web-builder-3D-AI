@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="100%" height="100%" fill="none">
+  <defs>
+    <filter id="shadow-keris" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#000000" flood-opacity="0.45" />
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#ff0055" flood-opacity="0.22" />
+    </filter>
+    <linearGradient id="body-grad-keris" x1="160" y1="90" x2="430" y2="520" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2d2f38" />
+      <stop offset="50%" stop-color="#191b22" />
+      <stop offset="100%" stop-color="#0c0d11" />
+    </linearGradient>
+    <linearGradient id="btn-left-keris" x1="170" y1="95" x2="285" y2="265" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#383c48" />
+      <stop offset="100%" stop-color="#1f222b" />
+    </linearGradient>
+    <linearGradient id="btn-right-keris" x1="410" y1="120" x2="310" y2="270" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#30333d" />
+      <stop offset="100%" stop-color="#1a1c23" />
+    </linearGradient>
+    <linearGradient id="wheel-glow-keris" x1="300" y1="135" x2="300" y2="215" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ff0055" />
+      <stop offset="50%" stop-color="#ff3377" />
+      <stop offset="100%" stop-color="#cc0044" />
+    </linearGradient>
+    <linearGradient id="rog-glow-keris" x1="260" y1="390" x2="340" y2="470" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ff0055" />
+      <stop offset="50%" stop-color="#e6004c" />
+      <stop offset="100%" stop-color="#990033" />
+    </linearGradient>
+  </defs>
+
+  <g filter="url(#shadow-keris)">
+    <!-- Right-Handed Ergonomic Contour (Keris II Arch) -->
+    <path d="M 285 78 C 225 80 170 135 158 230 C 148 300 144 375 168 450 C 188 510 245 528 305 528 C 365 528 418 502 432 432 C 445 350 435 270 422 205 C 408 128 355 76 285 78 Z" fill="url(#body-grad-keris)" stroke="#3e4350" stroke-width="1.8" />
+
+    <!-- Left Thumb Rest Contour -->
+    <path d="M 158 230 C 148 300 146 365 168 445 C 180 405 186 335 180 260 C 178 240 168 232 158 230 Z" fill="#13151a" opacity="0.9" />
+
+    <!-- Ergonomic Thumb Buttons -->
+    <path d="M 148 260 C 146 248 154 240 163 240 L 172 275 C 162 275 150 270 148 260 Z" fill="#090a0d" stroke="#ff0055" stroke-width="1.3" />
+    <path d="M 151 285 C 149 278 156 272 166 272 L 174 310 C 164 310 152 302 151 285 Z" fill="#090a0d" stroke="#ff0055" stroke-width="1.3" />
+
+    <!-- Asymmetrical Left Click Button (Elevated) -->
+    <path d="M 282 88 C 230 90 185 138 175 220 C 173 240 175 258 178 272 L 282 272 Z" fill="url(#btn-left-keris)" stroke="#454b5a" stroke-width="1.2" />
+
+    <!-- Asymmetrical Right Click Button (Sloped) -->
+    <path d="M 298 96 C 352 100 398 142 408 215 C 410 235 408 255 404 270 L 298 270 Z" fill="url(#btn-right-keris)" stroke="#3d4250" stroke-width="1.2" />
+
+    <!-- Center Separation Recess -->
+    <rect x="286" y="85" width="8" height="190" rx="4" fill="#090a0d" />
+    <rect x="278" y="132" width="24" height="85" rx="12" fill="#101216" stroke="#2c303a" stroke-width="1.5" />
+
+    <!-- Scroll Wheel (Textured Cyber Ribs + Neon Red Glow) -->
+    <rect x="282" y="138" width="16" height="72" rx="8" fill="#16181f" stroke="url(#wheel-glow-keris)" stroke-width="1.8" />
+    <line x1="284" y1="148" x2="296" y2="148" stroke="#ff3377" stroke-width="1.8" />
+    <line x1="284" y1="158" x2="296" y2="158" stroke="#ff3377" stroke-width="1.8" />
+    <line x1="284" y1="168" x2="296" y2="168" stroke="#ff3377" stroke-width="1.8" />
+    <line x1="284" y1="178" x2="296" y2="178" stroke="#ff3377" stroke-width="1.8" />
+    <line x1="284" y1="188" x2="296" y2="188" stroke="#ff3377" stroke-width="1.8" />
+    <line x1="284" y1="198" x2="296" y2="198" stroke="#ff3377" stroke-width="1.8" />
+
+    <!-- DPI Button -->
+    <rect x="284" y="228" width="12" height="18" rx="4" fill="#20232a" stroke="#373c48" stroke-width="1.2" />
+    <circle cx="290" cy="237" r="2" fill="#ff0055" />
+
+    <!-- Ergonomic Palm Ridge Arch -->
+    <path d="M 200 340 C 245 320 340 322 388 345" stroke="#252932" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.6" />
+
+    <!-- ROG Fearless Eye Emblem -->
+    <g transform="translate(252, 395) scale(0.92)">
+      <!-- Left Eye Wing -->
+      <path d="M 8 36 L 42 16 L 38 24 L 18 36 Z" fill="url(#rog-glow-keris)" />
+      <!-- Right Eye Wing / Pupil Slash -->
+      <path d="M 45 15 L 94 36 L 90 42 L 56 22 L 54 38 L 48 38 Z" fill="url(#rog-glow-keris)" />
+      <!-- Bottom Angular Fangs -->
+      <path d="M 24 42 L 40 54 L 34 56 L 20 44 Z" fill="url(#rog-glow-keris)" />
+      <path d="M 76 42 L 60 54 L 66 56 L 80 44 Z" fill="url(#rog-glow-keris)" />
+    </g>
+
+    <!-- 8000Hz Polling Rate Booster Badge -->
+    <text x="295" y="490" text-anchor="middle" fill="#667285" font-family="system-ui, sans-serif" font-size="11" font-weight="700" letter-spacing="3.5">8000HZ WIRELESS ACE</text>
+  </g>
+</svg>
