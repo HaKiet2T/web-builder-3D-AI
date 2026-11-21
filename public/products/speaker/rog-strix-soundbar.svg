@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="100%" height="100%" fill="none">
+  <defs>
+    <filter id="shadow-soundbar" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#000000" flood-opacity="0.5" />
+      <feDropShadow dx="0" dy="6" stdDeviation="12" flood-color="#00f0ff" flood-opacity="0.25" />
+    </filter>
+    <linearGradient id="soundbar-body" x1="40" y1="220" x2="560" y2="380" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1c1f26" />
+      <stop offset="30%" stop-color="#2a2e38" />
+      <stop offset="50%" stop-color="#181a20" />
+      <stop offset="70%" stop-color="#2a2e38" />
+      <stop offset="100%" stop-color="#1c1f26" />
+    </linearGradient>
+    <linearGradient id="grille-pattern" x1="60" y1="240" x2="540" y2="340" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#121317" />
+      <stop offset="100%" stop-color="#090a0d" />
+    </linearGradient>
+    <linearGradient id="aura-underglow" x1="60" y1="365" x2="540" y2="365" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ff0033" />
+      <stop offset="25%" stop-color="#7928ca" />
+      <stop offset="50%" stop-color="#00f0ff" />
+      <stop offset="75%" stop-color="#00df89" />
+      <stop offset="100%" stop-color="#ff0033" />
+    </linearGradient>
+    <radialGradient id="sb-driver" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00f0ff" stop-opacity="0.6" />
+      <stop offset="40%" stop-color="#151821" />
+      <stop offset="100%" stop-color="#0a0c10" />
+    </radialGradient>
+  </defs>
+
+  <g filter="url(#shadow-soundbar)">
+    <!-- Acoustic Desk Feet (Angled wedges) -->
+    <polygon points="100,345 160,345 175,375 85,375" fill="#1b1d24" stroke="#323642" stroke-width="1.5" />
+    <polygon points="440,345 500,345 515,375 425,375" fill="#1b1d24" stroke="#323642" stroke-width="1.5" />
+
+    <!-- Main Soundbar Chassis (Trapezoidal Gaming Profile) -->
+    <polygon points="60,250 540,250 560,350 40,350" fill="url(#soundbar-body)" stroke="#3f4554" stroke-width="2" />
+
+    <!-- Top Control Island & Chamfer -->
+    <polygon points="80,240 520,240 540,250 60,250" fill="#20232c" stroke="#363b47" stroke-width="1.2" />
+    <!-- Tactile Control Buttons -->
+    <circle cx="270" cy="245" r="4" fill="#00f0ff" />
+    <circle cx="290" cy="245" r="4" fill="#444955" />
+    <circle cx="310" cy="245" r="4" fill="#444955" />
+    <circle cx="330" cy="245" r="4" fill="#ff0033" />
+
+    <!-- Metallic Micro-Grille Center Display -->
+    <rect x="75" y="260" width="450" height="75" rx="6" fill="url(#grille-pattern)" stroke="#22252e" stroke-width="1.5" />
+    
+    <!-- 4x Precision Acoustic Drivers Behind Grille -->
+    <!-- Driver 1 (Left Woofer) -->
+    <circle cx="140" cy="297" r="28" fill="url(#sb-driver)" stroke="#00f0ff" stroke-width="1" stroke-opacity="0.4" />
+    <circle cx="140" cy="297" r="10" fill="#090a0d" />
+    <!-- Driver 2 (Left Tweeter) -->
+    <circle cx="215" cy="297" r="18" fill="#15171d" stroke="#ff0033" stroke-width="1" stroke-opacity="0.4" />
+    <circle cx="215" cy="297" r="6" fill="#00f0ff" />
+    <!-- Driver 3 (Right Tweeter) -->
+    <circle cx="385" cy="297" r="18" fill="#15171d" stroke="#ff0033" stroke-width="1" stroke-opacity="0.4" />
+    <circle cx="385" cy="297" r="6" fill="#00f0ff" />
+    <!-- Driver 4 (Right Woofer) -->
+    <circle cx="460" cy="297" r="28" fill="url(#sb-driver)" stroke="#00f0ff" stroke-width="1" stroke-opacity="0.4" />
+    <circle cx="460" cy="297" r="10" fill="#090a0d" />
+
+    <!-- Central ROG Aura Shield Emblem -->
+    <polygon points="300,285 315,295 308,312 292,312 285,295" fill="#0a0c10" stroke="#00f0ff" stroke-width="1.5" />
+    <path d="M 296 298 L 304 298 L 300 307 Z" fill="#ff0033" />
+
+    <!-- Bottom Aura Sync RGB Underglow Strip -->
+    <rect x="50" y="348" width="500" height="6" rx="3" fill="url(#aura-underglow)" opacity="0.9" />
+    <ellipse cx="300" cy="355" rx="220" ry="12" fill="#00f0ff" opacity="0.15" />
+  </g>
+</svg>

@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="100%" height="100%" fill="none">
+  <defs>
+    <filter id="shadow-cetra" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#000000" flood-opacity="0.5" />
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#ff0033" flood-opacity="0.25" />
+    </filter>
+    <linearGradient id="body-grad-cetra" x1="120" y1="100" x2="260" y2="480" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#24272e" />
+      <stop offset="60%" stop-color="#15171b" />
+      <stop offset="100%" stop-color="#0c0d10" />
+    </linearGradient>
+    <linearGradient id="stand-grad" x1="100" y1="460" x2="280" y2="520" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#343842" />
+      <stop offset="100%" stop-color="#121317" />
+    </linearGradient>
+    <radialGradient id="tweeter-grad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ff4466" />
+      <stop offset="40%" stop-color="#990022" />
+      <stop offset="85%" stop-color="#33000b" />
+      <stop offset="100%" stop-color="#111116" />
+    </radialGradient>
+    <radialGradient id="woofer-grad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1e2229" />
+      <stop offset="55%" stop-color="#121418" />
+      <stop offset="85%" stop-color="#ff0033" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#08090b" />
+    </radialGradient>
+    <linearGradient id="aura-strip" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ff0055" />
+      <stop offset="50%" stop-color="#00f0ff" />
+      <stop offset="100%" stop-color="#ff0055" />
+    </linearGradient>
+  </defs>
+
+  <g filter="url(#shadow-cetra)">
+    <!-- LEFT SPEAKER (Angled toward center) -->
+    <g transform="translate(40, 20)">
+      <!-- Acoustic Isolation Stand (Tilt 12deg up) -->
+      <polygon points="100,470 230,470 240,510 85,510" fill="url(#stand-grad)" stroke="#2b2f38" stroke-width="1.5" />
+      <rect x="90" y="504" width="145" height="4" rx="2" fill="#ff0033" opacity="0.6" />
+
+      <!-- Speaker Cabinet -->
+      <path d="M 115 130 L 220 138 L 228 472 L 95 470 Z" fill="url(#body-grad-cetra)" stroke="#3b404d" stroke-width="1.8" />
+      
+      <!-- Baffle Inset -->
+      <path d="M 122 144 L 213 150 L 220 460 L 105 458 Z" fill="#111317" stroke="#22252c" stroke-width="1" />
+
+      <!-- High-Frequency Tweeter (0.75" Silk Dome) -->
+      <circle cx="166" cy="205" r="26" fill="#0b0c0e" stroke="#ff0033" stroke-width="1.5" />
+      <circle cx="166" cy="205" r="16" fill="url(#tweeter-grad)" />
+      <circle cx="166" cy="205" r="7" fill="#ffffff" opacity="0.4" />
+      <!-- Tweeter Waveguide ring -->
+      <circle cx="166" cy="205" r="32" stroke="#2c303a" stroke-width="1" stroke-dasharray="3,3" />
+
+      <!-- Mid-Bass Woofer (3" Carbon Diaphragm) -->
+      <circle cx="163" cy="335" r="54" fill="#08090b" stroke="#333844" stroke-width="2" />
+      <circle cx="163" cy="335" r="46" fill="url(#woofer-grad)" />
+      <circle cx="163" cy="335" r="20" fill="#15171d" stroke="#ff0033" stroke-width="1" opacity="0.8" />
+      <!-- Concentric Cone Texture -->
+      <circle cx="163" cy="335" r="34" stroke="#ff0033" stroke-width="0.75" opacity="0.3" />
+      <circle cx="163" cy="335" r="26" stroke="#ffffff" stroke-width="0.5" opacity="0.15" />
+
+      <!-- Subtle Base LED Aura Glow -->
+      <rect x="110" y="445" width="98" height="3" rx="1.5" fill="url(#aura-strip)" opacity="0.8" />
+    </g>
+
+    <!-- RIGHT SPEAKER (Master unit with control dial) -->
+    <g transform="translate(280, 20)">
+      <!-- Acoustic Isolation Stand -->
+      <polygon points="90,470 220,470 235,510 80,510" fill="url(#stand-grad)" stroke="#2b2f38" stroke-width="1.5" />
+      <rect x="85" y="504" width="145" height="4" rx="2" fill="#ff0033" opacity="0.6" />
+
+      <!-- Speaker Cabinet -->
+      <path d="M 100 138 L 205 130 L 225 470 L 92 472 Z" fill="url(#body-grad-cetra)" stroke="#3b404d" stroke-width="1.8" />
+
+      <!-- Baffle Inset -->
+      <path d="M 107 150 L 198 144 L 215 458 L 100 460 Z" fill="#111317" stroke="#22252c" stroke-width="1" />
+
+      <!-- High-Frequency Tweeter -->
+      <circle cx="154" cy="205" r="26" fill="#0b0c0e" stroke="#ff0033" stroke-width="1.5" />
+      <circle cx="154" cy="205" r="16" fill="url(#tweeter-grad)" />
+      <circle cx="154" cy="205" r="7" fill="#ffffff" opacity="0.4" />
+      <circle cx="154" cy="205" r="32" stroke="#2c303a" stroke-width="1" stroke-dasharray="3,3" />
+
+      <!-- Mid-Bass Woofer -->
+      <circle cx="157" cy="335" r="54" fill="#08090b" stroke="#333844" stroke-width="2" />
+      <circle cx="157" cy="335" r="46" fill="url(#woofer-grad)" />
+      <circle cx="157" cy="335" r="20" fill="#15171d" stroke="#ff0033" stroke-width="1" opacity="0.8" />
+      <circle cx="157" cy="335" r="34" stroke="#ff0033" stroke-width="0.75" opacity="0.3" />
+      <circle cx="157" cy="335" r="26" stroke="#ffffff" stroke-width="0.5" opacity="0.15" />
+
+      <!-- Master Volume Control Dial & ROG Emblem -->
+      <circle cx="157" cy="425" r="15" fill="#1e2229" stroke="#ff0033" stroke-width="1.5" />
+      <circle cx="157" cy="425" r="9" fill="#0d0e12" />
+      <line x1="157" y1="416" x2="157" y2="422" stroke="#00f0ff" stroke-width="2" stroke-linecap="round" />
+      
+      <!-- Base LED Aura Glow -->
+      <rect x="112" y="445" width="98" height="3" rx="1.5" fill="url(#aura-strip)" opacity="0.8" />
+    </g>
+
+    <!-- Stereo Soundfield Link Wave Accent (Subtle desk wave) -->
+    <path d="M 235 485 C 275 495 325 495 365 485" stroke="#ff0033" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.4" />
+  </g>
+</svg>
