@@ -8444,6 +8444,7 @@ html[data-theme='light'] .tactile-cursor-reflection {
   align-items: center;
   justify-content: center;
   opacity: 0.35;
+  contain: layout paint;
   mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 45%, rgba(0, 0, 0, 0) 100%);
   -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 45%, rgba(0, 0, 0, 0) 100%);
 }
@@ -8453,11 +8454,14 @@ html[data-theme='light'] .tactile-cursor-reflection {
   max-width: 1200px;
   height: 100%;
   max-height: 380px;
+  pointer-events: none;
 }
 
 .speaker-waveform-bar {
   transform-origin: bottom;
-  transition: height 0.08s ease-out, y 0.08s ease-out, fill 0.2s ease;
+  pointer-events: none;
+  will-change: height, y;
+  transition: fill 0.2s ease;
 }
 
 .speaker-waveform-glow {
