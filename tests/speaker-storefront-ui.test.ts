@@ -108,6 +108,14 @@ describe('Speaker Storefront Architecture & Acoustic Waveform & Desk Stage UI (H
       assert.match(speakerCss, /\.speaker-desk-reflection/);
     });
 
+    it('optimizes waveform rendering with direct SVG DOM refs and CSS containment', () => {
+      assert.match(speakerStorefront, /barsRef/);
+      assert.match(speakerCss, /contain:\s*layout paint;/);
+      assert.match(speakerCss, /will-change:\s*height,\s*y;/);
+      assert.match(globalsCss, /contain:\s*layout paint;/);
+      assert.match(globalsCss, /will-change:\s*height,\s*y;/);
+    });
+
     it('provides sound profile switcher pills for Hi-Fi Studio, Bass Boost Gaming, and Vocal Acoustic', () => {
       assert.match(speakerStorefront, /className="speaker-profile-container"/);
       assert.match(speakerStorefront, /className="speaker-profile-btn"/);

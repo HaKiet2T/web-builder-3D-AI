@@ -39,11 +39,9 @@ export function SpeakerStorefront({ products }: SpeakerStorefrontProps) {
   const [isSimulatingAudio, setIsSimulatingAudio] = useState(true);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [addedToastId, setAddedToastId] = useState<string | null>(null);
-  const [spectrumHeights, setSpectrumHeights] = useState<number[]>(() =>
-    Array.from({ length: TOTAL_SPECTRUM_BARS }, () => 20),
-  );
 
   const dialRef = useRef<HTMLDivElement>(null);
+  const barsRef = useRef<(SVGRectElement | null)[]>([]);
   const isDraggingDialRef = useRef(false);
   const dragStartYRef = useRef(0);
   const dragStartVolRef = useRef(72);
@@ -55,6 +53,8 @@ export function SpeakerStorefront({ products }: SpeakerStorefrontProps) {
   const currentProduct = products[activeIndex] ?? products[0];
 
   // Frequency spectrum waveform math simulation in 60-120 FPS
+  // Mutates SVG bar elements directly through ref to avoid triggering React re-renders,
+  // preventing frame drops and jank when pointer moves over the page.
   useEffect(() => {
     let phase = 0;
 
@@ -67,24 +67,30 @@ export function SpeakerStorefront({ products }: SpeakerStorefrontProps) {
         vocal: { bass: 0.55, mid: 1.35, high: 0.85 },
       }[soundProfile];
 
-      const newHeights = Array.from({ length: TOTAL_SPECTRUM_BARS }, (_, index) => {
-        if (!isSimulatingAudio || volume === 0) return 4;
+      const bars = barsRef.current;
+      for (let i = 0; i < TOTAL_SPECTRUM_BARS; i++) {
+        const bar = bars[i];
+        if (!bar) continue;
 
-        const normalizedIndex = index / TOTAL_SPECTRUM_BARS;
-        // Frequency bands: index 0-11: Sub-bass & Bass, 12-24: Midrange, 25-35: Highs
-        let bandWeight = profileWeights.mid;
-        if (normalizedIndex < 0.33) bandWeight = profileWeights.bass;
-        else if (normalizedIndex > 0.66) bandWeight = profileWeights.high;
+        let rawHeight = 4;
+        if (isSimulatingAudio && volume > 0) {
+          const normalizedIndex = i / TOTAL_SPECTRUM_BARS;
+          // Frequency bands: index 0-11: Sub-bass & Bass, 12-24: Midrange, 25-35: Highs
+          let bandWeight = profileWeights.mid;
+          if (normalizedIndex < 0.33) bandWeight = profileWeights.bass;
+          else if (normalizedIndex > 0.66) bandWeight = profileWeights.high;
 
-        const harmonic1 = Math.sin(phase * 1.8 + index * 0.38) * 28;
-        const harmonic2 = Math.cos(phase * 2.6 - index * 0.22) * 16;
-        const harmonic3 = Math.sin(phase * 4.2 + index * 0.65) * 8;
-        const rawHeight = (harmonic1 + harmonic2 + harmonic3 + 55) * bandWeight * volMultiplier;
+          const harmonic1 = Math.sin(phase * 1.8 + i * 0.38) * 28;
+          const harmonic2 = Math.cos(phase * 2.6 - i * 0.22) * 16;
+          const harmonic3 = Math.sin(phase * 4.2 + i * 0.65) * 8;
+          rawHeight = Math.max(6, Math.min(130, (harmonic1 + harmonic2 + harmonic3 + 55) * bandWeight * volMultiplier));
+        }
 
-        return Math.max(6, Math.min(130, rawHeight));
-      });
+        const y = 145 - rawHeight;
+        bar.setAttribute('height', rawHeight.toFixed(1));
+        bar.setAttribute('y', y.toFixed(1));
+      }
 
-      setSpectrumHeights(newHeights);
       rafIdRef.current = requestAnimationFrame(tick);
     };
 
@@ -207,17 +213,19 @@ export function SpeakerStorefront({ products }: SpeakerStorefrontProps) {
               <stop offset="100%" stopColor="#be123c" stopOpacity="0.15" />
             </linearGradient>
           </defs>
-          {spectrumHeights.map((h, i) => {
+          {Array.from({ length: TOTAL_SPECTRUM_BARS }, (_, i) => {
             const x = i * 24 + 4;
-            const y = 145 - h;
             return (
               <rect
                 key={i}
+                ref={(el) => {
+                  barsRef.current[i] = el;
+                }}
                 className="speaker-waveform-bar"
                 x={x}
-                y={y}
+                y={125}
                 width={14}
-                height={h}
+                height={20}
                 rx={4}
                 fill="url(#waveformGrad)"
               />
