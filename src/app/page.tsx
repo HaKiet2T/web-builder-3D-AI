@@ -9,6 +9,7 @@ import { KineticMarquee } from '@/components/ui/KineticMarquee';
 import { BrandFeatures } from '@/components/home/BrandFeatures';
 import { NewsletterSection } from '@/components/home/NewsletterSection';
 import { countProductsByCategory, listCategories, listFeaturedProducts } from '@/lib/catalog/dal';
+import { listPublishedRoomSetups } from '@/lib/room/dal';
 import { SITE } from '@/lib/site';
 
 export const metadata: Metadata = {
@@ -41,10 +42,11 @@ function HomeLoading() {
 }
 
 async function HomeContent() {
-  const [counts, categories, featuredProducts] = await Promise.all([
+  const [counts, categories, featuredProducts, publishedRooms] = await Promise.all([
     countProductsByCategory(),
     listCategories(),
     listFeaturedProducts(6),
+    listPublishedRoomSetups(),
   ]);
 
   return (
@@ -54,7 +56,7 @@ async function HomeContent() {
         <HomeHeroBanner />
 
         {/* 3. Không gian trải nghiệm 3 ảnh cạnh nhau - Tràn viền tuyệt đối kéo lướt */}
-        <SetupCarousel />
+        <SetupCarousel setups={publishedRooms} />
 
         {/* 4. Kinetic Typography Marquee: Ticker thông số công nghệ flagship 2026 */}
         <KineticMarquee />

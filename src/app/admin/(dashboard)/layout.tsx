@@ -20,6 +20,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <Link href="/admin">Tổng quan</Link>
           <Link href="/admin/products">Sản phẩm & media</Link>
           <Link href="/admin/orders">Đơn hàng</Link>
+          <Link href="/admin/rooms">Góc setup (Phòng)</Link>
           <AdminCopilotTrigger />
         </nav>
         <div className="admin-account">
