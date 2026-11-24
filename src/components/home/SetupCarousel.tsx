@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useRef, useState, useCallback, useEffect } from 'react';
+import { useRef, useState, useCallback, useEffect, useMemo } from 'react';
+import type { RoomSetup } from '@/lib/room/types';
 
 interface SetupItem {
   id: string;
@@ -43,24 +44,45 @@ const SETUP_ITEMS: SetupItem[] = [
   },
 ];
 
-// 5 bộ phần tử nhân bản để tạo vòng lặp trượt vô tận mượt mà
-const EXTENDED_ITEMS: SetupItem[] = [
-  ...SETUP_ITEMS,
-  ...SETUP_ITEMS,
-  ...SETUP_ITEMS,
-  ...SETUP_ITEMS,
-  ...SETUP_ITEMS,
-];
-
 const BASE_COUNT = SETUP_ITEMS.length; // 3
 // Bắt đầu ở tập giữa: index 7 (tương ứng SETUP_ITEMS[1]: Góc làm việc tối giản hiện đại)
 const INITIAL_INDEX = BASE_COUNT * 2 + 1;
 const AUTOPLAY_INTERVAL = 7000; // 7 giây theo yêu cầu
 const CAROUSEL_GAP = 8; // px rãnh giữa các ảnh
 
-export function SetupCarousel() {
+export interface SetupCarouselProps {
+  setups?: RoomSetup[];
+}
+
+export function SetupCarousel({ setups }: SetupCarouselProps = {}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
+
+  const currentItems = useMemo(() => {
+    if (setups && setups.length >= 2) {
+      return setups.map((s, idx) => ({
+        id: s.id || `setup-${idx + 1}`,
+        slug: s.slug,
+        title: s.title,
+        tag: s.comboDiscountPct > 0 ? `Ưu đãi Combo -${s.comboDiscountPct}%` : 'Workspace Setup',
+        description: s.description,
+        image: s.bgImageUrl,
+        aspect: '16/9',
+      }));
+    }
+    return SETUP_ITEMS;
+  }, [setups]);
+
+  const activeExtendedItems = useMemo(
+    () => [
+      ...currentItems,
+      ...currentItems,
+      ...currentItems,
+      ...currentItems,
+      ...currentItems,
+    ],
+    [currentItems],
+  );
 
   const [trackIndex, setTrackIndex] = useState(INITIAL_INDEX);
   const [isTransitioning, setIsTransitioning] = useState(true);
@@ -246,7 +268,7 @@ export function SetupCarousel() {
           }}
           onTransitionEnd={handleTransitionEnd}
         >
-          {EXTENDED_ITEMS.map((item, idx) => {
+          {activeExtendedItems.map((item, idx) => {
             const isCenter = idx === trackIndex;
             return (
               <div
@@ -268,7 +290,9 @@ export function SetupCarousel() {
                       src={item.image}
                       alt={item.title}
                       loading="lazy"
+                      decoding="async"
                       draggable={false}
+                      sizes="(max-width: 768px) 82vw, (max-width: 1024px) 68vw, 50vw"
                       className="setup-card-img"
                     />
 
@@ -310,7 +334,7 @@ export function SetupCarousel() {
         </button>
 
         <div className="carousel-dots-group" role="tablist" aria-label="Chọn góc máy hiển thị">
-          {SETUP_ITEMS.map((item, dotIdx) => (
+          {currentItems.map((item, dotIdx) => (
             <button
               key={item.id}
               type="button"
