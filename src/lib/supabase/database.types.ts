@@ -13,6 +13,8 @@ export type ProductStatus = 'active' | 'draft' | 'archived';
 export type NotificationType = 'order' | 'payment' | 'system' | 'promo';
 export type ChatSender = 'user' | 'assistant' | 'system';
 export type ChatIntent = 'product' | 'order' | 'payment' | 'greeting' | 'rejected' | 'general';
+export type RoomSetupStatus = 'draft' | 'published';
+export type RoomItemType = 'product' | 'decor';
 
 export interface Database {
   public: {
@@ -379,6 +381,124 @@ export interface Database {
           },
         ];
       };
+      room_setups: {
+        Row: {
+          id: string;
+          slug: string;
+          title: string;
+          description: string;
+          bg_image_url: string;
+          aspect_ratio: number;
+          status: RoomSetupStatus;
+          combo_discount_pct: number;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          slug: string;
+          title: string;
+          description?: string;
+          bg_image_url: string;
+          aspect_ratio?: number;
+          status?: RoomSetupStatus;
+          combo_discount_pct?: number;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          slug?: string;
+          title?: string;
+          description?: string;
+          bg_image_url?: string;
+          aspect_ratio?: number;
+          status?: RoomSetupStatus;
+          combo_discount_pct?: number;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      room_items: {
+        Row: {
+          id: string;
+          setup_id: string;
+          item_type: RoomItemType;
+          product_id: string | null;
+          variant_id: string | null;
+          custom_image_url: string | null;
+          label: string | null;
+          x_pct: number;
+          y_pct: number;
+          width_pct: number;
+          rotation: number;
+          flip_x: boolean;
+          z_index: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          setup_id: string;
+          item_type: RoomItemType;
+          product_id?: string | null;
+          variant_id?: string | null;
+          custom_image_url?: string | null;
+          label?: string | null;
+          x_pct: number;
+          y_pct: number;
+          width_pct: number;
+          rotation?: number;
+          flip_x?: boolean;
+          z_index?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          setup_id?: string;
+          item_type?: RoomItemType;
+          product_id?: string | null;
+          variant_id?: string | null;
+          custom_image_url?: string | null;
+          label?: string | null;
+          x_pct?: number;
+          y_pct?: number;
+          width_pct?: number;
+          rotation?: number;
+          flip_x?: boolean;
+          z_index?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'room_items_setup_id_fkey';
+            columns: ['setup_id'];
+            isOneToOne: false;
+            referencedRelation: 'room_setups';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'room_items_product_id_fkey';
+            columns: ['product_id'];
+            isOneToOne: false;
+            referencedRelation: 'products';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'room_items_variant_id_fkey';
+            columns: ['variant_id'];
+            isOneToOne: false;
+            referencedRelation: 'product_variants';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -405,3 +525,5 @@ export type UserAddressRow = Tables<'user_addresses'>;
 export type UserNotificationRow = Tables<'user_notifications'>;
 export type ChatSessionRow = Tables<'chat_sessions'>;
 export type ChatMessageRow = Tables<'chat_messages'>;
+export type RoomSetupRow = Tables<'room_setups'>;
+export type RoomItemRow = Tables<'room_items'>;
