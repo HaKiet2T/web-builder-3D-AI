@@ -191,6 +191,18 @@ export function SiteHeader({ variant, context, categories }: SiteHeaderProps) {
 
       <nav className="site-nav" aria-label="Danh mục sản phẩm">
         <ul id={menuId} className="site-nav-list">
+          <li>
+            <Link
+              className="site-nav-link site-nav-link--setup flex items-center gap-1.5"
+              href="/setup"
+              aria-current={pathname === '/setup' || pathname === '/mau-setup' ? 'page' : undefined}
+            >
+              <span>Góc Setup</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-sky-500 text-white dark:bg-sky-600">
+                Studio 3D
+              </span>
+            </Link>
+          </li>
           {categories.map((category) => {
             const href = `/${category.slug}`;
             const isCurrent = pathname === href;

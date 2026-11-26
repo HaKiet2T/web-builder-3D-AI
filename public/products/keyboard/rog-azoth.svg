@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 150" width="100%" height="100%" fill="none">
+  <defs>
+    <linearGradient id="azothBody" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2a2e39"/>
+      <stop offset="100%" stop-color="#181a20"/>
+    </linearGradient>
+    <linearGradient id="oledScreen" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#050810"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="keyGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3b4252"/>
+      <stop offset="100%" stop-color="#2e3440"/>
+    </linearGradient>
+    <linearGradient id="accentKey" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ef4444"/>
+      <stop offset="100%" stop-color="#b91c1c"/>
+    </linearGradient>
+    <filter id="kbShadow" x="-5%" y="-5%" width="110%" height="115%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <g filter="url(#kbShadow)">
+    <rect x="10" y="10" width="380" height="130" rx="10" fill="url(#azothBody)" stroke="#475569" stroke-width="1.5"/>
+    <rect x="16" y="16" width="368" height="118" rx="8" fill="#13151b" stroke="#334155" stroke-width="1"/>
+  </g>
+  <!-- Mini OLED Display Top Right -->
+  <rect x="310" y="22" width="64" height="24" rx="4" fill="url(#oledScreen)" stroke="#0284c7" stroke-width="1"/>
+  <text x="342" y="38" fill="#38bdf8" font-size="9" font-family="monospace" font-weight="bold" text-anchor="middle">ROG 100%</text>
+  <!-- Function & Number row -->
+  <g fill="url(#keyGrad)" stroke="#1e293b" stroke-width="0.8">
+    <rect x="22" y="22" width="22" height="16" rx="3" fill="url(#accentKey)"/>
+    <rect x="48" y="22" width="18" height="16" rx="3"/>
+    <rect x="70" y="22" width="18" height="16" rx="3"/>
+    <rect x="92" y="22" width="18" height="16" rx="3"/>
+    <rect x="114" y="22" width="18" height="16" rx="3"/>
+    <rect x="138" y="22" width="18" height="16" rx="3"/>
+    <rect x="160" y="22" width="18" height="16" rx="3"/>
+    <rect x="182" y="22" width="18" height="16" rx="3"/>
+    <rect x="204" y="22" width="18" height="16" rx="3"/>
+    <rect x="228" y="22" width="18" height="16" rx="3"/>
+    <rect x="250" y="22" width="18" height="16" rx="3"/>
+    <rect x="272" y="22" width="18" height="16" rx="3"/>
+    <!-- Alphanumeric keys row 1 -->
+    <rect x="22" y="42" width="20" height="18" rx="3"/>
+    <rect x="46" y="42" width="20" height="18" rx="3"/>
+    <rect x="70" y="42" width="20" height="18" rx="3"/>
+    <rect x="94" y="42" width="20" height="18" rx="3"/>
+    <rect x="118" y="42" width="20" height="18" rx="3"/>
+    <rect x="142" y="42" width="20" height="18" rx="3"/>
+    <rect x="166" y="42" width="20" height="18" rx="3"/>
+    <rect x="190" y="42" width="20" height="18" rx="3"/>
+    <rect x="214" y="42" width="20" height="18" rx="3"/>
+    <rect x="238" y="42" width="20" height="18" rx="3"/>
+    <rect x="262" y="42" width="20" height="18" rx="3"/>
+    <rect x="286" y="42" width="30" height="18" rx="3"/>
+    <rect x="322" y="52" width="22" height="18" rx="3"/>
+    <rect x="348" y="52" width="24" height="18" rx="3"/>
+    <!-- Row 2 -->
+    <rect x="22" y="64" width="28" height="18" rx="3"/>
+    <rect x="54" y="64" width="20" height="18" rx="3"/>
+    <rect x="78" y="64" width="20" height="18" rx="3"/>
+    <rect x="102" y="64" width="20" height="18" rx="3"/>
+    <rect x="126" y="64" width="20" height="18" rx="3"/>
+    <rect x="150" y="64" width="20" height="18" rx="3"/>
+    <rect x="174" y="64" width="20" height="18" rx="3"/>
+    <rect x="198" y="64" width="20" height="18" rx="3"/>
+    <rect x="222" y="64" width="20" height="18" rx="3"/>
+    <rect x="246" y="64" width="20" height="18" rx="3"/>
+    <rect x="270" y="64" width="20" height="18" rx="3"/>
+    <rect x="294" y="64" width="32" height="18" rx="3" fill="url(#accentKey)"/>
+    <rect x="334" y="74" width="22" height="18" rx="3"/>
+    <rect x="360" y="74" width="20" height="18" rx="3"/>
+    <!-- Row 3 -->
+    <rect x="22" y="86" width="34" height="18" rx="3"/>
+    <rect x="60" y="86" width="20" height="18" rx="3"/>
+    <rect x="84" y="86" width="20" height="18" rx="3"/>
+    <rect x="108" y="86" width="20" height="18" rx="3"/>
+    <rect x="132" y="86" width="20" height="18" rx="3"/>
+    <rect x="156" y="86" width="20" height="18" rx="3"/>
+    <rect x="180" y="86" width="20" height="18" rx="3"/>
+    <rect x="204" y="86" width="20" height="18" rx="3"/>
+    <rect x="228" y="86" width="20" height="18" rx="3"/>
+    <rect x="252" y="86" width="20" height="18" rx="3"/>
+    <rect x="276" y="86" width="48" height="18" rx="3"/>
+    <rect x="340" y="96" width="24" height="18" rx="3"/>
+    <!-- Bottom row & Spacebar -->
+    <rect x="22" y="108" width="26" height="18" rx="3"/>
+    <rect x="52" y="108" width="22" height="18" rx="3"/>
+    <rect x="78" y="108" width="26" height="18" rx="3"/>
+    <rect x="108" y="108" width="138" height="18" rx="3"/>
+    <rect x="250" y="108" width="24" height="18" rx="3"/>
+    <rect x="278" y="108" width="22" height="18" rx="3"/>
+    <!-- Arrow keys -->
+    <rect x="314" y="112" width="18" height="14" rx="2"/>
+    <rect x="336" y="112" width="18" height="14" rx="2"/>
+    <rect x="358" y="112" width="18" height="14" rx="2"/>
+  </g>
+</svg>

@@ -5,6 +5,7 @@ import { HomeHeroBanner } from '@/components/home/HomeHeroBanner';
 import { CategoryShowcase } from '@/components/home/CategoryShowcase';
 import { FeaturedProductsSection } from '@/components/home/FeaturedProductsSection';
 import { SetupCarousel } from '@/components/home/SetupCarousel';
+import { SetupCtaBanner } from '@/components/home/SetupCtaBanner';
 import { KineticMarquee } from '@/components/ui/KineticMarquee';
 import { BrandFeatures } from '@/components/home/BrandFeatures';
 import { NewsletterSection } from '@/components/home/NewsletterSection';
@@ -68,6 +69,9 @@ async function HomeContent() {
 
           {/* Top sản phẩm nổi bật bán chạy */}
           <FeaturedProductsSection products={featuredProducts} />
+
+          {/* Banner trải nghiệm Studio Setup ảo tương tác dành cho khách hàng */}
+          <SetupCtaBanner />
 
           {/* Cam kết thương hiệu chuẩn HyperWork */}
           <BrandFeatures />

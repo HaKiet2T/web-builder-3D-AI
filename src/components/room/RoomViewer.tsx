@@ -20,10 +20,22 @@ export interface RoomViewerProps {
 }
 
 export function RoomViewer({ setup, onTrackEvent, className = '' }: RoomViewerProps) {
+  // Local state for items allowing customers to customize their layout in interactive mode
+  const [currentItems, setCurrentItems] = useState<RoomItem[]>(() => setup.items);
+  const [viewerMode, setViewerMode] = useState<'view' | 'edit'>('view');
+  const [hasCustomized, setHasCustomized] = useState<boolean>(false);
+  const [prevSetupItems, setPrevSetupItems] = useState<RoomItem[]>(setup.items);
+
+  if (prevSetupItems !== setup.items) {
+    setPrevSetupItems(setup.items);
+    setCurrentItems(setup.items);
+    setHasCustomized(false);
+  }
+
   // Extract only product items for catalog & combo interactions
   const productItems = useMemo(
-    () => setup.items.filter((item) => item.itemType === 'product'),
-    [setup.items],
+    () => currentItems.filter((item) => item.itemType === 'product'),
+    [currentItems],
   );
 
   // Set of selected item IDs in the combo cart (default: all in-stock items are selected)
@@ -198,26 +210,87 @@ export function RoomViewer({ setup, onTrackEvent, className = '' }: RoomViewerPr
     }, 3500);
   }, [selectedProductItems, addItem, openCart, setup.slug, comboPricing, onTrackEvent]);
 
+  // Customer interactive customization handlers
+  const handleUpdateItem = useCallback((updatedItem: RoomItem) => {
+    setCurrentItems((prev) =>
+      prev.map((i) => (i.id === updatedItem.id ? updatedItem : i)),
+    );
+    setHasCustomized(true);
+  }, []);
+
+  const handleDeleteItem = useCallback((id: string) => {
+    setCurrentItems((prev) => prev.filter((i) => i.id !== id));
+    setHasCustomized(true);
+  }, []);
+
+  const handleResetLayout = useCallback(() => {
+    setCurrentItems(setup.items);
+    setHasCustomized(false);
+  }, [setup.items]);
+
   return (
     <div className={`room-viewer-container ${className}`}>
       {/* 1. Core Tactile Setup Stage */}
       <div className="room-viewer-stage-wrapper">
+        {/* Customer Interactive Mode Switcher Bar */}
+        <div className="room-viewer-mode-bar">
+          <div className="room-mode-pill-group" role="tablist" aria-label="Chế độ trải nghiệm góc setup">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={viewerMode === 'view'}
+              className={`room-mode-pill ${viewerMode === 'view' ? 'room-mode-pill--active' : ''}`}
+              onClick={() => setViewerMode('view')}
+            >
+              <span aria-hidden="true">👁</span>
+              <span>Khám phá &amp; Mua sắm</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={viewerMode === 'edit'}
+              className={`room-mode-pill ${viewerMode === 'edit' ? 'room-mode-pill--active' : ''}`}
+              onClick={() => setViewerMode('edit')}
+            >
+              <span aria-hidden="true">✋</span>
+              <span>Tự tay sắp xếp góc máy</span>
+              <span className="room-mode-pill-badge">Kéo thả</span>
+            </button>
+          </div>
+
+          {hasCustomized && (
+            <button
+              type="button"
+              className="room-reset-layout-btn"
+              onClick={handleResetLayout}
+              title="Khôi phục lại vị trí gốc của các thiết bị"
+            >
+              ↺ Khôi phục vị trí mặc định
+            </button>
+          )}
+        </div>
+
         <RoomStage
           setup={setup}
-          items={setup.items}
-          mode="view"
+          items={currentItems}
+          mode={viewerMode}
           hoveredItemId={hoveredItemId}
           selectedItemId={selectedItemId}
           showHotspots={true}
           onItemHover={handleItemHover}
           onItemClick={handleItemClick}
           onSelectItem={(id) => setSelectedItemId(id)}
+          onUpdateItem={handleUpdateItem}
+          onDeleteItem={handleDeleteItem}
           onTrackEvent={onTrackEvent}
         />
+
         <div className="room-viewer-tip-bar">
           <span className="room-viewer-tip-icon">✦</span>
           <span>
-            Di chuột hoặc chạm vào các thiết bị để xem thông số và giá bán thực tế.
+            {viewerMode === 'edit'
+              ? 'Chế độ tương tác khách hàng: Hãy kéo thả chuột hoặc chạm di chuyển để bố trí các thiết bị theo phong cách của bạn.'
+              : 'Di chuột hoặc chạm vào các thiết bị để xem thông số và giá bán thực tế. Chuyển sang Tự tay sắp xếp để kéo thả vị trí.'}
           </span>
         </div>
       </div>

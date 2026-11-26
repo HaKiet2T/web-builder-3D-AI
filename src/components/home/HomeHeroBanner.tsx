@@ -8,7 +8,7 @@ export function HomeHeroBanner() {
         <Link
           href="/mau-setup"
           className="hero-primary-card"
-          aria-label="Khám phá các mẫu setup góc làm việc tối ưu"
+          aria-label="Khám phá phòng setup tương tác và tự phối góc làm việc tối ưu"
         >
           <div className="hero-image-box">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -24,10 +24,10 @@ export function HomeHeroBanner() {
             <span className="hero-badge">Cảm hứng Setup 2026</span>
             <h2 className="hero-title">Không Gian Làm Việc &amp; Sáng Tạo Đỉnh Cao</h2>
             <p className="hero-desc">
-              Phối ghép trọn bộ thiết bị, màn hình và phụ kiện công thái học chuẩn phong cách HyperWork.
+              Tự tay sắp xếp màn hình, bàn phím, loa và phụ kiện trong phòng setup ảo trước khi mua combo.
             </p>
             <span className="hero-cta">
-              Khám phá mẫu setup <span aria-hidden="true" className="hero-arrow">→</span>
+              Trải nghiệm Setup Studio 3D <span aria-hidden="true" className="hero-arrow">→</span>
             </span>
           </div>
         </Link>
