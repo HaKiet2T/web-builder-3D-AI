@@ -579,7 +579,7 @@ const SAMPLE_PRODUCTS: SampleProduct[] = [
     description:
       'Bàn phím 75% gasket mount, switch đã bôi trơn và màn hình OLED nhỏ hiển thị trạng thái kết nối.',
     highlights: ['Layout 75%', 'Không dây 2,4 GHz + Bluetooth', 'Gasket mount', 'Màn hình OLED'],
-    image: null,
+    image: '/products/keyboard/rog-azoth.svg',
     createdAt: '2026-02-05T00:00:00.000Z',
     variants: [
       {
@@ -609,7 +609,7 @@ const SAMPLE_PRODUCTS: SampleProduct[] = [
     description:
       'Bàn phím TKL có dây với keycap PBT dày, phù hợp cho cả làm việc và chơi game.',
     highlights: ['Layout TKL', 'Keycap PBT', 'Switch tuyến tính', 'Cáp USB-C tháo rời'],
-    image: null,
+    image: '/products/keyboard/keychron-q1-pro.svg',
     createdAt: '2026-02-06T00:00:00.000Z',
     variants: [
       {
@@ -664,7 +664,7 @@ const SAMPLE_PRODUCTS: SampleProduct[] = [
     description:
       'Thân vỏ nhôm nguyên khối gia công CNC chính xác, thiết kế Double Gasket Mount êm ái, kết nối Bluetooth 5.1 đa thiết bị và tùy biến phím toàn diện qua QMK/VIA.',
     highlights: ['Layout 75%', 'Khung nhôm CNC', 'Double Gasket Mount', 'Không dây Bluetooth & Type-C'],
-    image: null,
+    image: '/products/keyboard/keychron-q1-pro.svg',
     createdAt: '2026-02-08T00:00:00.000Z',
     variants: [
       {

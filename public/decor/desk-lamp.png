@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 220" width="100%" height="100%" fill="none">
+    <defs>
+      <linearGradient id="lampMatte" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#38bdf8"/>
+        <stop offset="100%" stop-color="#0284c7"/>
+      </linearGradient>
+    </defs>
+    <ellipse cx="105" cy="205" rx="35" ry="8" fill="#1e293b" stroke="#475569" stroke-width="2"/>
+    <line x1="105" y1="205" x2="95" y2="110" stroke="#334155" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="95" cy="110" r="5" fill="#f59e0b"/>
+    <line x1="95" y1="110" x2="45" y2="50" stroke="#334155" stroke-width="4" stroke-linecap="round"/>
+    <path d="M35 38 L65 62 L40 78 Z" fill="url(#lampMatte)" stroke="#0369a1" stroke-width="2"/>
+    <polygon points="40,78 65,62 10,180 90,195" fill="rgba(254, 240, 138, 0.25)"/>
+  </svg>
