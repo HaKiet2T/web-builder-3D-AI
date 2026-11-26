@@ -240,14 +240,22 @@ export function SetupCarousel({ setups }: SetupCarouselProps = {}) {
         handleMouseUpOrLeave();
       }}
     >
-      <div className="setup-carousel-header sr-only">
-        <span className="section-eyebrow">KHÔNG GIAN TRẢI NGHIỆM</span>
-        <h2 id="setup-carousel-title" className="section-title">
-          Cảm Hứng Setup Góc Làm Việc
-        </h2>
-        <p className="section-subtitle">
-          Khám phá các góc máy thực tế được phối ghép đồng bộ, tạo cảm hứng sáng tạo và tối ưu công năng.
-        </p>
+      <div className="setup-carousel-header home-container">
+        <div className="setup-carousel-header-text">
+          <span className="section-eyebrow">KHÔNG GIAN TRẢI NGHIỆM</span>
+          <h2 id="setup-carousel-title" className="section-title">
+            Cảm Hứng Setup Góc Làm Việc
+          </h2>
+          <p className="section-subtitle">
+            Khám phá các góc máy thực tế được phối ghép đồng bộ, tự do kéo thả bố trí và mua trọn bộ combo ưu đãi.
+          </p>
+        </div>
+        <div className="setup-carousel-header-actions">
+          <Link href="/setup" className="setup-carousel-header-btn">
+            <span>Trải nghiệm Setup Studio 3D</span>
+            <span aria-hidden="true">→</span>
+          </Link>
+        </div>
       </div>
 
       <div

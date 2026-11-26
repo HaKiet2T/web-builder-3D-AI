@@ -66,12 +66,18 @@ async function MauSetupContent() {
               <span className="destination-hero-badge">Flagship Setup 2026</span>
               <h2 className="destination-hero-title">{featuredSetup.title}</h2>
               <p className="destination-hero-desc">{featuredSetup.description}</p>
-              <div style={{ marginTop: '16px' }}>
+              <div style={{ marginTop: '16px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                 <Link
-                  href={`/khong-gian/${featuredSetup.slug}`}
+                  href={`/setup?space=${featuredSetup.slug}`}
                   className="roadmap-btn primary"
                 >
-                  Khám phá góc setup này →
+                  Trải nghiệm &amp; Kéo thả góc này →
+                </Link>
+                <Link
+                  href={`/khong-gian/${featuredSetup.slug}`}
+                  className="roadmap-btn secondary"
+                >
+                  Chi tiết combo
                 </Link>
               </div>
             </div>
@@ -126,11 +132,11 @@ async function MauSetupContent() {
             Tính năng tùy biến góc setup trực tiếp trong không gian tương tác với danh mục sản phẩm của {SITE.name} đã sẵn sàng.
           </p>
           <div className="roadmap-notice-actions">
-            <Link href="/" className="roadmap-btn primary">
-              Khám phá sản phẩm tại trang chủ
+            <Link href="/setup" className="roadmap-btn primary">
+              Vào phòng Setup Studio tương tác →
             </Link>
-            <Link href="/monitor" className="roadmap-btn secondary">
-              Trải nghiệm 3D Monitor Orbit
+            <Link href="/" className="roadmap-btn secondary">
+              Khám phá sản phẩm trang chủ
             </Link>
           </div>
         </section>
