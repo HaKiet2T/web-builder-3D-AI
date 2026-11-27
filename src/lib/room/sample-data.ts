@@ -1,4 +1,4 @@
-import type { DecorAsset, RoomItem, RoomSetup } from '@/lib/room/types';
+import type { DecorAsset, Model3DAsset, RoomItem, RoomSetup } from '@/lib/room/types';
 
 export const SAMPLE_ROOM_SETUPS: RoomSetup[] = [
   {
@@ -274,4 +274,44 @@ export const PRESET_DECOR_ASSETS: DecorAsset[] = [
     category: 'lifestyle',
   },
 ];
+
+export const PRESET_3D_MODELS: Model3DAsset[] = [
+  {
+    id: 'preset-3d-desk',
+    label: 'Bàn nâng hạ thông minh',
+    modelUrl: '/models3d/smart-desk.glb',
+    category: 'furniture',
+  },
+  {
+    id: 'preset-3d-monitor',
+    label: 'Màn hình UltraWide 34 inch',
+    modelUrl: '/models3d/ultrawide-monitor.glb',
+    category: 'tech',
+  },
+  {
+    id: 'preset-3d-gaming-pc',
+    label: 'PC Gaming Cyberpunk RGB',
+    modelUrl: '/models3d/gaming-pc.glb',
+    category: 'tech',
+  },
+  {
+    id: 'preset-3d-chair',
+    label: 'Ghế công thái học Ergonomic',
+    modelUrl: '/models3d/ergonomic-chair.glb',
+    category: 'furniture',
+  },
+  {
+    id: 'preset-3d-plant',
+    label: 'Chậu cây cảnh để bàn',
+    modelUrl: '/models3d/desk-plant.glb',
+    category: 'decor',
+  },
+  {
+    id: 'preset-3d-speakers',
+    label: 'Cặp loa kiểm âm Studio',
+    modelUrl: '/models3d/studio-speakers.glb',
+    category: 'audio',
+  },
+];
+
 
