@@ -220,7 +220,7 @@ export function SetupCarousel({ setups }: SetupCarouselProps = {}) {
       setTrackIndex(idx);
       resetTimer();
     }
-    // Nếu bấm ảnh ở giữa -> chuyển trang theo Link Next.js
+    // 3 ảnh không gian làm việc là cảm hứng trực quan, không chuyển hướng tới trang setup
   };
 
   // Tính vị trí translateX căn giữa ảnh active
@@ -240,7 +240,11 @@ export function SetupCarousel({ setups }: SetupCarouselProps = {}) {
         handleMouseUpOrLeave();
       }}
     >
-      <div className="setup-carousel-header home-container">
+      <div
+        className="setup-carousel-header home-container hidden"
+        style={{ display: 'none' }}
+        aria-hidden="true"
+      >
         <div className="setup-carousel-header-text">
           <span className="section-eyebrow">KHÔNG GIAN TRẢI NGHIỆM</span>
           <h2 id="setup-carousel-title" className="section-title">
@@ -282,15 +286,18 @@ export function SetupCarousel({ setups }: SetupCarouselProps = {}) {
               <div
                 key={`${item.id}-${idx}`}
                 className={`setup-carousel-item ${isCenter ? 'is-active' : ''}`}
-                style={{ width: slideWidth ? `${slideWidth}px` : undefined }}
+                style={{
+                  width: slideWidth ? `${slideWidth}px` : undefined,
+                  flexBasis: slideWidth ? `${slideWidth}px` : undefined,
+                }}
                 aria-hidden={!isCenter}
               >
-                <Link
-                  href={`/khong-gian/${item.slug}`}
+                <div
                   className="setup-card"
                   onClick={(e) => handleCardClick(e, idx)}
                   tabIndex={isCenter ? 0 : -1}
                   aria-label={`${item.title} - ${item.tag}`}
+                  role="group"
                 >
                   <div className="setup-card-media">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -318,12 +325,9 @@ export function SetupCarousel({ setups }: SetupCarouselProps = {}) {
                     <div className="setup-card-body setup-card-content">
                       <h3 className="setup-card-title">{item.title}</h3>
                       <p className="setup-card-desc">{item.description}</p>
-                      <span className="setup-card-cta-btn setup-card-link">
-                        Khám phá góc setup <span aria-hidden="true">→</span>
-                      </span>
                     </div>
                   </div>
-                </Link>
+                </div>
               </div>
             );
           })}
