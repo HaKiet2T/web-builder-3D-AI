@@ -73,3 +73,26 @@ export interface DecorAsset {
   createdAt?: string | null;
 }
 
+export interface Model3DAsset {
+  id: string;
+  label: string;
+  modelUrl: string;
+  storagePath?: string | null;
+  fileSize?: number;
+  category?: string;
+  createdAt?: string | null;
+}
+
+export interface UserSavedRoom {
+  id: string;
+  userId: string;
+  name: string;
+  description?: string;
+  aspectRatio: number;
+  items: RoomItem[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+
+

@@ -115,8 +115,9 @@ function MenuIcon({ open }: { open: boolean }) {
 export function SiteHeader({ variant, context, categories }: SiteHeaderProps) {
   const pathname = usePathname();
   const routeContext = pathname ? FULL_SCREEN_ROUTES[pathname] : undefined;
+  const isSetupRoute = pathname === '/setup';
   const resolvedVariant = variant ?? (routeContext ? 'overlay' : 'solid');
-  const resolvedContext = context ?? routeContext;
+  const resolvedContext = context ?? routeContext ?? (isSetupRoute ? 'Studio 3D' : undefined);
   const { theme, toggleTheme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState<{ email?: string; id?: string } | null>(null);

@@ -6,6 +6,8 @@ import { connection } from 'next/server';
 import { getCurrentUser, signOutUser } from '@/lib/account/actions';
 import { listUserOrders } from '@/lib/orders/dal';
 import { listUserAddresses, listUserNotifications } from '@/lib/account/dal';
+import { listUserSavedRooms } from '@/lib/room/user-rooms-dal';
+import { deleteCustomerRoomAction } from '@/lib/room/user-room-actions';
 
 export const metadata: Metadata = {
   title: 'Tài khoản của tôi',
@@ -42,10 +44,11 @@ async function AccountContent() {
     redirect('/account/login');
   }
 
-  const [orders, addresses, notifications] = await Promise.all([
+  const [orders, addresses, notifications, savedRooms] = await Promise.all([
     listUserOrders(user.id).catch(() => []),
     listUserAddresses(user.id).catch(() => []),
     listUserNotifications(user.id, 5).catch(() => []),
+    listUserSavedRooms(user.id).catch(() => []),
   ]);
 
   const fullName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Khách hàng';
@@ -97,10 +100,19 @@ async function AccountContent() {
             {orders.length}
           </span>
         </Link>
+        <Link
+          href="/setup"
+          className="px-3.5 py-1.5 text-xs font-semibold rounded-lg text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-1.5"
+        >
+          <span>Studio 3D</span>
+          <span className="text-[10px] font-mono px-1.5 py-0.2 bg-neutral-100 dark:bg-neutral-800 rounded-full text-neutral-500">
+            {savedRooms.length}
+          </span>
+        </Link>
       </div>
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 my-8">
         <div className="p-5 bg-white dark:bg-[#111214] border border-neutral-200/80 dark:border-neutral-800 rounded-xl">
           <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
             Đơn hàng của bạn
@@ -110,6 +122,18 @@ async function AccountContent() {
           </div>
           <div className="mt-1 text-xs text-neutral-400">
             {orders.filter((o) => o.status === 'pending' || o.status === 'processing').length} đơn đang xử lý
+          </div>
+        </div>
+
+        <div className="p-5 bg-white dark:bg-[#111214] border border-neutral-200/80 dark:border-neutral-800 rounded-xl">
+          <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+            Không gian 3D
+          </div>
+          <div className="mt-2 text-2xl font-bold text-neutral-900 dark:text-white">
+            {savedRooms.length}
+          </div>
+          <div className="mt-1 text-xs text-neutral-400">
+            {savedRooms.length > 0 ? `${savedRooms.length} phòng đã lưu` : 'Chưa có phòng lưu'}
           </div>
         </div>
 
@@ -207,6 +231,91 @@ async function AccountContent() {
                 >
                   Chi tiết đơn →
                 </Link>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Saved 3D Spaces Section */}
+      <div className="bg-white dark:bg-[#111214] border border-neutral-200/80 dark:border-neutral-800 rounded-xl p-6 mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-base font-bold text-neutral-900 dark:text-white">
+              Không gian 3D đã lưu
+            </h2>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+              Các phòng 3D bạn đã thiết kế và lưu vào tài khoản
+            </p>
+          </div>
+          <Link
+            href="/setup"
+            className="text-xs font-semibold text-neutral-900 dark:text-white hover:underline flex items-center gap-1"
+          >
+            <span>+ Tạo không gian mới</span>
+          </Link>
+        </div>
+
+        {savedRooms.length === 0 ? (
+          <div className="text-center py-10 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-lg">
+            <span className="text-3xl block mb-2">🧊</span>
+            <p className="text-sm text-neutral-600 dark:text-neutral-400 font-medium">
+              Bạn chưa lưu không gian 3D nào.
+            </p>
+            <p className="text-xs text-neutral-400 mt-1 max-w-sm mx-auto">
+              Khám phá Studio 3D để tự tay sắp đặt bàn ghế, màn hình, loa và phụ kiện trong phòng 3D riêng của bạn.
+            </p>
+            <Link
+              href="/setup"
+              className="inline-block mt-4 px-4 py-2 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-semibold rounded-lg hover:opacity-90 transition-opacity"
+            >
+              Bắt đầu thiết kế phòng 3D →
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {savedRooms.map((room) => (
+              <div
+                key={room.id}
+                className="p-4 border border-neutral-200/80 dark:border-neutral-800 rounded-lg flex flex-col justify-between gap-3 bg-neutral-50/50 dark:bg-neutral-900/30 hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors"
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="font-semibold text-sm text-neutral-900 dark:text-white">
+                      {room.name}
+                    </h3>
+                    <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-sky-50 dark:bg-sky-950/50 text-sky-700 dark:text-sky-300 border border-sky-200/50 dark:border-sky-800/50">
+                      {room.items.length} vật phẩm
+                    </span>
+                  </div>
+                  <p className="text-xs text-neutral-500 mt-1">
+                    Cập nhật: {new Date(room.updatedAt).toLocaleDateString('vi-VN')}
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between gap-2 pt-2 border-t border-neutral-200/60 dark:border-neutral-800">
+                  <Link
+                    href="/setup"
+                    className="px-3 py-1.5 text-xs font-medium bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-lg hover:opacity-90 transition-opacity flex items-center gap-1"
+                  >
+                    <span>Mở phòng 3D</span>
+                    <span>→</span>
+                  </Link>
+
+                  <form
+                    action={async () => {
+                      'use server';
+                      await deleteCustomerRoomAction(room.id);
+                    }}
+                  >
+                    <button
+                      type="submit"
+                      className="px-2.5 py-1.5 text-xs text-neutral-500 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                    >
+                      Xóa phòng
+                    </button>
+                  </form>
+                </div>
               </div>
             ))}
           </div>

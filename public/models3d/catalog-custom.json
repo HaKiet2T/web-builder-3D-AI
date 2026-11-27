@@ -1,0 +1,196 @@
+{
+  "models": [
+    {
+      "id": "model3d-1795762645568-d7fd",
+      "label": "Bàn phím cơ Test",
+      "modelUrl": "/models3d/test-custom-keyboard-mwympp9y.glb",
+      "storagePath": null,
+      "fileSize": 12,
+      "category": "tech",
+      "createdAt": "2026-11-27T06:57:25.568Z"
+    },
+    {
+      "id": "model3d-1795772472850-ofv7",
+      "label": "Bàn phím cơ Test",
+      "modelUrl": "/models3d/test-custom-keyboard-mwyskc23.glb",
+      "storagePath": null,
+      "fileSize": 12,
+      "category": "tech",
+      "createdAt": "2026-11-27T09:41:12.850Z"
+    },
+    {
+      "id": "model3d-1795772564035-za6o",
+      "label": "Bàn phím cơ Test",
+      "modelUrl": "/models3d/test-custom-keyboard-mwysmaey.glb",
+      "storagePath": null,
+      "fileSize": 12,
+      "category": "tech",
+      "createdAt": "2026-11-27T09:42:44.035Z"
+    },
+    {
+      "id": "model3d-1795774054157-uelo",
+      "label": "Bàn phím cơ Test",
+      "modelUrl": "/models3d/test-custom-keyboard-mwyti879.glb",
+      "storagePath": null,
+      "fileSize": 12,
+      "category": "tech",
+      "createdAt": "2026-11-27T10:07:34.157Z"
+    },
+    {
+      "id": "model3d-1795775828201-8dom",
+      "label": "Bàn phím cơ Test",
+      "modelUrl": "/models3d/test-custom-keyboard-mwyuk926.glb",
+      "storagePath": null,
+      "fileSize": 12,
+      "category": "tech",
+      "createdAt": "2026-11-27T10:37:08.201Z"
+    },
+    {
+      "id": "model3d-1795775999678-fl4l",
+      "label": "Bàn phím cơ Test",
+      "modelUrl": "/models3d/test-custom-keyboard-mwyunxdf.glb",
+      "storagePath": null,
+      "fileSize": 12,
+      "category": "tech",
+      "createdAt": "2026-11-27T10:39:59.678Z"
+    },
+    {
+      "id": "model3d-1795777345606-b90b",
+      "label": "Bàn phím cơ Test",
+      "modelUrl": "/models3d/test-custom-keyboard-mwyvgrwd.glb",
+      "storagePath": null,
+      "fileSize": 12,
+      "category": "tech",
+      "createdAt": "2026-11-27T11:02:25.606Z"
+    },
+    {
+      "id": "model3d-1795778762536-7six",
+      "label": "Bàn phím cơ Test",
+      "modelUrl": "/models3d/test-custom-keyboard-mwywb57j.glb",
+      "storagePath": null,
+      "fileSize": 12,
+      "category": "tech",
+      "createdAt": "2026-11-27T11:26:02.536Z"
+    },
+    {
+      "id": "model3d-1795780110729-7mbv",
+      "label": "Bàn phím cơ Test",
+      "modelUrl": "/models3d/test-custom-keyboard-mwyx41hc.glb",
+      "storagePath": null,
+      "fileSize": 12,
+      "category": "tech",
+      "createdAt": "2026-11-27T11:48:30.729Z"
+    },
+    {
+      "id": "model3d-1795781092103-q8x8",
+      "label": "Bàn phím cơ Test",
+      "modelUrl": "/models3d/test-custom-keyboard-mwyxp2pj.glb",
+      "storagePath": null,
+      "fileSize": 12,
+      "category": "tech",
+      "createdAt": "2026-11-27T12:04:52.103Z"
+    },
+    {
+      "id": "model3d-1795783300839-esy1",
+      "label": "Bàn phím cơ Test",
+      "modelUrl": "/models3d/test-custom-keyboard-mwyz0ezj.glb",
+      "storagePath": null,
+      "fileSize": 12,
+      "category": "tech",
+      "createdAt": "2026-11-27T12:41:40.839Z"
+    },
+    {
+      "id": "model3d-1795785337014-oysj",
+      "label": "Bàn phím cơ Test",
+      "modelUrl": "/models3d/test-custom-keyboard-mwz0823w.glb",
+      "storagePath": null,
+      "fileSize": 12,
+      "category": "tech",
+      "createdAt": "2026-11-27T13:15:37.014Z"
+    },
+    {
+      "id": "model3d-1795785390850-vym1",
+      "label": "Bàn phím cơ Test",
+      "modelUrl": "/models3d/test-custom-keyboard-mwz097nd.glb",
+      "storagePath": null,
+      "fileSize": 12,
+      "category": "tech",
+      "createdAt": "2026-11-27T13:16:30.850Z"
+    },
+    {
+      "id": "model3d-1795787186401-b8py",
+      "label": "Bàn phím cơ Test",
+      "modelUrl": "/models3d/test-custom-keyboard-mwz1bp3t.glb",
+      "storagePath": null,
+      "fileSize": 12,
+      "category": "tech",
+      "createdAt": "2026-11-27T13:46:26.401Z"
+    },
+    {
+      "id": "model3d-1795787651617-3j2x",
+      "label": "Bàn phím cơ Test",
+      "modelUrl": "/models3d/test-custom-keyboard-mwz1lo2j.glb",
+      "storagePath": null,
+      "fileSize": 12,
+      "category": "tech",
+      "createdAt": "2026-11-27T13:54:11.617Z"
+    },
+    {
+      "id": "model3d-1795790659419-41v7",
+      "label": "Bàn phím cơ Test",
+      "modelUrl": "/models3d/test-custom-keyboard-mwz3e4wl.glb",
+      "storagePath": null,
+      "fileSize": 12,
+      "category": "tech",
+      "createdAt": "2026-11-27T14:44:19.419Z"
+    },
+    {
+      "id": "model3d-1795791019634-1m4w",
+      "label": "Bàn phím cơ Test",
+      "modelUrl": "/models3d/test-custom-keyboard-mwz3luuj.glb",
+      "storagePath": null,
+      "fileSize": 12,
+      "category": "tech",
+      "createdAt": "2026-11-27T14:50:19.634Z"
+    },
+    {
+      "id": "model3d-1795791419830-do0y",
+      "label": "Bàn phím cơ Test",
+      "modelUrl": "/models3d/test-custom-keyboard-mwz3ufn2.glb",
+      "storagePath": null,
+      "fileSize": 12,
+      "category": "tech",
+      "createdAt": "2026-11-27T14:56:59.830Z"
+    },
+    {
+      "id": "model3d-1795791481760-sqzt",
+      "label": "Bàn phím cơ Test",
+      "modelUrl": "/models3d/test-custom-keyboard-mwz3vrfd.glb",
+      "storagePath": null,
+      "fileSize": 12,
+      "category": "tech",
+      "createdAt": "2026-11-27T14:58:01.760Z"
+    }
+  ],
+  "deletedIds": [
+    "model3d-1795762645573-dxsy",
+    "model3d-1795772472857-qh24",
+    "model3d-1795772564043-1l1j",
+    "model3d-1795774054163-9rpe",
+    "model3d-1795775828208-3pfm",
+    "model3d-1795775999683-afs6",
+    "model3d-1795777345611-63fe",
+    "model3d-1795778762542-2i5e",
+    "model3d-1795780110735-2u2e",
+    "model3d-1795781092113-wiek",
+    "model3d-1795783300848-qce5",
+    "model3d-1795785337019-mnks",
+    "model3d-1795785390856-7hzb",
+    "model3d-1795787186408-ktkt",
+    "model3d-1795787651626-gnh4",
+    "model3d-1795790659424-p2w9",
+    "model3d-1795791019639-20gk",
+    "model3d-1795791419835-3zbn",
+    "model3d-1795791481765-o0km"
+  ]
+}
