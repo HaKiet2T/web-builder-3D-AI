@@ -499,6 +499,39 @@ export interface Database {
           },
         ];
       };
+      user_saved_rooms: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          description: string;
+          aspect_ratio: number;
+          items: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          description?: string;
+          aspect_ratio?: number;
+          items?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          description?: string;
+          aspect_ratio?: number;
+          items?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -527,3 +560,4 @@ export type ChatSessionRow = Tables<'chat_sessions'>;
 export type ChatMessageRow = Tables<'chat_messages'>;
 export type RoomSetupRow = Tables<'room_setups'>;
 export type RoomItemRow = Tables<'room_items'>;
+export type UserSavedRoomRow = Tables<'user_saved_rooms'>;
