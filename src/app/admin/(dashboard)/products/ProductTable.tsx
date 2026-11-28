@@ -163,7 +163,28 @@ export function ProductTable({
                   <td>
                     <div className="admin-product-cell">
                       <div className="admin-product-info">
-                        <span className="admin-product-name">{product.name}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span className="admin-product-name">{product.name}</span>
+                          {product.media.some((m) => m.kind === 'model') ? (
+                            <span
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '3px',
+                                fontSize: '10px',
+                                fontWeight: 700,
+                                padding: '1px 6px',
+                                borderRadius: '4px',
+                                background: '#ecfdf5',
+                                color: '#047857',
+                                border: '1px solid #a7f3d0',
+                              }}
+                              title="Sản phẩm đã có mô hình 3D tương tác"
+                            >
+                              🧊 3D
+                            </span>
+                          ) : null}
+                        </div>
                         <div className="admin-product-meta-row">
                           <a
                             href={storeUrl}

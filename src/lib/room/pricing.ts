@@ -42,10 +42,18 @@ export function hydrateRoomItems(
         ? product.purchasable
         : false;
 
-    const resolvedImageUrl =
+    const modelMedia = product?.media?.find((m) => m.kind === 'model');
+    const customImageUrl =
       item.customImageUrl ||
-      product?.media?.[0]?.url ||
-      '';
+      modelMedia?.url ||
+      null;
+
+    const resolvedImageUrl =
+      (item.resolvedImageUrl && !item.resolvedImageUrl.endsWith('.glb'))
+        ? item.resolvedImageUrl
+        : product?.media?.find((m) => m.kind === 'image')?.url ||
+          product?.media?.[0]?.url ||
+          '';
 
     return {
       ...item,
@@ -54,6 +62,7 @@ export function hydrateRoomItems(
       price,
       compareAtPrice,
       inStock,
+      customImageUrl,
       resolvedImageUrl,
     };
   });

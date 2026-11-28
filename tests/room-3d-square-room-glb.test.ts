@@ -84,20 +84,23 @@ describe('Admin 3D Square Room & GLB Upload Architecture', () => {
       assert.ok(labels.some((l) => l.includes('Màn hình')));
     });
 
-    it('uploads a test 3D model asset and writes to public/models3d directory', async () => {
+    it('uploads a test 3D model asset without writing files to disk', async () => {
       // Create minimal mock GLB buffer with magic header
       const mockGlb = Buffer.from([0x67, 0x6c, 0x54, 0x46, 0x02, 0x00, 0x00, 0x00, 0x14, 0x00, 0x00, 0x00]);
       const res = await upload3DModelAsset({
-        fileName: 'test-custom-keyboard.glb',
+        fileName: 'sample-keyboard.glb',
         content: mockGlb,
         label: 'Bàn phím cơ Test',
         category: 'tech',
+        skipDiskWrite: true,
       });
 
       assert.ok(res.id);
       assert.equal(res.label, 'Bàn phím cơ Test');
       assert.ok(res.modelUrl.startsWith('/models3d/'));
       assert.ok(res.modelUrl.endsWith('.glb'));
+
+      await delete3DModelAsset(res.id);
     });
   });
 

@@ -186,13 +186,20 @@ export function AdminRoomEditor({
     (product: Product) => {
       const nextZ = items.reduce((max, it) => Math.max(max, it.zIndex), 0) + 1;
       const defaultVariant = product.variants[0];
+      const modelMedia = product.media?.find((m) => m.kind === 'model');
+      const modelUrl = modelMedia?.url || null;
+      const primaryImage =
+        product.media?.find((m) => m.kind === 'image')?.url ||
+        product.media?.[0]?.url ||
+        '';
+
       const newItem: RoomItem = {
         id: `item_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
         setupId: setup.id,
         itemType: 'product',
         productId: product.id,
         variantId: defaultVariant?.id || null,
-        customImageUrl: null,
+        customImageUrl: modelUrl,
         label: product.name,
         xPct: 50.0,
         yPct: 65.0,
@@ -200,9 +207,11 @@ export function AdminRoomEditor({
         rotation: 0,
         flipX: false,
         zIndex: nextZ,
+        resolvedImageUrl: primaryImage,
+        product,
       };
 
-      const hydrated = hydrateRoomItems([newItem], catalogProducts)[0];
+      const hydrated = hydrateRoomItems([newItem], catalogProducts)[0] || newItem;
       pushHistory([...items, hydrated]);
       setSelectedItemId(newItem.id);
     },
@@ -278,6 +287,15 @@ export function AdminRoomEditor({
       return;
     }
 
+    const MAX_3D_FILE_SIZE = 100 * 1024 * 1024; // 100 MB
+    if (file.size > MAX_3D_FILE_SIZE) {
+      const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+      setModel3dUploadError(`Tệp "${file.name}" (${sizeMb} MB) vượt quá giới hạn tối đa cho phép (100 MB). Vui lòng nén hoặc tối ưu hóa mô hình trước khi tải lên.`);
+      setSelectedUpload3DFile(null);
+      e.target.value = '';
+      return;
+    }
+
     setSelectedUpload3DFile(file);
     setModel3dUploadError(null);
 
@@ -294,6 +312,13 @@ export function AdminRoomEditor({
   const handleUpload3DModel = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedUpload3DFile) return;
+
+    const MAX_3D_FILE_SIZE = 100 * 1024 * 1024; // 100 MB
+    if (selectedUpload3DFile.size > MAX_3D_FILE_SIZE) {
+      const sizeMb = (selectedUpload3DFile.size / (1024 * 1024)).toFixed(1);
+      setModel3dUploadError(`Tệp "${selectedUpload3DFile.name}" (${sizeMb} MB) vượt quá giới hạn tối đa 100 MB.`);
+      return;
+    }
 
     setIsUploading3D(true);
     setModel3dUploadError(null);
@@ -324,8 +349,12 @@ export function AdminRoomEditor({
       });
       setTimeout(() => setStatusMessage(null), 3500);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Lỗi khi tải lên mô hình 3D.';
-      setModel3dUploadError(msg);
+      const rawMsg = err instanceof Error ? err.message : 'Lỗi khi tải lên mô hình 3D.';
+      const friendlyMsg =
+        rawMsg.toLowerCase().includes('end of form') || rawMsg.toLowerCase().includes('limit')
+          ? 'Tệp tải lên vượt quá giới hạn truyền tải của máy chủ hoặc đường truyền mạng bị ngắt quãng. Vui lòng kiểm tra dung lượng tệp (tối đa 100 MB) và thử lại.'
+          : rawMsg;
+      setModel3dUploadError(friendlyMsg);
     } finally {
       setIsUploading3D(false);
     }
@@ -530,7 +559,7 @@ export function AdminRoomEditor({
 
     try {
       const cleanItemsPayload = items.map((it) => ({
-        id: it.id.startsWith('item_') || it.id.startsWith('decor_') ? undefined : it.id,
+        id: it.id.startsWith('item_') || it.id.startsWith('decor_') || it.id.startsWith('glb_') ? undefined : it.id,
         setupId: setup.id,
         itemType: it.itemType,
         productId: it.productId,
@@ -543,6 +572,7 @@ export function AdminRoomEditor({
         rotation: it.rotation,
         flipX: it.flipX,
         zIndex: it.zIndex,
+        elevation: it.elevation ?? 0,
       }));
 
       const res = await saveRoomItemsBatchAction(setup.id, cleanItemsPayload);
@@ -680,6 +710,7 @@ export function AdminRoomEditor({
               onSelectItem={setSelectedItemId}
               onUpdateItem={handleUpdateItem}
               onDeleteItem={handleDeleteItem}
+              onUpdateSetup={(updated) => setSetup((prev) => ({ ...prev, ...updated }))}
             />
           ) : (
             <RoomStage
@@ -868,7 +899,7 @@ export function AdminRoomEditor({
                   <form onSubmit={handleUpload3DModel} className="admin-decor-upload-card">
                     <h4 className="admin-decor-upload-title">Tải lên mô hình 3D (.glb)</h4>
                     <p className="admin-decor-upload-desc">
-                      Chấp nhận file định dạng nhị phân 3D chuẩn .glb (tối đa 35 MB).
+                      Chấp nhận file định dạng nhị phân 3D chuẩn .glb (tối đa 100 MB).
                     </p>
 
                     <div className="admin-decor-upload-dropzone">
@@ -880,7 +911,11 @@ export function AdminRoomEditor({
                       />
                       {selectedUpload3DFile && (
                         <div style={{ marginTop: '8px', fontSize: '12px', color: '#0369a1', fontWeight: 500 }}>
-                          📁 Đã chọn: {selectedUpload3DFile.name} ({(selectedUpload3DFile.size / 1024).toFixed(1)} KB)
+                          📁 Đã chọn: {selectedUpload3DFile.name} (
+                          {selectedUpload3DFile.size >= 1024 * 1024
+                            ? `${(selectedUpload3DFile.size / (1024 * 1024)).toFixed(2)} MB`
+                            : `${(selectedUpload3DFile.size / 1024).toFixed(1)} KB`}
+                          )
                         </div>
                       )}
                     </div>
@@ -1153,30 +1188,54 @@ export function AdminRoomEditor({
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {filteredProducts.map((prod) => (
-                    <div key={prod.id} className="admin-catalog-item-card">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={prod.media[0]?.url || '/products/asus/ROG%20Strix%20OLED%20XG27AQWMG.png'}
-                        alt={prod.name}
-                        className="admin-catalog-item-thumb"
-                      />
-                      <div className="admin-catalog-item-info">
-                        <h4 className="admin-catalog-item-name">{prod.name}</h4>
-                        <p className="admin-catalog-item-price">
-                          {prod.priceFrom.toLocaleString('vi-VN')} đ
-                        </p>
+                  {filteredProducts.map((prod) => {
+                    const thumbUrl =
+                      prod.media?.find((m) => m.kind === 'image')?.url ||
+                      prod.media?.find((m) => !m.url.endsWith('.glb'))?.url ||
+                      '/products/asus/ROG%20Strix%20OLED%20XG27AQWMG.png';
+                    const hasModel = prod.media?.some((m) => m.kind === 'model');
+                    return (
+                      <div key={prod.id} className="admin-catalog-item-card">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={thumbUrl}
+                          alt={prod.name}
+                          className="admin-catalog-item-thumb"
+                        />
+                        <div className="admin-catalog-item-info">
+                          <h4 className="admin-catalog-item-name">
+                            {prod.name}
+                            {hasModel && (
+                              <span
+                                style={{
+                                  marginLeft: '6px',
+                                  fontSize: '10px',
+                                  background: '#dbeafe',
+                                  color: '#1d4ed8',
+                                  padding: '1px 5px',
+                                  borderRadius: '4px',
+                                  fontWeight: 600,
+                                }}
+                              >
+                                3D
+                              </span>
+                            )}
+                          </h4>
+                          <p className="admin-catalog-item-price">
+                            {prod.priceFrom.toLocaleString('vi-VN')} đ
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          className="admin-room-btn"
+                          style={{ padding: '4px 8px', fontSize: '11px' }}
+                          onClick={() => handleAddProduct(prod)}
+                        >
+                          + Thêm
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        className="admin-room-btn"
-                        style={{ padding: '4px 8px', fontSize: '11px' }}
-                        onClick={() => handleAddProduct(prod)}
-                      >
-                        + Thêm
-                      </button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </>
             )}
@@ -1447,10 +1506,34 @@ export function AdminRoomEditor({
                             {item.label || (item.itemType === 'product' ? 'Sản phẩm' : 'Decor')}
                           </h5>
                           <span className="admin-layer-meta">
-                            Lớp: {item.zIndex} | Rộng: {item.widthPct}% | ({item.xPct}%, {item.yPct}%)
+                            Lớp: {item.zIndex} | Cao: {typeof item.elevation === 'number' && item.elevation > 0 ? `${item.elevation.toFixed(2)}m` : '0m'} | Rộng: {item.widthPct}% | ({item.xPct}%, {item.yPct}%)
                           </span>
                         </div>
                         <div className="admin-layer-actions">
+                          <button
+                            type="button"
+                            className="admin-layer-btn"
+                            title="Nâng cao (+0.1m)"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const cur = item.elevation || 0;
+                              handleUpdateItem({ ...item, elevation: Math.round((cur + 0.1) * 100) / 100 });
+                            }}
+                          >
+                            +h
+                          </button>
+                          <button
+                            type="button"
+                            className="admin-layer-btn"
+                            title="Hạ thấp (-0.1m)"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const cur = item.elevation || 0;
+                              handleUpdateItem({ ...item, elevation: Math.max(0, Math.round((cur - 0.1) * 100) / 100) });
+                            }}
+                          >
+                            -h
+                          </button>
                           <button
                             type="button"
                             className="admin-layer-btn"
@@ -1579,6 +1662,21 @@ export function AdminRoomEditor({
                     style={{ width: '100%', padding: '6px 8px', fontSize: '12px', border: '1px solid #cbd5e1', borderRadius: '4px' }}
                   />
                 </div>
+
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 600 }}>Số mặt tường không gian 3D:</label>
+                  <select
+                    name="wallCount"
+                    value={setup.wallCount || 2}
+                    onChange={(e) => setSetup({ ...setup, wallCount: parseInt(e.target.value, 10) || 2 })}
+                    style={{ width: '100%', padding: '6px 8px', fontSize: '12px', border: '1px solid #cbd5e1', borderRadius: '4px' }}
+                  >
+                    <option value="1">1 mặt tường (Tường sau, không gian mở)</option>
+                    <option value="2">2 mặt tường (Tường sau + Tường trái, góc Diorama)</option>
+                    <option value="3">3 mặt tường (Tường sau + Trái + Phải, phòng kín 3 bên)</option>
+                  </select>
+                </div>
+                <input type="hidden" name="windows" value={JSON.stringify(setup.windows || [])} />
 
                 <div>
                   <label style={{ fontSize: '11px', fontWeight: 600 }}>Mô tả góc setup:</label>

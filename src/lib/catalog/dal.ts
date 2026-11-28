@@ -3,6 +3,7 @@ import { cacheLife, cacheTag } from 'next/cache';
 import { createPublicSupabaseClient } from '@/lib/supabase/public';
 import { requireAdminSupabaseClient } from '@/lib/admin/auth';
 import { CATEGORY_RECORDS, PRODUCT_RECORDS } from '@/lib/catalog/sample-data';
+import type { ModelConfig } from '@/lib/schemas/model-config';
 import type {
   Category,
   CategoryId,
@@ -13,6 +14,7 @@ import type {
 } from '@/lib/catalog/types';
 import type {
   CategoryRow,
+  Json,
   ProductMediaRow,
   ProductRow,
   ProductStatus,
@@ -82,6 +84,7 @@ function mapMedia(row: ProductMediaRow): ProductMedia {
     width: row.width,
     height: row.height,
     position: row.position,
+    modelConfig: ((row as unknown as { model_config?: unknown }).model_config as ProductMedia['modelConfig']) || null,
   };
 }
 
@@ -607,19 +610,94 @@ export async function deleteCatalogMedia(mediaId: string): Promise<void> {
   const supabase = await requireAdminSupabaseClient();
   const { data: media, error: lookupError } = await supabase
     .from('product_media')
-    .select('storage_path')
+    .select('storage_path, kind')
     .eq('id', mediaId)
     .single();
 
   if (lookupError) throw new Error(`Could not load product media: ${lookupError.message}`);
 
   if (media.storage_path) {
+    const bucket = media.kind === 'model' ? 'product-models' : 'product-media';
     const { error: storageError } = await supabase.storage
-      .from('product-media')
+      .from(bucket)
       .remove([media.storage_path]);
-    if (storageError) throw new Error(`Could not delete stored image: ${storageError.message}`);
+    if (storageError) console.warn(`Could not delete stored file: ${storageError.message}`);
   }
 
   const { error } = await supabase.from('product_media').delete().eq('id', mediaId);
   if (error) throw new Error(`Could not delete product media: ${error.message}`);
+}
+
+export async function uploadCatalogModelMedia(input: {
+  productId: string;
+  fileName: string;
+  content: ArrayBuffer;
+  alt?: string;
+  modelConfig?: ModelConfig | null;
+}): Promise<void> {
+  const supabase = await requireAdminSupabaseClient();
+  const extension = input.fileName.split('.').pop()?.toLowerCase() || 'glb';
+  const path = `${input.productId}/${crypto.randomUUID()}.${extension}`;
+
+  const { data: existingModel } = await supabase
+    .from('product_media')
+    .select('id, storage_path')
+    .eq('product_id', input.productId)
+    .eq('kind', 'model')
+    .maybeSingle();
+
+  const { error: uploadError } = await supabase.storage
+    .from('product-models')
+    .upload(path, input.content, { contentType: 'model/gltf-binary', upsert: false });
+
+  if (uploadError) throw new Error(`Không thể tải lên file 3D: ${uploadError.message}`);
+
+  const { data: publicUrl } = supabase.storage.from('product-models').getPublicUrl(path);
+
+  if (existingModel) {
+    const { error: updateError } = await supabase
+      .from('product_media')
+      .update({
+        url: publicUrl.publicUrl,
+        storage_path: path,
+        alt: input.alt || 'Mô hình 3D sản phẩm',
+        model_config: (input.modelConfig ?? null) as unknown as Json,
+      })
+      .eq('id', existingModel.id);
+
+    if (updateError) {
+      await supabase.storage.from('product-models').remove([path]);
+      throw new Error(`Lỗi cập nhật mô hình 3D: ${updateError.message}`);
+    }
+
+    if (existingModel.storage_path && existingModel.storage_path !== path) {
+      await supabase.storage.from('product-models').remove([existingModel.storage_path]);
+    }
+  } else {
+    const { error: insertError } = await supabase.from('product_media').insert({
+      id: `med_${crypto.randomUUID()}`,
+      product_id: input.productId,
+      kind: 'model',
+      url: publicUrl.publicUrl,
+      storage_path: path,
+      alt: input.alt || 'Mô hình 3D sản phẩm',
+      position: 0,
+      model_config: (input.modelConfig ?? null) as unknown as Json,
+    });
+
+    if (insertError) {
+      await supabase.storage.from('product-models').remove([path]);
+      throw new Error(`Lỗi lưu dữ liệu mô hình 3D: ${insertError.message}`);
+    }
+  }
+}
+
+export async function updateCatalogModelConfig(mediaId: string, modelConfig: ModelConfig): Promise<void> {
+  const supabase = await requireAdminSupabaseClient();
+  const { error } = await supabase
+    .from('product_media')
+    .update({ model_config: modelConfig as unknown as Json })
+    .eq('id', mediaId);
+
+  if (error) throw new Error(`Lỗi cập nhật cấu hình 3D: ${error.message}`);
 }

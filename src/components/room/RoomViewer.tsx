@@ -8,7 +8,11 @@ import type { RoomItem, RoomSetupWithItems, UserSavedRoom, Model3DAsset, DecorAs
 import type { Product } from '@/lib/catalog/types';
 import { PRESET_3D_MODELS, PRESET_DECOR_ASSETS } from '@/lib/room/sample-data';
 import { PRODUCT_RECORDS } from '@/lib/catalog/sample-data';
-import { listCustomerRoomsAction, saveCustomerRoomAction } from '@/lib/room/user-room-actions';
+import {
+  listCustomerRoomsAction,
+  saveCustomerRoomAction,
+  listDynamicCatalogProductsAction,
+} from '@/lib/room/user-room-actions';
 import { calculateComboPricing } from '@/lib/room/pricing';
 import { trackRoomEvent, type RoomAnalyticsHandler } from '@/lib/room/analytics';
 import { useCartStore } from '@/store/cart';
@@ -54,6 +58,7 @@ export interface RoomViewerProps {
   onTrackEvent?: RoomAnalyticsHandler;
   className?: string;
   initialSavedRooms?: UserSavedRoom[];
+  allProducts?: Product[];
 }
 
 export function RoomViewer({
@@ -61,8 +66,31 @@ export function RoomViewer({
   onTrackEvent,
   className = '',
   initialSavedRooms,
+  allProducts,
 }: RoomViewerProps) {
-  // Local state for items allowing customers to customize their layout in interactive mode
+  const [dynamicProducts, setDynamicProducts] = useState<Product[]>(() => allProducts || []);
+
+  useEffect(() => {
+    let isMounted = true;
+    listDynamicCatalogProductsAction()
+      .then((prods) => {
+        if (isMounted && prods && prods.length > 0) {
+          setDynamicProducts(prods);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const catalogProducts = useMemo(() => {
+    if (dynamicProducts.length > 0) return dynamicProducts;
+    if (allProducts && allProducts.length > 0) return allProducts;
+    return PRODUCT_RECORDS;
+  }, [dynamicProducts, allProducts]);
+  // Local state for setup & items allowing customers to customize their layout in interactive mode
+  const [currentSetup, setCurrentSetup] = useState<RoomSetupWithItems>(() => setup);
   const [currentItems, setCurrentItems] = useState<RoomItem[]>(() => setup.items);
   const [viewerMode, setViewerMode] = useState<'view' | 'edit'>('view');
   const [hasCustomized, setHasCustomized] = useState<boolean>(false);
@@ -367,6 +395,7 @@ export function RoomViewer({
     setHasCustomized(true);
     setViewerMode('edit');
     setViewDimension('3d');
+    setCurrentSetup((prev) => ({ ...prev, wallCount: 2, windows: [] }));
     setSaveStatusMsg({
       type: 'success',
       text: 'Đã tạo không gian phòng vuông trống mới! Bạn có thể thêm các vật thể vào phòng.',
@@ -387,7 +416,9 @@ export function RoomViewer({
       const res = await saveCustomerRoomAction({
         id: activeSavedRoomId || undefined,
         name: cleanName,
-        aspectRatio: setup.aspectRatio || 1.6,
+        aspectRatio: currentSetup.aspectRatio || 1.6,
+        wallCount: currentSetup.wallCount || 2,
+        windows: currentSetup.windows || [],
         items: currentItems,
       });
 
@@ -407,7 +438,9 @@ export function RoomViewer({
           id: activeSavedRoomId || `guest_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
           userId: 'guest',
           name: cleanName,
-          aspectRatio: setup.aspectRatio || 1.6,
+          aspectRatio: currentSetup.aspectRatio || 1.6,
+          wallCount: currentSetup.wallCount || 2,
+          windows: currentSetup.windows || [],
           items: currentItems,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
@@ -434,7 +467,9 @@ export function RoomViewer({
         id: activeSavedRoomId || `guest_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
         userId: 'guest',
         name: cleanName,
-        aspectRatio: setup.aspectRatio || 1.6,
+        aspectRatio: currentSetup.aspectRatio || 1.6,
+        wallCount: currentSetup.wallCount || 2,
+        windows: currentSetup.windows || [],
         items: currentItems,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -460,6 +495,7 @@ export function RoomViewer({
       setActiveSavedRoomId(null);
       setActiveRoomName(setup.title);
       setHasCustomized(false);
+      setCurrentSetup(setup);
       return;
     }
 
@@ -470,6 +506,13 @@ export function RoomViewer({
       setActiveRoomName(room.name);
       setHasCustomized(false);
       setSelectedItemId(null);
+      if (room.wallCount !== undefined || room.windows !== undefined) {
+        setCurrentSetup((prev) => ({
+          ...prev,
+          wallCount: room.wallCount ?? prev.wallCount,
+          windows: room.windows ?? prev.windows,
+        }));
+      }
     }
   };
 
@@ -484,14 +527,27 @@ export function RoomViewer({
         const variants = prod.variants || [];
         const defaultVariant = variants[0];
         const media = prod.media || [];
-        const resolvedUrl = media[0]?.url;
+        const modelMedia = media.find((m) => m.kind === 'model');
+        const defaultModelUrl =
+          modelMedia?.url ||
+          (prod.categoryId === 'monitor'
+            ? '/models3d/ultrawide-monitor.glb'
+            : prod.categoryId === 'speaker'
+            ? '/models3d/studio-speakers.glb'
+            : prod.categoryId === 'keyboard'
+            ? '/models3d/test-custom-keyboard-mwympp9y.glb'
+            : null);
+        const resolvedUrl =
+          media.find((m) => m.kind === 'image')?.url ||
+          media[0]?.url ||
+          '/products/asus/ROG%20Strix%20OLED%20XG27AQWMG.png';
         newItem = {
           id: generateUniqueId('item'),
           setupId: setup.id,
           itemType: 'product',
           productId: prod.id,
           variantId: defaultVariant?.id || null,
-          customImageUrl: null,
+          customImageUrl: defaultModelUrl,
           label: prod.name,
           xPct: 50.0,
           yPct: 50.0,
@@ -501,7 +557,7 @@ export function RoomViewer({
           zIndex: nextZ,
           product: prod,
           variant: defaultVariant,
-          ...(resolvedUrl ? { resolvedImageUrl: resolvedUrl } : {}),
+          resolvedImageUrl: resolvedUrl,
           price: prod.priceFrom,
           inStock: true,
         };
@@ -658,14 +714,19 @@ export function RoomViewer({
       }
     );
 
-    // 2. Store Products from PRODUCT_RECORDS
-    PRODUCT_RECORDS.forEach((p) => {
+    // 2. Store Products from catalogProducts
+    catalogProducts.forEach((p) => {
       let category: 'monitor' | 'gear' | 'audio' | 'furniture' | 'decor' = 'gear';
       let categoryLabel = 'Bàn phím & Chuột';
       let modelUrl: string | null = null;
       let has3D = false;
 
-      if (p.categoryId === 'monitor') {
+      // Ưu tiên model 3D thực tế đã được upload trong media
+      const modelMedia = p.media?.find((m) => m.kind === 'model');
+      if (modelMedia?.url) {
+        modelUrl = modelMedia.url;
+        has3D = true;
+      } else if (p.categoryId === 'monitor') {
         category = 'monitor';
         categoryLabel = 'Màn hình';
         modelUrl = '/models3d/ultrawide-monitor.glb';
@@ -692,6 +753,25 @@ export function RoomViewer({
         has3D = false;
       }
 
+      if (p.categoryId === 'monitor') {
+        category = 'monitor';
+        categoryLabel = 'Màn hình';
+      } else if (p.categoryId === 'speaker') {
+        category = 'audio';
+        categoryLabel = 'Loa & Âm thanh';
+      } else if (p.categoryId === 'keyboard' || p.categoryId === 'mouse') {
+        category = 'gear';
+        categoryLabel = p.categoryId === 'keyboard' ? 'Bàn phím cơ' : 'Chuột gaming';
+      } else if (p.categoryId === 'monitor-led') {
+        category = 'decor';
+        categoryLabel = 'Đèn màn hình';
+      }
+
+      const imageUrl =
+        p.media?.find((m) => m.kind === 'image')?.url ||
+        p.media?.[0]?.url ||
+        '/products/asus/ROG%20Strix%20OLED%20XG27AQWMG.png';
+
       items.push({
         id: p.id,
         sourceKey: p.id,
@@ -699,7 +779,7 @@ export function RoomViewer({
         category,
         categoryLabel,
         price: p.priceFrom,
-        imageUrl: p.media?.[0]?.url || '/products/asus/ROG%20Strix%20OLED%20XG27AQWMG.png',
+        imageUrl,
         modelUrl,
         has3DModel: has3D,
         rawType: 'product',
@@ -733,7 +813,7 @@ export function RoomViewer({
     });
 
     return items;
-  }, []);
+  }, [catalogProducts]);
 
   // Merge catalogue with live room items to compute in-room status
   const dockDisplayItems = useMemo(() => {
@@ -852,13 +932,15 @@ export function RoomViewer({
       if (catItem.rawType === 'product') {
         const rawProd = catItem.rawItem as Product;
         const defaultVariant = rawProd.variants?.[0];
+        const modelMedia = rawProd.media?.find((m) => m.kind === 'model');
+        const effectiveModelUrl = catItem.modelUrl || modelMedia?.url || null;
         newItem = {
           id: generateUniqueId('item'),
           setupId: setup.id,
           itemType: 'product',
           productId: rawProd.id,
           variantId: defaultVariant?.id || null,
-          customImageUrl: catItem.modelUrl || null,
+          customImageUrl: effectiveModelUrl,
           label: catItem.title,
           xPct,
           yPct,
@@ -1059,17 +1141,18 @@ export function RoomViewer({
         {/* 3D Room Stage vs 2D Stage */}
         {viewDimension === '3d' ? (
           <RoomStage3D
-            setup={setup}
+            setup={currentSetup}
             items={currentItems}
             mode={viewerMode}
             selectedItemId={selectedItemId}
             onSelectItem={(id) => setSelectedItemId(id)}
             onUpdateItem={handleUpdateItem}
             onDeleteItem={handleDeleteItem}
+            onUpdateSetup={(updated) => setCurrentSetup((prev) => ({ ...prev, ...updated }))}
           />
         ) : (
           <RoomStage
-            setup={setup}
+            setup={currentSetup}
             items={currentItems}
             mode={viewerMode}
             hoveredItemId={hoveredItemId}
@@ -1182,27 +1265,53 @@ export function RoomViewer({
               <div className="room-catalog-grid">
                 {/* 1. Products */}
                 {(addItemCategory === 'all' || addItemCategory === 'products') &&
-                  PRODUCT_RECORDS.filter(
+                  catalogProducts.filter(
                     (p) =>
                       addItemSearch.trim() === '' ||
                       p.name.toLowerCase().includes(addItemSearch.toLowerCase())
-                  ).map((p) => (
-                    <div
-                      key={p.id}
-                      className="room-catalog-card"
-                      onClick={() => handleAddObjectToRoom('product', p)}
-                      title={`Thêm ${p.name} vào phòng 3D`}
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={p.media[0]?.url || '/products/asus/ROG%20Strix%20OLED%20XG27AQWMG.png'}
-                        alt={p.name}
-                        className="room-catalog-card-thumb"
-                      />
-                      <span className="room-catalog-card-name">{p.name}</span>
-                      <span className="room-catalog-card-category">{p.priceFrom.toLocaleString('vi-VN')} đ</span>
-                    </div>
-                  ))}
+                  ).map((p) => {
+                    const has3D = p.media?.some((m) => m.kind === 'model');
+                    const thumbUrl =
+                      p.media?.find((m) => m.kind === 'image')?.url ||
+                      p.media?.[0]?.url ||
+                      '/products/asus/ROG%20Strix%20OLED%20XG27AQWMG.png';
+                    return (
+                      <div
+                        key={p.id}
+                        className="room-catalog-card"
+                        onClick={() => handleAddObjectToRoom('product', p)}
+                        title={`Thêm ${p.name} vào phòng 3D`}
+                        style={{ position: 'relative' }}
+                      >
+                        {has3D && (
+                          <span
+                            style={{
+                              position: 'absolute',
+                              top: '6px',
+                              right: '6px',
+                              fontSize: '10px',
+                              fontWeight: 700,
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              backgroundColor: '#0284c7',
+                              color: '#ffffff',
+                              zIndex: 2,
+                            }}
+                          >
+                            🧊 3D
+                          </span>
+                        )}
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={thumbUrl}
+                          alt={p.name}
+                          className="room-catalog-card-thumb"
+                        />
+                        <span className="room-catalog-card-name">{p.name}</span>
+                        <span className="room-catalog-card-category">{p.priceFrom.toLocaleString('vi-VN')} đ</span>
+                      </div>
+                    );
+                  })}
 
                 {/* 2. 3D Models */}
                 {(addItemCategory === 'all' || addItemCategory === '3d') &&

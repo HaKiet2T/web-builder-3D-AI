@@ -19,6 +19,9 @@ export async function resolve(specifier, context, nextResolve) {
   if (specifier === 'next/cache') {
     return nextResolve(new URL('./next-cache-stub.mjs', import.meta.url).href, context);
   }
+  if (specifier === 'next/navigation') {
+    return nextResolve(new URL('./next-navigation-stub.mjs', import.meta.url).href, context);
+  }
   if (!specifier.startsWith('@/')) return nextResolve(specifier, context);
 
   const target = toUrl(specifier);

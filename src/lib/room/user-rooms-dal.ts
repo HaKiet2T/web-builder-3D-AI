@@ -48,6 +48,8 @@ export async function saveUserRoom(
     name: string;
     description?: string;
     aspectRatio?: number;
+    wallCount?: number;
+    windows?: UserSavedRoom['windows'];
     items: RoomItem[];
   },
   userId: string
@@ -66,6 +68,8 @@ export async function saveUserRoom(
     name: cleanName,
     description: input.description || '',
     aspectRatio: input.aspectRatio || 1.6,
+    wallCount: input.wallCount || 2,
+    windows: input.windows || [],
     items: input.items,
     createdAt: now,
     updatedAt: now,

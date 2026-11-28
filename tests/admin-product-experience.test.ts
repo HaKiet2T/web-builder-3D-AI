@@ -145,8 +145,8 @@ describe('admin navigation and product editing experience', () => {
   });
 
   it('configures Server Actions request headroom and validates upload payload boundaries', () => {
-    // The request limit includes multipart overhead beyond the 25 MB image batch.
-    assert.match(nextConfigFile, /experimental:\s*\{[\s\S]*serverActions:\s*\{[\s\S]*bodySizeLimit:\s*['"]30mb['"]/);
+    // The request limit includes multipart overhead beyond the 25 MB image batch and heavy 3D GLB models.
+    assert.match(nextConfigFile, /experimental:\s*\{[\s\S]*serverActions:\s*\{[\s\S]*bodySizeLimit:\s*['"](?:30mb|100mb)['"]/);
 
     // Backend actions validate both single file and total batch payload boundaries
     assert.match(adminActions, /file\.size > 15 \* 1024 \* 1024/);

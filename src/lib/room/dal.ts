@@ -15,11 +15,12 @@ import type {
   RoomItem,
   RoomSetup,
   RoomSetupWithItems,
+  WindowConfig,
 } from '@/lib/room/types';
 import type { RoomItemRow, RoomSetupRow } from '@/lib/supabase/database.types';
 import { createPublicSupabaseClient } from '@/lib/supabase/public';
 
-function mapRoomSetupRow(row: RoomSetupRow): RoomSetup {
+function mapRoomSetupRow(row: RoomSetupRow & { wall_count?: number; wallCount?: number; windows?: WindowConfig[] }): RoomSetup {
   return {
     id: row.id,
     slug: row.slug,
@@ -30,6 +31,8 @@ function mapRoomSetupRow(row: RoomSetupRow): RoomSetup {
     status: row.status,
     comboDiscountPct: Number(row.combo_discount_pct),
     sortOrder: row.sort_order,
+    wallCount: row.wall_count || row.wallCount || 2,
+    windows: Array.isArray(row.windows) ? row.windows : [],
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -389,6 +392,8 @@ export async function upsertRoomSetup(input: RoomSetupInput): Promise<RoomSetup>
       status: validated.status ?? 'draft',
       comboDiscountPct: validated.comboDiscountPct ?? 0,
       sortOrder: validated.sortOrder ?? 0,
+      wallCount: validated.wallCount ?? existing?.wallCount ?? 2,
+      windows: validated.windows ?? existing?.windows ?? [],
       createdAt: existing?.createdAt || now,
       updatedAt: now,
     };
@@ -464,6 +469,8 @@ export async function upsertRoomSetup(input: RoomSetupInput): Promise<RoomSetup>
       status: validated.status ?? 'draft',
       comboDiscountPct: validated.comboDiscountPct ?? 0,
       sortOrder: validated.sortOrder ?? 0,
+      wallCount: validated.wallCount ?? existing?.wallCount ?? 2,
+      windows: validated.windows ?? existing?.windows ?? [],
       createdAt: existing?.createdAt || now,
       updatedAt: now,
     };
@@ -840,6 +847,9 @@ export async function list3DModelAssets(): Promise<Model3DAsset[]> {
       const files = fs.readdirSync(modelsDir);
       for (const file of files) {
         if (file.toLowerCase().endsWith('.glb')) {
+          if (file.toLowerCase().startsWith('test-')) {
+            continue;
+          }
           const matchedPreset = PRESET_3D_MODELS.find((p) => p.modelUrl.endsWith(`/${file}`));
           if (!matchedPreset) {
             const stats = fs.statSync(path.join(modelsDir, file));
@@ -945,22 +955,28 @@ export async function update3DModelAsset(
 export async function delete3DModelAsset(id: string): Promise<boolean> {
   await loadPersistedCustomModels();
   deletedModelIds.add(id);
+  const existing = customModelsMap.get(id);
   customModelsMap.delete(id);
   await persistCustomModels();
 
-  // Try to clean up local disk file if it's a disk model
-  if (id.startsWith('disk-')) {
-    try {
-      const fs = await import('node:fs');
-      const path = await import('node:path');
-      const fileName = id.replace(/^disk-/, '');
+  // Try to clean up local disk file if it's a disk model or uploaded model with /models3d/ path
+  try {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    let fileName: string | null = null;
+    if (id.startsWith('disk-')) {
+      fileName = id.replace(/^disk-/, '');
+    } else if (existing?.modelUrl?.startsWith('/models3d/')) {
+      fileName = existing.modelUrl.replace(/^\/models3d\//, '');
+    }
+    if (fileName) {
       const filePath = path.join(process.cwd(), 'public', 'models3d', fileName);
       if (fs.existsSync(filePath)) {
         await fs.promises.unlink(filePath);
       }
-    } catch {
-      // Ignore deletion failure
     }
+  } catch {
+    // Ignore deletion failure
   }
 
   return true;
@@ -971,6 +987,7 @@ export async function upload3DModelAsset(input: {
   content: Buffer | ArrayBuffer;
   label?: string;
   category?: string;
+  skipDiskWrite?: boolean;
 }): Promise<Model3DAsset> {
   const fs = await import('node:fs');
   const path = await import('node:path');
@@ -983,28 +1000,32 @@ export async function upload3DModelAsset(input: {
   const safeFileName = `${cleanBaseName}-${Date.now().toString(36)}.glb`;
   const modelsDir = path.join(process.cwd(), 'public', 'models3d');
 
-  if (!fs.existsSync(modelsDir)) {
-    fs.mkdirSync(modelsDir, { recursive: true });
-  }
+  if (!input.skipDiskWrite) {
+    if (!fs.existsSync(modelsDir)) {
+      fs.mkdirSync(modelsDir, { recursive: true });
+    }
 
-  const destPath = path.join(modelsDir, safeFileName);
-  await fs.promises.writeFile(destPath, buffer);
+    const destPath = path.join(modelsDir, safeFileName);
+    await fs.promises.writeFile(destPath, buffer);
+  }
 
   const modelUrl = `/models3d/${safeFileName}`;
   const label = input.label || input.fileName.replace(/\.glb$/i, '');
 
   let storagePath: string | null = null;
-  try {
-    const supabase = await requireAdminSupabaseClient();
-    if (supabase) {
-      storagePath = `models/${safeFileName}`;
-      await supabase.storage.from('room-assets').upload(storagePath, buffer, {
-        contentType: 'model/gltf-binary',
-        upsert: true,
-      });
+  if (!input.skipDiskWrite) {
+    try {
+      const supabase = await requireAdminSupabaseClient();
+      if (supabase) {
+        storagePath = `models/${safeFileName}`;
+        await supabase.storage.from('room-assets').upload(storagePath, buffer, {
+          contentType: 'model/gltf-binary',
+          upsert: true,
+        });
+      }
+    } catch {
+      // Continue with local public serving
     }
-  } catch {
-    // Continue with local public serving
   }
 
   const modelAsset: Model3DAsset = {
@@ -1017,10 +1038,12 @@ export async function upload3DModelAsset(input: {
     createdAt: new Date().toISOString(),
   };
 
-  await loadPersistedCustomModels();
-  customModelsMap.set(modelAsset.id, modelAsset);
-  deletedModelIds.delete(modelAsset.id);
-  await persistCustomModels();
+  if (!input.skipDiskWrite) {
+    await loadPersistedCustomModels();
+    customModelsMap.set(modelAsset.id, modelAsset);
+    deletedModelIds.delete(modelAsset.id);
+    await persistCustomModels();
+  }
 
   return modelAsset;
 }
