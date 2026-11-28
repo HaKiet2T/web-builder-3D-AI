@@ -260,10 +260,12 @@ export function RoomStage({
         const isHovered = hoveredItemId === item.id;
         const isDragging = activeDrag?.itemId === item.id;
         const imageUrl =
-          item.resolvedImageUrl ||
-          item.customImageUrl ||
-          item.product?.media?.[0]?.url ||
-          '/products/asus/ROG%20Strix%20OLED%20XG27AQWMG.png';
+          (item.resolvedImageUrl && !item.resolvedImageUrl.toLowerCase().endsWith('.glb'))
+            ? item.resolvedImageUrl
+            : item.product?.media?.find((m) => m.kind === 'image')?.url ||
+              (item.customImageUrl && !item.customImageUrl.toLowerCase().endsWith('.glb') ? item.customImageUrl : null) ||
+              item.product?.media?.[0]?.url ||
+              '/products/asus/ROG%20Strix%20OLED%20XG27AQWMG.png';
 
         const itemClassNames = [
           'room-stage-item',
