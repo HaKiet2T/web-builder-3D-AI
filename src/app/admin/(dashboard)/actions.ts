@@ -8,7 +8,10 @@ import {
   deleteCatalogMedia,
   saveCatalogProduct,
   uploadCatalogMedia,
+  uploadCatalogModelMedia,
+  updateCatalogModelConfig,
 } from '@/lib/catalog/dal';
+import { ModelConfigSchema } from '@/lib/schemas/model-config';
 import { processProductImages } from '@/lib/catalog/image-processing';
 import { ProductInputSchema as ProductSchema } from '@/lib/catalog/schema';
 import { updateAdminOrderStatus } from '@/lib/orders/dal';
@@ -205,4 +208,66 @@ export async function updateOrderStatusAction(formData: FormData) {
   await updateAdminOrderStatus(orderId, status.data);
   revalidatePath('/admin/orders');
   redirect('/admin/orders?updated=1');
+}
+
+export async function uploadModelMediaAction(formData: FormData) {
+  const productId = String(formData.get('productId') ?? '').trim();
+  const file = formData.get('file');
+
+  if (!productId || !(file instanceof File) || file.size === 0) {
+    throw new Error('Vui lòng chọn file 3D (.glb / .gltf) hợp lệ.');
+  }
+
+  const MAX_3D_MODEL_SIZE = 100 * 1024 * 1024; // 100 MB
+  if (file.size > MAX_3D_MODEL_SIZE) {
+    throw new Error('Dung lượng file 3D vượt quá giới hạn tối đa 100 MB.');
+  }
+
+  const buffer = await file.arrayBuffer();
+  const headerBytes = new Uint8Array(buffer.slice(0, 4));
+  const magic = String.fromCharCode(...headerBytes);
+  if (magic !== 'glTF') {
+    throw new Error('File không hợp lệ: Thiếu glTF magic header.');
+  }
+
+  await uploadCatalogModelMedia({
+    productId,
+    fileName: file.name,
+    content: buffer,
+    alt: `Mô hình 3D của ${productId}`,
+  });
+
+  revalidateTag('catalog', 'max');
+  revalidatePath('/admin/products');
+  revalidatePath('/setup');
+  revalidatePath('/mau-setup');
+  revalidatePath('/');
+  return { success: true };
+}
+
+export async function updateModelConfigAction(formData: FormData) {
+  const mediaId = String(formData.get('mediaId') ?? '').trim();
+  const rawConfig = String(formData.get('modelConfig') ?? '').trim();
+
+  if (!mediaId || !rawConfig) {
+    throw new Error('Thiếu mediaId hoặc modelConfig.');
+  }
+
+  let jsonConfig: unknown;
+  try {
+    jsonConfig = JSON.parse(rawConfig);
+  } catch {
+    throw new Error('Cấu hình 3D phải là chuỗi JSON hợp lệ.');
+  }
+
+  const parsed = ModelConfigSchema.safeParse(jsonConfig);
+  if (!parsed.success) {
+    throw new Error(`Cấu hình không hợp lệ: ${parsed.error.issues.map((i) => i.message).join(', ')}`);
+  }
+
+  await updateCatalogModelConfig(mediaId, parsed.data);
+  revalidateTag('catalog', 'max');
+  revalidatePath('/admin/products');
+  revalidatePath('/');
+  redirect('/admin/products?model=configured');
 }

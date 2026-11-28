@@ -42,6 +42,15 @@ export async function saveRoomSetupAction(
     status: (formData.get('status') || 'draft') as 'draft' | 'published',
     comboDiscountPct: Number(formData.get('comboDiscountPct') || 0),
     sortOrder: Number(formData.get('sortOrder') || 0),
+    wallCount: Number(formData.get('wallCount') || 2),
+    windows: (() => {
+      try {
+        const raw = formData.get('windows');
+        return raw ? JSON.parse(String(raw)) : [];
+      } catch {
+        return [];
+      }
+    })(),
   };
 
   const parsed = RoomSetupInputSchema.safeParse(rawData);
@@ -259,8 +268,9 @@ export async function upload3DModelAction(
       return { success: false, error: 'Vui lòng chọn một tệp mô hình 3D (.glb) để tải lên.' };
     }
 
-    if (rawFile.size > 35 * 1024 * 1024) {
-      return { success: false, error: 'Dung lượng tệp 3D vượt quá giới hạn cho phép (tối đa 35 MB).' };
+    const MAX_3D_MODEL_SIZE = 100 * 1024 * 1024; // 100 MB
+    if (rawFile.size > MAX_3D_MODEL_SIZE) {
+      return { success: false, error: 'Dung lượng tệp 3D vượt quá giới hạn cho phép (tối đa 100 MB).' };
     }
 
     const buffer = Buffer.from(await rawFile.arrayBuffer());

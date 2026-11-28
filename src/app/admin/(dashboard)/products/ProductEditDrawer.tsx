@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Category } from '@/lib/catalog/types';
 import type { AdminProduct } from '@/lib/catalog/dal';
 import { AdminProductForm } from '@/app/admin/(dashboard)/AdminProductForm';
+import { ProductModelManager } from './ProductModelManager';
 import {
   deleteMediaAction,
   archiveProductAction,
@@ -462,7 +463,7 @@ export function ProductEditDrawer({
               className={`admin-drawer-tab-btn ${activeTab === 'media' ? 'active' : ''}`}
               onClick={() => onTabChange('media')}
             >
-              Hình ảnh & Media ({product.media.length})
+              Hình ảnh & 3D ({product.media.length})
             </button>
           </nav>
         ) : null}
@@ -479,15 +480,22 @@ export function ProductEditDrawer({
             <AdminProductForm categories={categories} product={product} />
           ) : product && activeTab === 'media' ? (
             <div className="admin-drawer-media-wrap">
+              {/* Phân hệ Quản lý Mô hình 3D (.glb / .gltf) */}
+              <ProductModelManager
+                product={product}
+                primaryImageUrl={product.media.find((m) => m.kind === 'image')?.url}
+              />
+
+              {/* Phân hệ Thư viện ảnh 2D & Xóa phông AI */}
               <section className="admin-media-section" style={{ borderTop: 'none', margin: 0, padding: 0 }}>
                 <div className="admin-section-header-row">
-                  <h3>Thư viện media ({product.media.length})</h3>
+                  <h3>Thư viện ảnh 2D ({product.media.filter((m) => m.kind === 'image').length})</h3>
                   <span className="admin-help">Ảnh lưu trữ trực tiếp trên Supabase Storage</span>
                 </div>
 
-                {product.media.length > 0 ? (
+                {product.media.filter((m) => m.kind === 'image').length > 0 ? (
                   <ul className="admin-media-grid-list">
-                    {product.media.map((media) => (
+                    {product.media.filter((m) => m.kind === 'image').map((media) => (
                       <li key={media.id} className="admin-media-card-item">
                         <div className="admin-media-thumb-wrap">
                           {media.url ? (
