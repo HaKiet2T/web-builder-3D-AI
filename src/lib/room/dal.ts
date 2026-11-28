@@ -20,6 +20,14 @@ import type {
 import type { RoomItemRow, RoomSetupRow } from '@/lib/supabase/database.types';
 import { createPublicSupabaseClient } from '@/lib/supabase/public';
 
+async function getAdminSupabaseClientSafely() {
+  try {
+    return await requireAdminSupabaseClient();
+  } catch {
+    return null;
+  }
+}
+
 function mapRoomSetupRow(row: RoomSetupRow & { wall_count?: number; wallCount?: number; windows?: WindowConfig[] }): RoomSetup {
   return {
     id: row.id,
@@ -315,7 +323,7 @@ export async function listAdminRoomSetups(): Promise<RoomSetup[]> {
     (s) => !deletedRoomSetupIds.has(s.id) && !deletedRoomSetupIds.has(s.slug),
   );
 
-  const supabase = await requireAdminSupabaseClient();
+  const supabase = await getAdminSupabaseClientSafely();
   if (supabase) {
     try {
       const { data, error } = await supabase
@@ -375,7 +383,7 @@ export async function upsertRoomSetup(input: RoomSetupInput): Promise<RoomSetup>
   }
   deletedRoomSetupIds.delete(validated.slug);
 
-  const supabase = await requireAdminSupabaseClient();
+  const supabase = await getAdminSupabaseClientSafely();
 
   if (!supabase) {
     const existing = SAMPLE_ROOM_SETUPS.find(
@@ -486,7 +494,7 @@ export async function saveRoomItems(
   items: RoomItemInput[],
 ): Promise<RoomItem[]> {
   const validatedItems = items.map((item) => RoomItemSchema.parse(item));
-  const supabase = await requireAdminSupabaseClient();
+  const supabase = await getAdminSupabaseClientSafely();
 
   if (!supabase) {
     return validatedItems.map((item, idx) => ({
@@ -604,7 +612,7 @@ export async function clearAllSampleRooms(): Promise<boolean> {
   }
   await persistCustomRooms();
 
-  const supabase = await requireAdminSupabaseClient();
+  const supabase = await getAdminSupabaseClientSafely();
   if (supabase) {
     for (const sample of SAMPLE_ROOM_SETUPS) {
       try {
@@ -639,7 +647,7 @@ export async function deleteRoomSetup(id: string): Promise<boolean> {
 
   await persistCustomRooms();
 
-  const supabase = await requireAdminSupabaseClient();
+  const supabase = await getAdminSupabaseClientSafely();
   if (!supabase) return true;
 
   try {
@@ -711,12 +719,7 @@ export async function uploadDecorAsset(input: {
   label?: string;
   category?: string;
 }): Promise<DecorAsset> {
-  let supabase: Awaited<ReturnType<typeof requireAdminSupabaseClient>> | null = null;
-  try {
-    supabase = await requireAdminSupabaseClient();
-  } catch {
-    supabase = null;
-  }
+  const supabase = await getAdminSupabaseClientSafely();
 
   const extension = input.fileName.split('.').pop()?.toLowerCase() || 'png';
   const rawBaseName = input.fileName
@@ -767,12 +770,7 @@ export async function deleteDecorAsset(storagePath: string): Promise<boolean> {
     throw new Error('Đường dẫn file decor không hợp lệ.');
   }
 
-  let supabase: Awaited<ReturnType<typeof requireAdminSupabaseClient>> | null = null;
-  try {
-    supabase = await requireAdminSupabaseClient();
-  } catch {
-    supabase = null;
-  }
+  const supabase = await getAdminSupabaseClientSafely();
   if (!supabase) return true;
 
   const { error } = await supabase.storage.from('room-assets').remove([storagePath]);
@@ -1014,17 +1012,17 @@ export async function upload3DModelAsset(input: {
 
   let storagePath: string | null = null;
   if (!input.skipDiskWrite) {
-    try {
-      const supabase = await requireAdminSupabaseClient();
-      if (supabase) {
+    const supabase = await getAdminSupabaseClientSafely();
+    if (supabase) {
+      try {
         storagePath = `models/${safeFileName}`;
         await supabase.storage.from('room-assets').upload(storagePath, buffer, {
           contentType: 'model/gltf-binary',
           upsert: true,
         });
+      } catch {
+        // Continue with local public serving
       }
-    } catch {
-      // Continue with local public serving
     }
   }
 
