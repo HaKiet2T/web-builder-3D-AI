@@ -17,6 +17,7 @@ export interface RoomItem {
   rotation: number;
   flipX: boolean;
   zIndex: number;
+  elevation?: number;
   createdAt?: string;
   updatedAt?: string;
 
@@ -29,6 +30,15 @@ export interface RoomItem {
   inStock?: boolean;
 }
 
+export interface WindowConfig {
+  id: string;
+  wall: 'back' | 'left' | 'right';
+  positionPct: number; // 10% to 90% along the wall
+  width?: number; // width in meters (default ~2.0m)
+  height?: number; // height in meters (default ~1.6m)
+  elevationY?: number; // center elevation in meters (default ~2.0m)
+}
+
 export interface RoomSetup {
   id: string;
   slug: string;
@@ -39,6 +49,8 @@ export interface RoomSetup {
   status: RoomSetupStatus;
   comboDiscountPct: number;
   sortOrder: number;
+  wallCount?: number; // 1, 2, or 3 walls
+  windows?: WindowConfig[];
   createdAt: string;
   updatedAt: string;
 }
@@ -89,6 +101,8 @@ export interface UserSavedRoom {
   name: string;
   description?: string;
   aspectRatio: number;
+  wallCount?: number;
+  windows?: WindowConfig[];
   items: RoomItem[];
   createdAt: string;
   updatedAt: string;

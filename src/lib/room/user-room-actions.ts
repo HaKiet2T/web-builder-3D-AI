@@ -8,7 +8,8 @@ import {
   listUserSavedRooms,
   saveUserRoom,
 } from '@/lib/room/user-rooms-dal';
-import type { RoomItem, UserSavedRoom } from '@/lib/room/types';
+import type { RoomItem, UserSavedRoom, WindowConfig } from '@/lib/room/types';
+import type { Product } from '@/lib/catalog/types';
 
 export interface SaveUserRoomResult {
   success: boolean;
@@ -21,6 +22,8 @@ export async function saveCustomerRoomAction(payload: {
   name: string;
   description?: string;
   aspectRatio?: number;
+  wallCount?: number;
+  windows?: WindowConfig[];
   items: RoomItem[];
 }): Promise<SaveUserRoomResult> {
   const user = await getCurrentUser();
@@ -46,6 +49,8 @@ export async function saveCustomerRoomAction(payload: {
         name: cleanName,
         description: payload.description,
         aspectRatio: payload.aspectRatio,
+        wallCount: payload.wallCount,
+        windows: payload.windows,
         items: payload.items,
       },
       user.id
@@ -117,4 +122,14 @@ export async function getCustomerRoomAction(
   const user = await getCurrentUser();
   if (!user) return null;
   return getUserSavedRoomById(roomId, user.id);
+}
+
+export async function listDynamicCatalogProductsAction(): Promise<Product[]> {
+  try {
+    const { listProducts } = await import('@/lib/catalog/dal');
+    return await listProducts();
+  } catch {
+    const { PRODUCT_RECORDS } = await import('@/lib/catalog/sample-data');
+    return PRODUCT_RECORDS;
+  }
 }

@@ -10,6 +10,8 @@
  * because every price in this catalogue is a whole đồng amount.
  */
 
+import type { ModelConfig } from '@/lib/schemas/model-config';
+
 export type CategoryId = 'monitor' | 'speaker' | 'mouse' | 'keyboard' | 'monitor-led';
 
 export type StockStatus = 'in-stock' | 'preorder' | 'out-of-stock';
@@ -56,6 +58,7 @@ export interface ProductMedia {
   width: number | null;
   height: number | null;
   position: number;
+  modelConfig?: ModelConfig | null;
 }
 
 export interface Product {

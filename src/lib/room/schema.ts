@@ -20,6 +20,7 @@ export const RoomItemSchema = z
     rotation: z.number().default(0),
     flipX: z.boolean().default(false),
     zIndex: z.number().int().default(1),
+    elevation: z.number().min(0, 'Độ cao phải từ 0 trở lên.').max(10, 'Độ cao tối đa 10m.').optional().default(0),
   })
   .superRefine((data, ctx) => {
     if (data.itemType === 'product') {
@@ -50,6 +51,17 @@ export const RoomItemSchema = z
 
 export type RoomItemInput = z.input<typeof RoomItemSchema>;
 
+export const WindowConfigSchema = z.object({
+  id: z.string(),
+  wall: z.enum(['back', 'left', 'right']).default('back'),
+  positionPct: z.number().min(5, 'Vị trí cửa sổ tối thiểu 5%.').max(95, 'Vị trí cửa sổ tối đa 95%.').default(50),
+  width: z.number().positive('Chiều rộng cửa sổ phải lớn hơn 0.').optional().default(2.0),
+  height: z.number().positive('Chiều cao cửa sổ phải lớn hơn 0.').optional().default(1.6),
+  elevationY: z.number().positive('Độ cao cửa sổ phải lớn hơn 0.').optional().default(2.0),
+});
+
+export type WindowConfigInput = z.infer<typeof WindowConfigSchema>;
+
 export const RoomSetupInputSchema = z.object({
   id: z.string().optional(),
   slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug chỉ gồm chữ thường, số và dấu gạch ngang.'),
@@ -60,6 +72,8 @@ export const RoomSetupInputSchema = z.object({
   status: RoomSetupStatusSchema.default('draft'),
   comboDiscountPct: z.number().min(0, 'Chiết khấu combo tối thiểu 0%.').max(100, 'Chiết khấu combo tối đa 100%.').default(0),
   sortOrder: z.number().int().default(0),
+  wallCount: z.number().int().min(1, 'Số mặt tường tối thiểu 1.').max(3, 'Số mặt tường tối đa 3.').optional().default(2),
+  windows: z.array(WindowConfigSchema).optional().default([]),
   items: z.array(RoomItemSchema).optional(),
 });
 

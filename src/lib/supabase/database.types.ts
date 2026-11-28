@@ -154,6 +154,7 @@ export interface Database {
           width: number | null;
           height: number | null;
           position: number;
+          model_config?: Json | null;
         };
         Insert: {
           id?: string;
@@ -165,6 +166,7 @@ export interface Database {
           width?: number | null;
           height?: number | null;
           position?: number;
+          model_config?: Json | null;
         };
         Update: {
           id?: string;
@@ -176,6 +178,7 @@ export interface Database {
           width?: number | null;
           height?: number | null;
           position?: number;
+          model_config?: Json | null;
         };
         Relationships: [
           {
